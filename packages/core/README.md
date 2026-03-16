@@ -1,5 +1,8 @@
 # @fabrknt/veil-core
 
+[![npm version](https://img.shields.io/npm/v/@fabrknt/veil-core.svg)](https://www.npmjs.com/package/@fabrknt/veil-core)
+[![npm downloads](https://img.shields.io/npm/dm/@fabrknt/veil-core.svg)](https://www.npmjs.com/package/@fabrknt/veil-core)
+
 Chain-agnostic encryption and privacy primitives for DeFi protocols, with optional Solana extensions.
 
 Not every DeFi protocol needs TradFi compliance -- but if yours does, you shouldn't have to rebuild from scratch. Fabrknt plugs into your existing protocol with composable SDKs and APIs. No permissioned forks, no separate deployments.
