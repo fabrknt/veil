@@ -1,6 +1,6 @@
 {
   "name": "@fabrknt/veil-core",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Chain-agnostic encryption and privacy primitives (NaCl box, Shamir, payload serialization) with optional Solana-specific extensions (ZK compression, shielded transfers, Arcium MPC)",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
