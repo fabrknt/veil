@@ -1,6 +1,11 @@
 # veil
 
+[![npm version](https://img.shields.io/npm/v/@fabrknt/veil-core.svg)](https://www.npmjs.com/package/@fabrknt/veil-core)
+[![npm downloads](https://img.shields.io/npm/dm/@fabrknt/veil-core.svg)](https://www.npmjs.com/package/@fabrknt/veil-core)
+
 Privacy primitives for any blockchain, with optional Solana-specific extensions.
+
+Part of [Fabrknt](https://fabrknt.com) — plug-in compliance for existing DeFi protocols. `npm install @fabrknt/veil-core`
 
 The core modules (NaCl box encryption, Shamir secret sharing, payload serialization, order encryption) are **chain-agnostic** -- pure cryptographic primitives that work with Solana, Ethereum, Polygon, Arbitrum, or any other chain. Solana-specific features (ZK compression, shielded transfers, Arcium MPC, SOVEREIGN identity) are clearly separated and labeled.
 
