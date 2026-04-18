@@ -168,6 +168,25 @@ export function deserializePayload(
 // ============ Predefined Schemas ============
 
 /**
+ * Schema for Dark Pool perp order payload.
+ * Layout: side(u8) + orderType(u8) + price(u64) + quantity(u64) + maxSlippageBps(u16) + marketId(u8) + padding(5) = 28 bytes
+ *
+ * On-chain commitment verification re-serializes decrypted params with this layout,
+ * hashes with SHA-256, and compares against the submitted payload_hash.
+ */
+export const PERP_ORDER_SCHEMA: PayloadSchema = {
+  fields: [
+    { name: 'side', type: 'u8' },            // 0 = long/bid, 1 = short/ask
+    { name: 'orderType', type: 'u8' },        // 0 = limit, 1 = market
+    { name: 'price', type: 'u64' },           // limit price (6 decimals), 0 for market
+    { name: 'quantity', type: 'u64' },         // base asset quantity (6 decimals)
+    { name: 'maxSlippageBps', type: 'u16' },   // max slippage tolerance
+    { name: 'marketId', type: 'u8' },          // 0=SOL, 1=BTC, 2=ETH
+    { name: 'padding', type: 'bytes', size: 5 },
+  ],
+};
+
+/**
  * Schema for Confidential Swap Router order payload
  */
 export const SWAP_ORDER_SCHEMA: PayloadSchema = {

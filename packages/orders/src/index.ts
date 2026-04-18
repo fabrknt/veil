@@ -6,6 +6,7 @@ import {
   deserializePayload,
   validateEncryptedData,
   SWAP_ORDER_SCHEMA,
+  PERP_ORDER_SCHEMA,
   splitSecret,
   combineShares,
   SecretShare,
@@ -202,6 +203,126 @@ export function createCommittedEncryptedOrder(
 
   const encrypted = encryptOrderPayload(payload, solverPublicKey, userKeypair);
   const payloadHash = computePayloadHash(payload);
+
+  return {
+    encryptedBytes: encrypted.bytes,
+    payloadHash,
+    userPublicKey: userKeypair.publicKey,
+  };
+}
+
+// ============================================================================
+// Perp Order Encryption (Dark Pool)
+// ============================================================================
+
+/**
+ * Perp order side
+ */
+export type PerpSide = 'long' | 'short';
+
+/**
+ * Perp order type
+ */
+export type PerpOrderType = 'limit' | 'market';
+
+/**
+ * Perp order payload — encrypted fields for dark pool orders.
+ * Contains sensitive order details hidden from MEV searchers and strategy copiers.
+ */
+export interface PerpOrderPayload {
+  /** Order side: 'long' (bid) or 'short' (ask) */
+  side: PerpSide;
+  /** Order type: 'limit' or 'market' */
+  orderType: PerpOrderType;
+  /** Limit price in 6-decimal fixed point (0 for market orders) */
+  price: BN;
+  /** Base asset quantity in 6-decimal fixed point */
+  quantity: BN;
+  /** Maximum slippage tolerance in basis points */
+  maxSlippageBps: number;
+  /** Market identifier: 0=SOL, 1=BTC, 2=ETH */
+  marketId: number;
+}
+
+/**
+ * Serialize perp order payload to bytes using PERP_ORDER_SCHEMA (28 bytes).
+ */
+export function serializePerpOrderPayload(payload: PerpOrderPayload): Uint8Array {
+  return serializePayload({
+    side: payload.side === 'long' ? 0 : 1,
+    orderType: payload.orderType === 'limit' ? 0 : 1,
+    price: payload.price,
+    quantity: payload.quantity,
+    maxSlippageBps: payload.maxSlippageBps,
+    marketId: payload.marketId,
+    padding: new Uint8Array(5),
+  }, PERP_ORDER_SCHEMA);
+}
+
+/**
+ * Deserialize bytes back to perp order payload.
+ */
+export function deserializePerpOrderPayload(bytes: Uint8Array): PerpOrderPayload {
+  const data = deserializePayload(bytes, PERP_ORDER_SCHEMA);
+  return {
+    side: data.side === 0 ? 'long' : 'short',
+    orderType: data.orderType === 0 ? 'limit' : 'market',
+    price: data.price as BN,
+    quantity: data.quantity as BN,
+    maxSlippageBps: data.maxSlippageBps as number,
+    marketId: data.marketId as number,
+  };
+}
+
+/**
+ * Encrypt a perp order payload using NaCl box.
+ */
+export function encryptPerpOrderPayload(
+  payload: PerpOrderPayload,
+  solverPublicKey: Uint8Array,
+  userKeypair: EncryptionKeypair,
+): EncryptedPayload {
+  const plaintext = serializePerpOrderPayload(payload);
+  const encrypted = encrypt(plaintext, solverPublicKey, userKeypair);
+  return {
+    nonce: encrypted.nonce,
+    ciphertext: encrypted.ciphertext,
+    bytes: encrypted.bytes,
+  };
+}
+
+/**
+ * Decrypt a perp order payload using NaCl box.
+ */
+export function decryptPerpOrderPayload(
+  encryptedBytes: Uint8Array,
+  userPublicKey: Uint8Array,
+  solverKeypair: EncryptionKeypair,
+): PerpOrderPayload {
+  const plaintext = decrypt(encryptedBytes, userPublicKey, solverKeypair);
+  return deserializePerpOrderPayload(plaintext);
+}
+
+/**
+ * Compute SHA-256 hash of the serialized perp order payload (commitment).
+ * This hash is submitted on-chain for commitment verification.
+ */
+export function computePerpPayloadHash(payload: PerpOrderPayload): Uint8Array {
+  const serialized = serializePerpOrderPayload(payload);
+  const hash = createHash('sha256').update(serialized).digest();
+  return new Uint8Array(hash);
+}
+
+/**
+ * Create an encrypted perp order with commitment hash for on-chain verification.
+ */
+export function createCommittedEncryptedPerpOrder(
+  payload: PerpOrderPayload,
+  solverPublicKey: Uint8Array,
+  userKeypair: EncryptionKeypair,
+): EncryptedOrderWithCommitment {
+  const encrypted = encryptPerpOrderPayload(payload, solverPublicKey, userKeypair);
+  const payloadHash = computePerpPayloadHash(payload);
 
   return {
     encryptedBytes: encrypted.bytes,

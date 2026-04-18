@@ -34,6 +34,7 @@ export {
   serializePayload,
   deserializePayload,
   SWAP_ORDER_SCHEMA,
+  PERP_ORDER_SCHEMA,
   RWA_ASSET_SCHEMA,
   RWA_ACCESS_GRANT_SCHEMA,
 } from './payload';
