@@ -32,7 +32,7 @@
 
 Users told us the same thing differently: "Why would I use this instead of Drift?" There was no good answer.
 
-The pivot: take the privacy primitives we already had (Veil — recognized by QuickNode, 6 published apps, chain-agnostic encryption on npm) and build the product the ecosystem actually needs — **a dark pool for Solana perps**. No one has built this. Silhouette does it on Hyperliquid. Nothing exists on Solana.
+The pivot: take the privacy primitives we already had (Veil — 6 published apps, chain-agnostic encryption on npm) and build the product the ecosystem actually needs — **a dark pool for Solana perps**. No one has built this. Silhouette does it on Hyperliquid. Nothing exists on Solana.
 
 Syntx's VenueAdapter infrastructure lives on as the settlement layer inside Veil Dark Pool. Nothing was wasted.
 
@@ -80,7 +80,7 @@ Syntx's VenueAdapter infrastructure lives on as the settlement layer inside Veil
 
 ### Section 4: Why This Matters (30s)
 
-"This is built on Veil's production privacy infrastructure — NaCl box encryption, commitment verification, threshold decryption. The same primitives are published on npm, recognized by QuickNode, and used across 6 existing Veil apps."
+"This is built on Veil's production privacy infrastructure — NaCl box encryption, commitment verification, threshold decryption. The same primitives are published on npm and used across 6 existing Veil apps."
 
 "We're not starting from zero. We're shipping the flagship product on top of infrastructure that's already proven."
 
@@ -108,7 +108,7 @@ Syntx's VenueAdapter infrastructure lives on as the settlement layer inside Veil
 
 ### Why We Can Build This (30s)
 
-"This isn't our first privacy product. Veil is a privacy infrastructure suite published on npm, recognized by QuickNode, with 6 existing Solana apps — confidential swaps, dark AMM, reputation-gated DEX, private token launches."
+"This isn't our first privacy product. Veil is a privacy infrastructure suite published on npm, with 6 existing Solana apps — confidential swaps, dark AMM, reputation-gated DEX, private token launches."
 
 "We also run production vaults — Yogi on Drift mainnet, Kodiak on Hyperliquid mainnet. We know perps infrastructure. The dark pool combines both: privacy primitives plus perps execution."
 

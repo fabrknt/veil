@@ -27,7 +27,7 @@ Veil Dark Pool is a shielded execution layer for Solana perp DEXs — the first 
 
 In TradFi, dark pools handle 30-50% of institutional equity flow. On-chain perps have no equivalent — every trade is visible, front-runnable, and copyable. Silhouette raised $3M to solve this on Hyperliquid. Nothing exists on Solana.
 
-Built on Veil's production privacy infrastructure: NaCl encryption, commitment verification, and threshold decryption — published on npm, recognized by QuickNode, powering 6 existing Solana privacy apps.
+Built on Veil's production privacy infrastructure: NaCl encryption, commitment verification, and threshold decryption — published on npm, powering 6 existing Solana privacy apps.
 
 Built for: perp traders losing to MEV, vault operators hiding rebalance intent, and institutional players who need execution privacy before entering DeFi.
 
@@ -37,7 +37,7 @@ Built for: perp traders losing to MEV, vault operators hiding rebalance intent, 
 
 We started this hackathon building Syntx — a cross-venue perp DEX. Mentor feedback was direct: competing with Drift, Jupiter, and Phoenix head-on provides no clear edge. Users asked "why would I use this instead of Drift?" and we had no good answer.
 
-But we had something no one else on Solana had: production privacy infrastructure. Veil — NaCl encryption, commitment verification, confidential swap router — recognized by QuickNode, published on npm, 6 working apps. And we run live perp vaults (Yogi on Drift, Kodiak on Hyperliquid), so we understand the execution stack.
+But we had something no one else on Solana had: production privacy infrastructure. Veil — NaCl encryption, commitment verification, confidential swap router — published on npm, 6 working apps. And we run live perp vaults (Yogi on Drift, Kodiak on Hyperliquid), so we understand the execution stack.
 
 The pivot was obvious: build the product the ecosystem actually needs. Silhouette proved dark pools work on Hyperliquid ($3M raised). Nothing equivalent exists on Solana — the largest composable smart contract platform. Every perp trade on Solana gets worse execution from MEV frontrunning and strategy copying.
 
@@ -61,7 +61,7 @@ https://github.com/fabrknt/veil
 
 Veil is a privacy infrastructure monorepo. The dark pool is at apps/dark-pool/. Key components: Anchor program (6 instructions, 3 state accounts), off-chain solver (matcher + settlement adapters), and SDK wrapping @fabrknt/veil-orders for perp order encryption.
 
-The encryption primitives (@fabrknt/veil-core, @fabrknt/veil-orders) are production packages — published on npm, with a QuickNode Marketplace add-on, shared across 6 other Veil apps (confidential swaps, dark AMM, etc).
+The encryption primitives (@fabrknt/veil-core, @fabrknt/veil-orders) are production packages — published on npm, shared across 6 other Veil apps (confidential swaps, dark AMM, etc).
 
 (489 chars)
 
@@ -85,7 +85,7 @@ Japan
 
 We pivoted mid-hackathon based on mentor feedback — from Syntx (cross-venue perp DEX) to Veil Dark Pool. The VenueAdapter infrastructure from Syntx became the settlement layer. The pivot was validated: dark pools are a proven TradFi model with no Solana equivalent.
 
-This isn't our first product. Yogi runs live on Drift mainnet. Kodiak runs live on Hyperliquid mainnet. Veil's privacy primitives are recognized by QuickNode. We combined production perps infra + production privacy infra into one product.
+This isn't our first product. Yogi runs live on Drift mainnet. Kodiak runs live on Hyperliquid mainnet. We combined production perps infra + production privacy infra into one product.
 
 (499 chars)
 
