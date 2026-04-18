@@ -32,7 +32,7 @@
 
 Users told us the same thing differently: "Why would I use this instead of Drift?" There was no good answer.
 
-The pivot: take the privacy primitives we already had (Veil — 6 published apps, chain-agnostic encryption on npm) and build the product the ecosystem actually needs — **a dark pool for Solana perps**. No one has built this. Silhouette does it on Hyperliquid. Nothing exists on Solana.
+The pivot: take the privacy primitives we already had (Veil — recognized by QuickNode, 6 published apps, chain-agnostic encryption on npm) and build the product the ecosystem actually needs — **a dark pool for Solana perps**. No one has built this. Silhouette does it on Hyperliquid. Nothing exists on Solana.
 
 Syntx's VenueAdapter infrastructure lives on as the settlement layer inside Veil Dark Pool. Nothing was wasted.
 

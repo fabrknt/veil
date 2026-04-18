@@ -34,7 +34,7 @@ Built for: perp traders losing to MEV, vault operators hiding rebalance intent, 
 
 We started this hackathon building a cross-venue perp DEX. Mentor feedback was direct: competing with Drift and Jupiter head-on provides no edge. Users asked "why would I use this instead of Drift?" — no good answer.
 
-But we had something no one else on Solana had: production privacy infrastructure. Veil — NaCl encryption, commitment verification, confidential swap router — published on npm, 6 working apps. And we run live perp vaults (Yogi on Drift mainnet, Kodiak on Hyperliquid mainnet).
+But we had something no one else on Solana had: production privacy infrastructure. Veil — NaCl encryption, commitment verification, confidential swap router — published on npm, recognized by QuickNode, 6 working apps. And we run live perp vaults (Yogi on Drift mainnet, Kodiak on Hyperliquid mainnet).
 
 The pivot was obvious: the ecosystem needs execution privacy, not another DEX. Silhouette proved dark pools work on Hyperliquid ($3M raised). Nothing equivalent exists on Solana — the largest composable smart contract platform.
 
