@@ -170,27 +170,37 @@ async function main() {
 
   const connection = new Connection(RPC_URL, 'confirmed');
 
-  // Generate keypairs
+  // Load funder from default keypair, generate test accounts
+  const fs = require('fs');
+  const funderPath = process.env.KEYPAIR_PATH || `${process.env.HOME}/.config/solana/id.json`;
+  const funder = Keypair.fromSecretKey(new Uint8Array(JSON.parse(fs.readFileSync(funderPath, 'utf-8'))));
   const admin = Keypair.generate();
   const solver = Keypair.generate();
   const traderA = Keypair.generate();
   const traderB = Keypair.generate();
 
+  console.log('[setup] Funder:', funder.publicKey.toBase58());
   console.log('[setup] Admin:', admin.publicKey.toBase58());
   console.log('[setup] Solver:', solver.publicKey.toBase58());
   console.log('[setup] Trader A:', traderA.publicKey.toBase58());
   console.log('[setup] Trader B:', traderB.publicKey.toBase58());
   console.log();
 
-  // Airdrop SOL (sequential to avoid rate limits)
-  console.log('[setup] Requesting airdrops...');
+  // Fund accounts from funder wallet (works even when airdrop is rate-limited)
+  console.log('[setup] Funding accounts...');
+  const fundAmount = 0.5e9; // 0.5 SOL each
   for (const kp of [admin, solver, traderA, traderB]) {
-    const sig = await connection.requestAirdrop(kp.publicKey, 2e9);
-    await connection.confirmTransaction(sig, 'confirmed');
-    console.log('       Airdropped 2 SOL to', kp.publicKey.toBase58().slice(0, 8) + '...');
-    await new Promise(r => setTimeout(r, 1000)); // rate limit pause
+    const tx = new Transaction().add(
+      SystemProgram.transfer({
+        fromPubkey: funder.publicKey,
+        toPubkey: kp.publicKey,
+        lamports: fundAmount,
+      }),
+    );
+    await sendAndConfirmTransaction(connection, tx, [funder]);
+    console.log('       Funded 0.5 SOL to', kp.publicKey.toBase58().slice(0, 8) + '...');
   }
-  console.log('[setup] All airdrops confirmed');
+  console.log('[setup] All accounts funded');
 
   // Create USDC mock mint
   console.log('[setup] Creating mock USDC mint...');
