@@ -17,7 +17,8 @@ The core modules (NaCl box encryption, Shamir secret sharing, payload serializat
 | [`@fabrknt/veil-orders`](#veilorders) | Chain-agnostic encrypted swap order payloads for MEV protection on any DEX |
 | [`@fabrknt/veil-qn-addon`](#veilqn-addon) | Fabrknt Privacy — QuickNode Marketplace REST Add-On serving chain-agnostic privacy primitives |
 | [`@fabrknt/veil-mcp-server`](#veilmcp-server) | MCP server exposing privacy tools for AI agents (chain-agnostic + Solana-specific) |
-| [`apps/*`](#solana-apps) | 5 Solana privacy DeFi apps (confidential swaps, RWA secrets, umbra, darkflow, shadowlaunch) |
+| [`apps/dark-pool`](apps/dark-pool/) | **Veil Dark Pool** — first shielded perp execution on Solana ([devnet](https://explorer.solana.com/address/FPAF4iwMtb2CWDcqpWf6NJzJCYrBhQNH8PkWY8ZCGMUA?cluster=devnet)) |
+| [`apps/*`](#solana-apps) | 5 more Solana privacy DeFi apps (confidential swaps, RWA secrets, umbra, darkflow, shadowlaunch) |
 
 ## Getting Started
 
