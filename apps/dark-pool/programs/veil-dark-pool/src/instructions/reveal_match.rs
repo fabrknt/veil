@@ -122,8 +122,8 @@ fn compute_perp_payload_hash(
     payload[20] = market_id;
     // bytes 21..28 remain zero (padding)
 
-    let hash = anchor_lang::solana_program::hash::hash(&payload);
-    hash.to_bytes()
+    let hash_result = anchor_lang::solana_program::hash::hash(&payload);
+    hash_result.to_bytes()
 }
 
 #[derive(Accounts)]

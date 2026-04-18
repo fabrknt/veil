@@ -23,7 +23,7 @@ export function loadConfig(): DarkPoolSolverConfig {
     rpcUrl: process.env.RPC_URL || 'http://localhost:8899',
     keypair: loadKeypair(process.env.SOLVER_KEYPAIR_PATH || '~/.config/solana/id.json'),
     encryptionKeypair: loadOrGenerateEncryptionKeypair(),
-    programId: process.env.PROGRAM_ID || 'VDPoo1DarkPoo1DarkPoo1DarkPoo1DarkPoo111111',
+    programId: process.env.PROGRAM_ID || 'FPAF4iwMtb2CWDcqpWf6NJzJCYrBhQNH8PkWY8ZCGMUA',
     pollIntervalMs: Number(process.env.POLL_INTERVAL_MS) || 2000,
     apiPort: Number(process.env.API_PORT) || 3040,
     defaultVenue: (process.env.DEFAULT_VENUE as 'drift' | 'jupiter') || 'drift',

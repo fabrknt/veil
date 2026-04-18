@@ -6,7 +6,7 @@ pub mod instructions;
 
 use instructions::*;
 
-declare_id!("VDPoo1DarkPoo1DarkPoo1DarkPoo1DarkPoo111111");
+declare_id!("FPAF4iwMtb2CWDcqpWf6NJzJCYrBhQNH8PkWY8ZCGMUA");
 
 #[program]
 pub mod veil_dark_pool {

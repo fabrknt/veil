@@ -80,7 +80,7 @@ pub struct SubmitPerpOrder<'info> {
         bump = config.bump,
         constraint = config.is_active @ DarkPoolError::PoolNotActive,
     )]
-    pub config: Account<'info, DarkPoolConfig>,
+    pub config: Box<Account<'info, DarkPoolConfig>>,
 
     #[account(
         init,
@@ -89,7 +89,7 @@ pub struct SubmitPerpOrder<'info> {
         seeds = [COMMITMENT_SEED, &config.commitment_count.to_le_bytes()],
         bump,
     )]
-    pub commitment: Account<'info, PerpOrderCommitment>,
+    pub commitment: Box<Account<'info, PerpOrderCommitment>>,
 
     #[account(
         init,
@@ -99,17 +99,17 @@ pub struct SubmitPerpOrder<'info> {
         token::mint = usdc_mint,
         token::authority = commitment,
     )]
-    pub collateral_vault: Account<'info, TokenAccount>,
+    pub collateral_vault: Box<Account<'info, TokenAccount>>,
 
     #[account(
         mut,
         constraint = trader_usdc.mint == config.usdc_mint @ DarkPoolError::InvalidCollateral,
         constraint = trader_usdc.owner == trader.key() @ DarkPoolError::UnauthorizedOwner,
     )]
-    pub trader_usdc: Account<'info, TokenAccount>,
+    pub trader_usdc: Box<Account<'info, TokenAccount>>,
 
     #[account(constraint = usdc_mint.key() == config.usdc_mint)]
-    pub usdc_mint: Account<'info, anchor_spl::token::Mint>,
+    pub usdc_mint: Box<Account<'info, anchor_spl::token::Mint>>,
 
     pub token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>,

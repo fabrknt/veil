@@ -3,10 +3,10 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
-veil_dark_pool = "VDPoo1DarkPoo1DarkPoo1DarkPoo1DarkPoo111111"
+veil_dark_pool = "FPAF4iwMtb2CWDcqpWf6NJzJCYrBhQNH8PkWY8ZCGMUA"
 
 [programs.devnet]
-veil_dark_pool = "VDPoo1DarkPoo1DarkPoo1DarkPoo1DarkPoo111111"
+veil_dark_pool = "FPAF4iwMtb2CWDcqpWf6NJzJCYrBhQNH8PkWY8ZCGMUA"
 
 [registry]
 url = "https://api.apr.dev"
