@@ -8,8 +8,8 @@ use crate::instructions::submit_perp_order::COMMITMENT_SEED;
 pub const TRADE_SEED: &[u8] = b"dark_trade";
 
 /// Perp order payload layout (must match PERP_ORDER_SCHEMA in @fabrknt/veil-core):
-/// side(u8) + orderType(u8) + price(u64) + quantity(u64) + maxSlippageBps(u16) + marketId(u8) + padding(5) = 28 bytes
-const PERP_PAYLOAD_SIZE: usize = 28;
+/// side(u8) + orderType(u8) + price(u64) + quantity(u64) + maxSlippageBps(u16) + marketId(u8) + padding(5) = 26 bytes
+const PERP_PAYLOAD_SIZE: usize = 26;
 
 pub fn handler(
     ctx: Context<RevealMatch>,
@@ -104,7 +104,7 @@ pub fn handler(
 }
 
 /// Recompute SHA-256 hash of perp order params for commitment verification.
-/// Layout matches PERP_ORDER_SCHEMA: side(1) + orderType(1) + price(8) + qty(8) + slippage(2) + marketId(1) + padding(5) = 28
+/// Layout matches PERP_ORDER_SCHEMA: side(1) + orderType(1) + price(8) + qty(8) + slippage(2) + marketId(1) + padding(5) = 26
 fn compute_perp_payload_hash(
     side: u8,
     order_type: u8,
