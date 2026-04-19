@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Veil Dark Pool — Business Pitch</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-snap-type: y mandatory; overflow-y: scroll; }
+    body { background: #000; color: #c0c8d0; font-family: 'JetBrains Mono', monospace; }
+    body::after {
+      content: ''; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,136,0.012) 2px, rgba(0,255,136,0.012) 4px);
+      pointer-events: none; z-index: 9999;
+    }
+    .slide {
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      padding: 60px 80px; position: relative; scroll-snap-align: start; overflow: hidden;
+    }
+    .slide-inner { max-width: 1100px; width: 100%; position: relative; z-index: 10; }
+    .slide canvas.matrix {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      opacity: 0.06; z-index: 0;
+    }
+    h1 {
+      font-family: 'Orbitron', sans-serif; font-size: 56px; font-weight: 900;
+      color: #00ffcc; text-shadow: 0 0 20px #00ffcc80, 0 0 60px #00ffcc30;
+      letter-spacing: 4px; margin-bottom: 16px;
+    }
+    h2 {
+      font-family: 'Orbitron', sans-serif; font-size: 30px; font-weight: 700;
+      color: #00ccaa; text-shadow: 0 0 10px #00ccaa50;
+      letter-spacing: 2px; margin-bottom: 28px;
+    }
+    .step {
+      font-family: 'Orbitron', sans-serif; color: #ff00aa; font-size: 13px;
+      text-transform: uppercase; letter-spacing: 5px; text-shadow: 0 0 8px #ff00aa60;
+      margin-bottom: 14px;
+    }
+    p { font-size: 19px; line-height: 1.75; margin-bottom: 16px; }
+    .cyan { color: #00ffcc; text-shadow: 0 0 6px #00ffcc50; }
+    .magenta { color: #ff00aa; text-shadow: 0 0 6px #ff00aa50; }
+    .gold { color: #ffcc00; text-shadow: 0 0 6px #ffcc0050; }
+    .dim { color: #445566; }
+    .small { font-size: 14px; }
+    .badge {
+      display: inline-block; border: 1px solid #00ffcc50; color: #00ffcc;
+      padding: 6px 14px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+      margin-right: 8px; margin-bottom: 8px;
+    }
+    .card {
+      background: #000a0f; border: 1px solid #00ffcc20;
+      box-shadow: 0 0 20px #00ffcc08; padding: 28px; margin: 16px 0;
+      position: relative;
+    }
+    .card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, transparent, #00ffcc, transparent);
+    }
+    .card-label {
+      font-family: 'Orbitron', sans-serif; font-size: 11px; letter-spacing: 3px;
+      text-transform: uppercase; color: #00ffcc50; margin-bottom: 16px;
+    }
+    table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+    th {
+      text-align: left; color: #00ffcc; padding: 12px 14px;
+      border-bottom: 1px solid #00ffcc25; font-size: 13px;
+      text-transform: uppercase; letter-spacing: 2px;
+    }
+    td { padding: 12px 14px; border-bottom: 1px solid #0a1520; font-size: 15px; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+    .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; }
+    .stat-box {
+      background: #000a0f; border: 1px solid #112233; padding: 24px; text-align: center;
+    }
+    .stat-box .big { font-family: 'Orbitron', sans-serif; font-size: 36px; font-weight: 700; }
+    .stat-box .label { font-size: 12px; color: #556677; margin-top: 8px; text-transform: uppercase; letter-spacing: 2px; }
+    .verify-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 0; border-bottom: 1px solid #112233;
+    }
+    .verify-row:last-child { border-bottom: none; }
+    .check { color: #00ffcc; text-shadow: 0 0 8px #00ffcc; }
+    .timeline-item { display: flex; gap: 20px; margin-bottom: 20px; }
+    .timeline-dot {
+      width: 12px; height: 12px; border-radius: 50%;
+      background: #00ffcc; box-shadow: 0 0 8px #00ffcc;
+      margin-top: 6px; flex-shrink: 0;
+    }
+    .timeline-dot.dim { background: #334455; box-shadow: none; }
+    .slide-num {
+      position: absolute; bottom: 30px; right: 40px;
+      font-family: 'Orbitron', sans-serif; font-size: 12px; color: #223344; letter-spacing: 2px; z-index: 10;
+    }
+    #nav {
+      position: fixed; right: 20px; top: 50%; transform: translateY(-50%);
+      z-index: 10000; display: flex; flex-direction: column; gap: 8px;
+    }
+    #nav a {
+      display: block; width: 8px; height: 8px; border-radius: 50%; background: #334455;
+      transition: background 0.3s;
+    }
+    #nav a.active { background: #00ffcc; box-shadow: 0 0 6px #00ffcc; }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .slide-inner > * { animation: fadeInUp 0.6s ease-out both; }
+    .slide-inner > *:nth-child(2) { animation-delay: 0.1s; }
+    .slide-inner > *:nth-child(3) { animation-delay: 0.2s; }
+    .slide-inner > *:nth-child(4) { animation-delay: 0.3s; }
+    .slide-inner > *:nth-child(5) { animation-delay: 0.4s; }
+
+    /* Quadrant chart */
+    .quadrant {
+      position: relative; width: 100%; aspect-ratio: 1.6;
+      border-left: 1px solid #334455; border-bottom: 1px solid #334455;
+      margin: 24px 0;
+    }
+    .quadrant-label-x {
+      position: absolute; bottom: -28px; left: 50%; transform: translateX(-50%);
+      font-size: 11px; color: #556677; letter-spacing: 2px; text-transform: uppercase;
+    }
+    .quadrant-label-y {
+      position: absolute; left: -120px; top: 50%; transform: translateY(-50%) rotate(-90deg);
+      font-size: 11px; color: #556677; letter-spacing: 2px; text-transform: uppercase;
+    }
+    .q-item {
+      position: absolute; padding: 8px 14px; font-size: 12px;
+      border: 1px solid; border-radius: 4px; white-space: nowrap;
+    }
+    .q-veil { border-color: #00ffcc; color: #00ffcc; background: #00ffcc10;
+      text-shadow: 0 0 8px #00ffcc60; font-weight: 700; font-size: 14px; }
+    .q-other { border-color: #334455; color: #667788; background: #0a0f15; }
+    .q-line-h { position: absolute; left: 0; right: 0; border-top: 1px dashed #1a2530; }
+    .q-line-v { position: absolute; top: 0; bottom: 0; border-left: 1px dashed #1a2530; }
+  </style>
+</head>
+<body>
+
+<div id="nav"></div>
+
+<!-- ============================================================
+     SLIDE 1: Title
+     ============================================================ -->
+<div class="slide" id="s1">
+  <canvas class="matrix"></canvas>
+  <div class="slide-inner" style="text-align:center;">
+    <h1>VEIL DARK POOL</h1>
+    <h2>SHIELDED PERP EXECUTION ON SOLANA</h2>
+    <p style="font-size:22px; color:#88aaaa; margin-top:16px;">The on-chain equivalent of what NYSE already operates.</p>
+    <p class="dim" style="font-size:16px; margin-top:8px;">Solana Frontier Hackathon 2026</p>
+    <div style="margin-top:48px;">
+      <span class="badge">Live on Devnet</span>
+      <span class="badge">80 Tests Passing</span>
+      <span class="badge">Production Infra</span>
+    </div>
+  </div>
+  <div class="slide-num">01 / 12</div>
+</div>
+
+<!-- ============================================================
+     SLIDE 2: Why Now
+     ============================================================ -->
+<div class="slide" id="s2">
+  <canvas class="matrix"></canvas>
+  <div class="slide-inner">
+    <div class="step">// Why Now</div>
+    <h2>$7T/MONTH IN PERPS, ZERO DARK POOLS</h2>
+    <div class="three-col" style="margin-top:32px;">
+      <div class="stat-box">
+        <div class="big gold">$7T</div>
+        <div class="label">Monthly perp volume</div>
+      </div>
+      <div class="stat-box">
+        <div class="big cyan">30-50%</div>
+        <div class="label">TradFi equity via dark pools</div>
+      </div>
+      <div class="stat-box">
+        <div class="big magenta">$0</div>
+        <div class="label">Dark pool volume on Solana</div>
+      </div>
+    </div>
+    <p style="margin-top:32px;">Every large perp trade on Solana gets <span class="magenta">front-run</span>, <span class="magenta">sandwiched</span>, or <span class="magenta">copied</span>. Institutional capital won't enter until execution is private.</p>
+    <p>Solana now has <span class="cyan">multiple mature perp venues</span> (Drift, Jupiter Perps, Phoenix). The liquidity is here. The privacy layer is missing.</p>
+  </div>
+  <div class="slide-num">02 / 12</div>
+</div>
+
+<!-- ============================================================
+     SLIDE 3: Competitive Landscape
+     ============================================================ -->
+<div class="slide" id="s3">
+  <canvas class="matrix"></canvas>
+  <div class="slide-inner">
+    <div class="step">// Landscape</div>
+    <h2>NO ONE OCCUPIES THIS POSITION</h2>
+    <div class="quadrant">
+      <div class="q-line-h" style="top:50%;"></div>
+      <div class="q-line-v" style="left:50%;"></div>
+      <div class="quadrant-label-x">PERPS ← → SPOT</div>
+      <div class="quadrant-label-y">APPLICATION ← → VALIDATOR</div>
+
+      <!-- Top-left: Application + Perps = Veil -->
+      <div class="q-item q-veil" style="top:15%; left:12%;">VEIL DARK POOL</div>
+      <div class="q-item q-other" style="top:25%; left:25%;">Silhouette (HL only)</div>
+
+      <!-- Top-right: Application + Spot -->
+      <div class="q-item q-other" style="top:18%; right:15%;">Flashbots Protect</div>
+      <div class="q-item q-other" style="top:32%; right:25%;">CoW Protocol</div>
+
+      <!-- Bottom-left: Validator + Perps -->
+      <div class="q-item q-other" style="bottom:25%; left:20%;">Jito (bundles)</div>
+
+      <!-- Bottom-right: Validator + Spot -->
+      <div class="q-item q-other" style="bottom:18%; right:20%;">Umbra (transfers)</div>
+    </div>
+    <p class="dim small" style="margin-top:40px;">Application-layer privacy for perps on Solana — the intersection no one occupies. Silhouette is closest but locked to Hyperliquid (no composability).</p>
+  </div>
+  <div class="slide-num">03 / 12</div>
+</div>
+
+<!-- ============================================================
+     SLIDE 4: Why Not Tornado Cash
+     ============================================================ -->
+<div class="slide" id="s4">
+  <canvas class="matrix"></canvas>
+  <div class="slide-inner">
+    <div class="step">// Legal Clarity</div>
+    <h2>CONFIDENTIALITY ≠ ANONYMITY</h2>
+    <div class="two-col" style="margin-top:24px;">
+      <div class="card">
+        <div class="card-label" style="color:#ff00aa50;">Tornado Cash</div>
+        <div class="verify-row"><span class="dim">Hides</span><span class="magenta">Who you are</span></div>
+        <div class="verify-row"><span class="dim">Duration</span><span>Permanent</span></div>
+        <div class="verify-row"><span class="dim">Audit trail</span><span>None</span></div>
+        <div class="verify-row"><span class="dim">Status</span><span class="magenta">OFAC sanctioned</span></div>
+      </div>
+      <div class="card">
+        <div class="card-label">Veil Dark Pool</div>
+        <div class="verify-row"><span class="dim">Hides</span><span class="cyan">What you trade</span></div>
+        <div class="verify-row"><span class="dim">Duration</span><span>Until execution only</span></div>
+        <div class="verify-row"><span class="dim">Audit trail</span><span>DarkTradeRecord on-chain</span></div>
+        <div class="verify-row"><span class="dim">Status</span><span class="cyan">SEC-regulated in TradFi</span></div>
+      </div>
+    </div>
+    <p style="margin-top:20px;">NYSE, NASDAQ, every major broker operates dark pools under <span class="cyan">Reg ATS</span>. We're bringing a regulated, proven model on-chain.</p>
+  </div>
+  <div class="slide-num">04 / 12</div>
+</div>
+
+<!-- ============================================================
+     SLIDE 5: Why Solana > Hyperliquid
+     ============================================================ -->
+<div class="slide" id="s5">
+  <canvas class="matrix"></canvas>
+  <div class="slide-inner">
+    <div class="step">// Why Solana</div>
+    <h2>COMPOSABILITY IS THE MOAT</h2>
+    <div class="two-col" style="margin-top:24px;">
+      <div class="card">
+        <div class="card-label" style="color:#ff00aa50;">Silhouette on Hyperliquid</div>
+        <div class="verify-row"><span class="dim">Settlement</span><span>HyperCore only</span></div>
+        <div class="verify-row"><span class="dim">DEX options</span><span>1 (Hyperliquid)</span></div>
+        <div class="verify-row"><span class="dim">CPI composability</span><span class="magenta">None</span></div>
+        <div class="verify-row"><span class="dim">DeFi integration</span><span class="magenta">Bridge required</span></div>
+        <div class="verify-row"><span class="dim">Funding</span><span>$3M raised</span></div>
+      </div>
+      <div class="card">
+        <div class="card-label">Veil on Solana</div>
+        <div class="verify-row"><span class="dim">Settlement</span><span>Drift, Jupiter, Phoenix</span></div>
+        <div class="verify-row"><span class="dim">DEX options</span><span class="cyan">3+ venues</span></div>
+        <div class="verify-row"><span class="dim">CPI composability</span><span class="cyan">Atomic transactions</span></div>
+        <div class="verify-row"><span class="dim">DeFi integration</span><span class="cyan">Native (Kamino, Marginfi...)</span></div>
+        <div class="verify-row"><span class="dim">Stage</span><span>Devnet, seeking funding</span></div>
+      </div>
+    </div>
+    <p style="margin-top:20px;">Silhouette is locked to one venue. Veil settles on <span class="cyan">any Solana DEX</span> — composability that Hyperliquid structurally cannot offer.</p>
+  </div>
+  <div class="slide-num">05 / 12</div>
+</div>
+
+<!-- ============================================================
+     SLIDE 6: Go-to-Market
+     ============================================================ -->
+<div class="slide" id="s6">
+  <canvas class="matrix"></canvas>
+  <div class="slide-inner">
+    <div class="step">// Go-to-Market</div>
+    <h2>VAULT OPERATORS FIRST, INSTITUTIONS NEXT</h2>
+    <div style="margin-top:32px;">
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div>
+          <p><span class="cyan">Phase 1: We are our own first customer</span></p>
+          <p class="dim small">Yogi (Drift mainnet) and Kodiak (Hyperliquid mainnet) lose money on every visible rebalance. Route through Veil Dark Pool → instant MEV savings.</p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot dim"></div>
+        <div>
+          <p><span class="dim">Phase 2: Other vault operators</span></p>
+          <p class="dim small">Liminal ($30M TVL), Harmonix ($6M), Reflect, GLAM — every vault on Solana has the same MEV problem. Dark pool API integration = 1 function call.</p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot dim"></div>
+        <div>
+          <p><span class="dim">Phase 3: Institutional desks</span></p>
+          <p class="dim small">Trading firms, market makers, family offices. Dark pools are table stakes for institutional flow. TEE attestation (v1) unlocks trust requirements.</p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot dim"></div>
+        <div>
+          <p><span class="dim">Phase 4: Protocol integration</span></p>
+          <p class="dim small">Any Solana protocol can CPI into Veil for private execution. Distribution through composability — same playbook as Jupiter.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-num">06 / 12</div>
+</div>
+
+<!-- ============================================================
+     SLIDE 7: Revenue Model
+     ============================================================ -->
+<div class="slide" id="s7">
+  <canvas class="matrix"></canvas>
+  <div class="slide-inner">
+    <div class="step">// Revenue</div>
+    <h2>VOLUME-BASED, NOT CAPITAL-BASED</h2>
+    <div class="card" style="margin-top:24px;">
+      <div class="card-label">Revenue Streams</div>
+      <div class="verify-row"><span>Dark pool matching fees</span><span class="gold">2-5 bps per matched trade</span></div>
+      <div class="verify-row"><span>Fallback routing fees</span><span class="gold">1 bps per routed order</span></div>
+      <div class="verify-row"><span>Premium tiers (M-of-N threshold encryption)</span><span class="gold">Institutional pricing</span></div>
+      <div class="verify-row"><span>API access for vault operators</span><span class="gold">Monthly subscription</span></div>
+    </div>
+    <div class="two-col" style="margin-top:24px;">
+      <div class="stat-box">
+        <div class="big gold">$2.4M</div>
+        <div class="label">Annual at $1B/month × 2bps</div>
+      </div>
+      <div class="stat-box">
+        <div class="big cyan">∞</div>
+        <div class="label">Scales with volume, not capital</div>
+      </div>
+    </div>
+    <p class="dim small" style="margin-top:20px;">In traditional markets, Robinhood is worth more than Nasdaq. Value accrues to the execution layer above exchanges.</p>
+  </div>
+  <div class="slide-num">07 / 12</div>
+</div>
+
+<!-- ============================================================
+     SLIDE 8: Traction & Proof
+     ============================================================ -->
+<div class="slide" id="s8">
+  <canvas class="matrix"></canvas>
+  <div class="slide-inner">
+    <div class="step">// Traction</div>
+    <h2>NOT STARTING FROM ZERO</h2>
+    <div class="three-col" style="margin-top:32px;">
+      <div class="stat-box">
+        <div class="big cyan">80</div>
+        <div class="label">Tests passing</div>
+      </div>
+      <div class="stat-box">
+        <div class="big cyan">6</div>
+        <div class="label">Privacy apps in Veil</div>
+      </div>
+      <div class="stat-box">
+        <div class="big cyan">29</div>
+        <div class="label">@fabrknt/* npm packages</div>
+      </div>
+    </div>
+    <div class="two-col" style="margin-top:24px;">
+      <div class="card">
+        <div class="card-label">Production Vaults (Live)</div>
+        <div class="verify-row"><span>Yogi — Drift mainnet</span><span class="check">✓</span></div>
+        <div class="verify-row"><span>Kodiak — Hyperliquid mainnet</span><span class="check">✓</span></div>
+        <div class="verify-row"><span>veil-core — npm published</span><span class="check">✓</span></div>
+        <div class="verify-row"><span>veil-orders — npm published</span><span class="check">✓</span></div>
+      </div>
+      <div class="card">
+        <div class="card-label">Dark Pool (Devnet)</div>
+        <div class="verify-row"><span>Anchor program deployed</span><span class="check">✓</span></div>
+        <div class="verify-row"><span>E2E lifecycle passing</span><span class="check">✓</span></div>
+        <div class="verify-row"><span>Drift settlement wired</span><span class="check">✓</span></div>
+        <div class="verify-row"><span>Jupiter Perps settlement wired</span><span class="check">✓</span></div>
+      </div>
+    </div>
+    <p class="dim small" style="margin-top:16px;">QuickNode co-founder and Solana lead follow @psyto. Recognized by QuickNode.</p>
+  </div>
+  <div class="slide-num">08 / 12</div>
+</div>
+
+<!-- ============================================================
+     SLIDE 9: Team
+     ============================================================ -->
+<div class="slide" id="s9">
+  <canvas class="matrix"></canvas>
+  <div class="slide-inner">
+    <div class="step">// Team</div>
+    <h2>BUILDER WITH PRODUCTION TRACK RECORD</h2>
+    <div class="card" style="margin-top:24px;">
+      <div class="card-label">@psyto — Solo Founder, Tokyo</div>
+      <div class="verify-row"><span class="dim">Yogi</span><span>Funding rate vault, live on Drift mainnet</span></div>
+      <div class="verify-row"><span class="dim">Kodiak</span><span>Delta-neutral vault, live on Hyperliquid mainnet</span></div>
+      <div class="verify-row"><span class="dim">Veil</span><span>Privacy infra suite — 6 apps, npm published, QuickNode recognition</span></div>
+      <div class="verify-row"><span class="dim">Fabrknt</span><span>29 infrastructure packages powering all products</span></div>
+      <div class="verify-row"><span class="dim">Experience</span><span>Perps execution across Drift, Jupiter, Hyperliquid</span></div>
+    </div>
+    <p style="margin-top:24px;">I run live perp vaults that <span class="magenta">lose money to MEV on every rebalance</span>. I'm building the dark pool because <span class="cyan">I need it myself</span>.</p>
+    <p class="dim small">This isn't a hackathon project I'll abandon. It's the flagship product for an existing privacy infrastructure business.</p>
+  </div>
+  <div class="slide-num">09 / 12</div>
+</div>
+
+<!-- ============================================================
+     SLIDE 10: The Pivot Story
+     ============================================================ -->
+<div class="slide" id="s10">
+  <canvas class="matrix"></canvas>
+  <div class="slide-inner">
+    <div class="step">// The Pivot</div>
+    <h2>MENTOR FEEDBACK CHANGED EVERYTHING</h2>
+    <div style="margin-top:24px;">
+      <div class="timeline-item">
+        <div class="timeline-dot dim"></div>
+        <div>
+          <p><span class="dim">Weeks 1-2:</span> Built Syntx — cross-venue perp DEX. 5 venue adapters, 15 instructions, full frontend.</p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot dim"></div>
+        <div>
+          <p><span class="magenta">"You're competing with Drift and Jupiter. You have no edge."</span></p>
+          <p class="dim small">Users asked: "Why would I use this instead of Drift?" — no good answer.</p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div>
+          <p><span class="cyan">Week 3:</span> Pivoted to Veil Dark Pool. Combined proven privacy infra (Veil) + proven perps execution (Yogi/Kodiak) → product the ecosystem actually needs.</p>
+          <p class="gold" style="margin-top:8px;">Built in 1 week. 80 tests. Deployed to devnet. E2E passing.</p>
+        </div>
+      </div>
+    </div>
+    <p class="dim small" style="margin-top:24px;">Syntx's VenueAdapter infrastructure became the settlement layer inside Veil Dark Pool. Nothing was wasted — we pivoted the product, not the technology.</p>
+  </div>
+  <div class="slide-num">10 / 12</div>
+</div>
+
+<!-- ============================================================
+     SLIDE 11: The Ask
+     ============================================================ -->
+<div class="slide" id="s11">
+  <canvas class="matrix"></canvas>
+  <div class="slide-inner">
+    <div class="step">// The Ask</div>
+    <h2>WHAT WE NEED TO SHIP</h2>
+    <div class="two-col" style="margin-top:32px;">
+      <div class="card">
+        <div class="card-label">Immediate (Colosseum Accelerator)</div>
+        <div class="verify-row"><span>Security audit</span><span class="gold">$50-100K</span></div>
+        <div class="verify-row"><span>TEE integration (v1)</span><span class="gold">3 months</span></div>
+        <div class="verify-row"><span>Mainnet deployment</span><span class="gold">Post-audit</span></div>
+        <div class="verify-row"><span>First vault integration</span><span class="gold">Yogi + Kodiak</span></div>
+      </div>
+      <div class="card">
+        <div class="card-label">What We Bring</div>
+        <div class="verify-row"><span>Production privacy infra</span><span class="check">✓</span></div>
+        <div class="verify-row"><span>Live mainnet vaults</span><span class="check">✓</span></div>
+        <div class="verify-row"><span>Working dark pool on devnet</span><span class="check">✓</span></div>
+        <div class="verify-row"><span>First customer (ourselves)</span><span class="check">✓</span></div>
+        <div class="verify-row"><span>Novel primitive (first on Solana)</span><span class="check">✓</span></div>
+      </div>
+    </div>
+    <p style="margin-top:24px;">Colosseum backs teams building the next wave of Solana infrastructure. <span class="cyan">Dark pools are that infrastructure.</span></p>
+  </div>
+  <div class="slide-num">11 / 12</div>
+</div>
+
+<!-- ============================================================
+     SLIDE 12: Close
+     ============================================================ -->
+<div class="slide" id="s12">
+  <canvas class="matrix"></canvas>
+  <div class="slide-inner" style="text-align:center;">
+    <h1>VEIL DARK POOL</h1>
+    <p style="margin-top:24px; font-size:22px; color:#88aaaa;">
+      Dark pools handle half of institutional equity volume for a reason.
+      <br><span class="cyan">Solana perps deserve the same infrastructure.</span>
+    </p>
+    <p style="margin-top:32px; font-size:18px;">
+      <span class="gold">First of its kind. Built on production systems. Ready for mainnet.</span>
+    </p>
+    <div style="margin-top:48px;">
+      <p class="dim" style="font-size:14px; letter-spacing:2px;">FPAF4iwMtb2CWDcqpWf6NJzJCYrBhQNH8PkWY8ZCGMUA</p>
+      <p style="font-size:14px; letter-spacing:2px; margin-top:8px;">
+        <a href="https://github.com/fabrknt/veil" style="color:#00ffcc80; text-decoration:none;">github.com/fabrknt/veil</a>
+      </p>
+      <p style="font-size:14px; letter-spacing:2px; color:#00ffcc40; margin-top:20px;">
+        <a href="https://x.com/psyto" style="color:#00ffcc40; text-decoration:none;">@psyto</a> · Fabrknt · Tokyo, Japan
+      </p>
+    </div>
+  </div>
+  <div class="slide-num">12 / 12</div>
+</div>
+
+<script>
+  // Matrix rain
+  document.querySelectorAll('canvas.matrix').forEach(canvas => {
+    const ctx = canvas.getContext('2d');
+    const resize = () => { canvas.width = canvas.parentElement.offsetWidth; canvas.height = canvas.parentElement.offsetHeight; };
+    resize(); window.addEventListener('resize', resize);
+    const chars = 'ヴェイルダークプール01アイウエオカキクケコサシスセソ暗号'.split('');
+    const fontSize = 14;
+    let columns = Math.floor(canvas.width / fontSize);
+    let drops = Array(columns).fill(1);
+    setInterval(() => {
+      ctx.fillStyle = 'rgba(0,0,0,0.05)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#00ffcc'; ctx.font = fontSize + 'px monospace';
+      columns = Math.floor(canvas.width / fontSize);
+      while (drops.length < columns) drops.push(1);
+      for (let i = 0; i < columns; i++) {
+        ctx.fillText(chars[Math.floor(Math.random() * chars.length)], i * fontSize, drops[i] * fontSize);
+        if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+        drops[i]++;
+      }
+    }, 60);
+  });
+
+  // Nav dots
+  const slides = document.querySelectorAll('.slide');
+  const nav = document.getElementById('nav');
+  slides.forEach((s, i) => { const a = document.createElement('a'); a.href = '#s'+(i+1); nav.appendChild(a); });
+  const dots = nav.querySelectorAll('a');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        dots.forEach(d => d.classList.remove('active'));
+        const idx = Array.from(slides).indexOf(e.target);
+        if (dots[idx]) dots[idx].classList.add('active');
+      }
+    });
+  }, { threshold: 0.5 });
+  slides.forEach(s => observer.observe(s));
+
+  // Keyboard navigation
+  document.addEventListener('keydown', e => {
+    const current = Array.from(slides).findIndex(s => {
+      const rect = s.getBoundingClientRect();
+      return rect.top >= -100 && rect.top <= window.innerHeight / 2;
+    });
+    if (e.key === 'ArrowDown' || e.key === ' ' || e.key === 'j') {
+      e.preventDefault();
+      if (current < slides.length - 1) slides[current + 1].scrollIntoView({ behavior: 'smooth' });
+    }
+    if (e.key === 'ArrowUp' || e.key === 'k') {
+      e.preventDefault();
+      if (current > 0) slides[current - 1].scrollIntoView({ behavior: 'smooth' });
+    }
+  });
+</script>
+
+</body>
+</html>
