@@ -196,27 +196,35 @@
   <div class="slide-inner">
     <div class="step">// Landscape</div>
     <h2>NO ONE OCCUPIES THIS POSITION</h2>
-    <div class="quadrant">
-      <div class="q-line-h" style="top:50%;"></div>
-      <div class="q-line-v" style="left:50%;"></div>
-      <div class="quadrant-label-x">PERPS ← → SPOT</div>
-      <div class="quadrant-label-y">APPLICATION ← → VALIDATOR</div>
-
-      <!-- Top-left: Application + Perps = Veil -->
-      <div class="q-item q-veil" style="top:15%; left:12%;">VEIL DARK POOL</div>
-      <div class="q-item q-other" style="top:25%; left:25%;">Silhouette (HL only)</div>
-
-      <!-- Top-right: Application + Spot -->
-      <div class="q-item q-other" style="top:18%; right:15%;">Flashbots Protect</div>
-      <div class="q-item q-other" style="top:32%; right:25%;">CoW Protocol</div>
-
-      <!-- Bottom-left: Validator + Perps -->
-      <div class="q-item q-other" style="bottom:25%; left:20%;">Jito (bundles)</div>
-
-      <!-- Bottom-right: Validator + Spot -->
-      <div class="q-item q-other" style="bottom:18%; right:20%;">Umbra (transfers)</div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:0; margin:20px 0; border:1px solid #1a2530;">
+      <!-- Axis labels -->
+      <div style="grid-column:1/3; display:flex; justify-content:center; padding:6px; border-bottom:1px dashed #1a2530;">
+        <span class="dim small" style="letter-spacing:3px;">← PERPS &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; SPOT →</span>
+      </div>
+      <!-- Top row: Application layer -->
+      <div style="padding:20px; border-right:1px dashed #1a2530; border-bottom:1px dashed #1a2530; min-height:160px;">
+        <div class="dim small" style="letter-spacing:2px; margin-bottom:14px;">APP LAYER + PERPS</div>
+        <div class="q-item q-veil" style="position:relative; display:inline-block; margin-bottom:10px;">VEIL DARK POOL</div>
+        <br>
+        <div class="q-item q-other" style="position:relative; display:inline-block;">Silhouette <span class="dim">(HL only)</span></div>
+      </div>
+      <div style="padding:20px; border-bottom:1px dashed #1a2530; min-height:160px;">
+        <div class="dim small" style="letter-spacing:2px; margin-bottom:14px;">APP LAYER + SPOT</div>
+        <div class="q-item q-other" style="position:relative; display:inline-block; margin-bottom:10px;">Flashbots Protect</div>
+        <br>
+        <div class="q-item q-other" style="position:relative; display:inline-block;">CoW Protocol</div>
+      </div>
+      <!-- Bottom row: Validator layer -->
+      <div style="padding:20px; border-right:1px dashed #1a2530; min-height:120px;">
+        <div class="dim small" style="letter-spacing:2px; margin-bottom:14px;">VALIDATOR + PERPS</div>
+        <div class="q-item q-other" style="position:relative; display:inline-block;">Jito <span class="dim">(bundles)</span></div>
+      </div>
+      <div style="padding:20px; min-height:120px;">
+        <div class="dim small" style="letter-spacing:2px; margin-bottom:14px;">VALIDATOR + TRANSFERS</div>
+        <div class="q-item q-other" style="position:relative; display:inline-block;">Umbra <span class="dim">(stealth addr)</span></div>
+      </div>
     </div>
-    <p class="dim small" style="margin-top:40px;">Application-layer privacy for perps on Solana — the intersection no one occupies. Silhouette is closest but locked to Hyperliquid (no composability).</p>
+    <p class="dim small">Application-layer privacy for perps on Solana — the intersection no one occupies.</p>
   </div>
   <div class="slide-num">03 / 12</div>
 </div>
