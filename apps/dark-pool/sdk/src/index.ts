@@ -39,4 +39,5 @@ export const MARKETS = {
 export const VENUES = {
   DRIFT: 0,
   JUPITER: 1,
+  PHOENIX: 2,
 } as const;

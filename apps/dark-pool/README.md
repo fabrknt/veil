@@ -64,6 +64,7 @@ Trader encrypts perp order (NaCl box)
 - **PerpMatcher**: Price-time priority crossing engine with per-market order books
 - **DriftSettlement**: `DriftClient.placePerpOrder()` with LIMIT + MUST_POST_ONLY
 - **JupiterPerpsSettlement**: `program.methods.createIncreasePositionMarketRequest()`
+- **PhoenixSettlement**: `Phoenix.Client` swap orders on spot CLOB (for DN spot leg)
 - **API**: `/solver-pubkey`, `/orders/:id/status`, `/markets`, `/health`
 
 ### Encryption (from @fabrknt/veil-orders)
@@ -133,6 +134,7 @@ apps/dark-pool/
       settlement/
         drift.ts                 # Drift SDK settlement
         jupiter-perps.ts         # Jupiter Perps settlement
+        phoenix.ts               # Phoenix spot CLOB settlement
 
   sdk/src/index.ts               # Re-exports from @fabrknt/veil-orders
   scripts/demo.ts                # End-to-end demo script
@@ -156,12 +158,13 @@ This isn't built from scratch. Veil Dark Pool composes existing production infra
 | Commitment verification | `confidential-swap-router` | Deployed on devnet |
 | Drift execution patterns | Yogi vault | Live on Drift mainnet |
 | Jupiter Perps patterns | Nanuk vault | Production-tested |
+| Phoenix execution | Syntx vault | Production-tested |
 
 ## Markets Supported
 
 | ID | Market | Venues |
 |----|--------|--------|
-| 0 | SOL-PERP | Drift, Jupiter Perps |
+| 0 | SOL-PERP | Drift, Jupiter Perps, Phoenix (spot leg) |
 | 1 | BTC-PERP | Drift, Jupiter Perps |
 | 2 | ETH-PERP | Drift, Jupiter Perps |
 
@@ -186,7 +189,7 @@ Silhouette raised $3M to solve this on Hyperliquid. Nothing exists on Solana —
 | Encryption | NaCl box (Curve25519-XSalsa20-Poly1305) |
 | Commitment | SHA-256 |
 | Matching | Price-time priority (TypeScript) |
-| Settlement | Drift SDK, Jupiter Perps (Anchor IDL) |
+| Settlement | Drift SDK, Jupiter Perps (Anchor IDL), Phoenix SDK |
 | Solver API | Express.js |
 
 ---
