@@ -14,19 +14,39 @@ export interface DarkPoolSolverConfig {
   pollIntervalMs: number;
   /** API server port */
   apiPort: number;
-  /** Settlement venue: 'drift' | 'jupiter' */
-  defaultVenue: 'drift' | 'jupiter';
+  /** Settlement venue: 'drift' | 'jupiter' | 'phoenix' */
+  defaultVenue: 'drift' | 'jupiter' | 'phoenix';
+}
+
+/**
+ * Resolve RPC endpoint with priority:
+ * 1. RPC_URL env var (explicit override)
+ * 2. QUICKNODE_ENDPOINT env var (recommended for production — low latency, Streams support)
+ * 3. HELIUS_RPC_URL env var (alternative)
+ * 4. localhost (for local development)
+ */
+function resolveRpcUrl(): string {
+  if (process.env.RPC_URL) return process.env.RPC_URL;
+  if (process.env.QUICKNODE_ENDPOINT) {
+    console.log('[config] Using QuickNode RPC');
+    return process.env.QUICKNODE_ENDPOINT;
+  }
+  if (process.env.HELIUS_RPC_URL) {
+    console.log('[config] Using Helius RPC');
+    return process.env.HELIUS_RPC_URL;
+  }
+  return 'http://localhost:8899';
 }
 
 export function loadConfig(): DarkPoolSolverConfig {
   return {
-    rpcUrl: process.env.RPC_URL || 'http://localhost:8899',
+    rpcUrl: resolveRpcUrl(),
     keypair: loadKeypair(process.env.SOLVER_KEYPAIR_PATH || '~/.config/solana/id.json'),
     encryptionKeypair: loadOrGenerateEncryptionKeypair(),
     programId: process.env.PROGRAM_ID || 'FPAF4iwMtb2CWDcqpWf6NJzJCYrBhQNH8PkWY8ZCGMUA',
     pollIntervalMs: Number(process.env.POLL_INTERVAL_MS) || 2000,
     apiPort: Number(process.env.API_PORT) || 3040,
-    defaultVenue: (process.env.DEFAULT_VENUE as 'drift' | 'jupiter') || 'drift',
+    defaultVenue: (process.env.DEFAULT_VENUE as 'drift' | 'jupiter' | 'phoenix') || 'drift',
   };
 }
 
