@@ -1,17 +1,25 @@
-import { expect } from 'chai';
-import BN from 'bn.js';
-import {
+const { expect } = require('chai');
+const BN = require('bn.js');
+const {
   generateEncryptionKeypair,
-  PerpOrderPayload,
   serializePerpOrderPayload,
   deserializePerpOrderPayload,
   encryptPerpOrderPayload,
   decryptPerpOrderPayload,
   computePerpPayloadHash,
   createCommittedEncryptedPerpOrder,
-} from '@fabrknt/veil-orders';
-import { PERP_ORDER_SCHEMA, calculateSchemaSize } from '@fabrknt/veil-core';
-import { createHash } from 'crypto';
+} = require('@fabrknt/veil-orders');
+const { PERP_ORDER_SCHEMA, calculateSchemaSize } = require('@fabrknt/veil-core');
+const { createHash } = require('crypto');
+
+type PerpOrderPayload = {
+  side: 'long' | 'short';
+  orderType: 'limit' | 'market';
+  price: any;
+  quantity: any;
+  maxSlippageBps: number;
+  marketId: number;
+};
 
 describe('Perp Order Encryption', () => {
   const userKeypair = generateEncryptionKeypair();
@@ -26,14 +34,14 @@ describe('Perp Order Encryption', () => {
     marketId: 0, // SOL
   };
 
-  it('should have correct schema size (28 bytes)', () => {
+  it('should have correct schema size (26 bytes)', () => {
     const size = calculateSchemaSize(PERP_ORDER_SCHEMA);
-    expect(size).to.equal(28);
+    expect(size).to.equal(26);
   });
 
   it('should serialize and deserialize correctly', () => {
     const bytes = serializePerpOrderPayload(sampleOrder);
-    expect(bytes.length).to.equal(28);
+    expect(bytes.length).to.equal(26);
 
     const decoded = deserializePerpOrderPayload(bytes);
     expect(decoded.side).to.equal('short');

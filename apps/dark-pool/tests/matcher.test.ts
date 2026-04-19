@@ -129,8 +129,9 @@ describe('PerpMatcher', () => {
 
   it('should remove expired orders', () => {
     const pastExpiry = Math.floor(Date.now() / 1000) - 10;
-    matcher.addOrder(makeOrder({ commitmentId: 1, side: 'long', expiresAt: pastExpiry }));
-    matcher.addOrder(makeOrder({ commitmentId: 2, side: 'short', expiresAt: pastExpiry }));
+    // Use non-crossing prices so orders rest in the book without matching
+    matcher.addOrder(makeOrder({ commitmentId: 1, side: 'long', price: new BN(99_000_000), expiresAt: pastExpiry }));
+    matcher.addOrder(makeOrder({ commitmentId: 2, side: 'short', price: new BN(101_000_000), expiresAt: pastExpiry }));
 
     const expired = matcher.removeExpired(Math.floor(Date.now() / 1000));
     expect(expired).to.have.length(2);
