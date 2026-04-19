@@ -31,7 +31,7 @@ Built by @psyto · Fabrknt · Tokyo, Japan
 
 Built for the Solana Frontier Hackathon (Colosseum, Apr 6 – May 11, 2026)
 
-#Solana #DeFi #DarkPool #Hackathon #SolanaFrontier #Colosseum #Perps #Privacy #Veil
+#Solana #DeFi #DarkPool #Hackathon #SolanaFrontier #Colosseum #Perps #Privacy #Veil #QuickNode
 ```
 
 ---
@@ -102,6 +102,8 @@ Built on production infrastructure, not from scratch:
 • Nanuk → Jupiter Perps patterns
 • Syntx → Phoenix adapter
 
+Solver runs on @QuickNode RPC. Streams integration planned for v1.
+
 I build dark pools because I lose money to MEV on every rebalance.
 ```
 
@@ -116,7 +118,7 @@ GitHub: github.com/fabrknt/veil
 Dark pools handle half of institutional equity volume for a reason.
 Solana perps deserve the same infrastructure.
 
-@solana @JupiterExchange @DriftProtocol
+@solana @JupiterExchange @DriftProtocol @QuickNode
 ```
 
 ---
