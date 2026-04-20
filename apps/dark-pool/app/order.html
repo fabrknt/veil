@@ -190,11 +190,25 @@
       border-radius: 50%; animation: spin 0.8s linear infinite;
       vertical-align: middle; margin-right: 8px;
     }
+    .nav {
+      display: flex; justify-content: center; gap: 24px;
+      padding: 14px; font-size: 11px; letter-spacing: 1px;
+      position: relative; z-index: 10;
+    }
+    .nav a { color: #445566; text-decoration: none; transition: color 0.2s; }
+    .nav a:hover { color: #00ffcc; }
+    .nav a.active { color: #00ffcc; text-shadow: 0 0 6px #00ffcc50; }
   </style>
 </head>
 <body>
 
 <canvas id="matrix"></canvas>
+
+<div class="nav">
+  <a href="index.html">Home</a>
+  <a href="scan.html">Scan</a>
+  <a href="order.html" class="active">Order</a>
+</div>
 
 <div class="app">
   <!-- Header -->

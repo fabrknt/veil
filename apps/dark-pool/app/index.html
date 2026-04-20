@@ -129,6 +129,46 @@
 
     /* ---- Comparison ---- */
     .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+    /* Split-screen panels */
+    .split-panel {
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; text-align: center;
+      padding: 48px 32px; min-height: 360px;
+      transition: all 0.3s; cursor: pointer;
+    }
+    .split-problem {
+      background: #0a0008; border: 1px solid #ff00aa15;
+    }
+    .split-problem:hover { background: #120010; border-color: #ff00aa40; }
+    .split-solution {
+      background: #000a0f; border: 1px solid #00ffcc15;
+    }
+    .split-solution:hover { background: #001018; border-color: #00ffcc40; }
+    .split-label {
+      font-family: 'Orbitron', sans-serif; font-size: 10px;
+      letter-spacing: 4px; text-transform: uppercase;
+      color: #445566; margin-bottom: 20px;
+    }
+    .split-icon { font-size: 40px; margin-bottom: 16px; }
+    .split-title {
+      font-family: 'Orbitron', sans-serif; font-size: 18px;
+      font-weight: 700; letter-spacing: 1px; margin-bottom: 12px;
+    }
+    .split-desc {
+      font-size: 13px; color: #667788; line-height: 1.7;
+      margin-bottom: 24px; max-width: 300px;
+    }
+    .split-cta {
+      border: 1px solid; padding: 10px 24px;
+      font-size: 12px; letter-spacing: 1px;
+      transition: all 0.2s;
+    }
+    .split-problem:hover .split-cta { background: #ff00aa15; }
+    .split-solution:hover .split-cta { background: #00ffcc15; }
+    @media (max-width: 700px) {
+      .split-panel { min-height: 280px; padding: 32px 24px; }
+    }
     @media (max-width: 700px) { .two-col { grid-template-columns: 1fr; } }
     .card.danger { border-color: #ff00aa20; }
     .card.danger::before { background: linear-gradient(90deg, transparent, #ff00aa, transparent); }
@@ -182,11 +222,29 @@
         Dark pools handle <em>30-50%</em> of institutional equity volume.
         <br>On-chain perps have <em>zero equivalent</em>. Until now.
       </p>
-      <div class="cta-row">
-        <a href="scan.html" class="btn-primary">How Exposed Are You?</a>
-        <a href="order.html" class="btn-secondary">Submit Encrypted Order</a>
-      </div>
-      <div class="scroll-hint">↓ SCROLL TO LEARN MORE</div>
+      <div class="scroll-hint" style="margin-top:40px;">↓ SCROLL TO LEARN MORE</div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       Split-screen: Problem vs Solution
+       ============================================================ -->
+  <div class="section" style="max-width:1000px;">
+    <div class="two-col" style="gap:0;">
+      <a href="scan.html" class="split-panel split-problem" style="text-decoration:none;">
+        <div class="split-label">THE PROBLEM</div>
+        <div class="split-icon">⚠</div>
+        <h3 class="split-title" style="color:#ff00aa;">Your Trades Are 100% Public</h3>
+        <p class="split-desc">Every perp order — direction, size, timing — is visible on-chain. MEV bots see it all before they front-run you.</p>
+        <div class="split-cta" style="border-color:#ff00aa; color:#ff00aa;">Check Your Exposure →</div>
+      </a>
+      <a href="order.html" class="split-panel split-solution" style="text-decoration:none;">
+        <div class="split-label">THE SOLUTION</div>
+        <div class="split-icon">🔒</div>
+        <h3 class="split-title" style="color:#00ffcc;">Encrypt With Veil</h3>
+        <p class="split-desc">Submit an encrypted order. The solver matches privately. No one sees your side, price, or size until after execution.</p>
+        <div class="split-cta" style="border-color:#00ffcc; color:#00ffcc;">Submit Encrypted Order →</div>
+      </a>
     </div>
   </div>
 
@@ -299,8 +357,8 @@
     <h2 style="margin-bottom:16px;">TRY IT NOW</h2>
     <p style="color:#88aaaa; margin-bottom:32px;">See how exposed your trading is — or submit your first encrypted order.</p>
     <div class="cta-row">
-      <a href="scan.html" class="btn-primary">Check Your Exposure</a>
-      <a href="order.html" class="btn-secondary">Submit Encrypted Order</a>
+      <a href="scan.html" class="btn-primary">Check Your Exposure →</a>
+      <a href="order.html" class="btn-secondary">Submit Encrypted Order →</a>
     </div>
   </div>
 

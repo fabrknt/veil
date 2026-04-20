@@ -173,11 +173,25 @@
 
     /* Hidden by default */
     #results { display: none; }
+    .nav {
+      display: flex; justify-content: center; gap: 24px;
+      padding: 14px; font-size: 11px; letter-spacing: 1px;
+      position: relative; z-index: 10;
+    }
+    .nav a { color: #445566; text-decoration: none; transition: color 0.2s; }
+    .nav a:hover { color: #00ffcc; }
+    .nav a.active { color: #ff00aa; text-shadow: 0 0 6px #ff00aa50; }
   </style>
 </head>
 <body>
 
 <canvas id="matrix"></canvas>
+
+<div class="nav">
+  <a href="index.html">Home</a>
+  <a href="scan.html" class="active">Scan</a>
+  <a href="order.html">Order</a>
+</div>
 
 <div class="app">
   <div class="header">
