@@ -335,13 +335,6 @@
     }
   }, 60);
 
-  // Mainnet RPC endpoints — tries each in order
-  const RPC_URLS = [
-    'https://api.mainnet-beta.solana.com',
-    'https://solana-rpc.publicnode.com',
-  ];
-  let rpcIndex = 0;
-  function getRpcUrl() { return RPC_URLS[rpcIndex % RPC_URLS.length]; }
   let scannedWallet = '';
 
   function setStatus(msg, type) {
@@ -359,6 +352,29 @@
     } catch { setStatus('Connection rejected', 'error'); }
   }
 
+  /**
+   * Try multiple RPC endpoints. Test with the actual query (getSignaturesForAddress)
+   * since some RPCs allow getBalance but block heavier calls.
+   */
+  async function findWorkingConnection(pubkey) {
+    const endpoints = [
+      'https://solana-rpc.publicnode.com',
+      'https://api.mainnet-beta.solana.com',
+    ];
+    for (const url of endpoints) {
+      try {
+        const conn = new solanaWeb3.Connection(url, 'confirmed');
+        // Test with the actual query we need, not just getBalance
+        await conn.getSignaturesForAddress(pubkey, { limit: 1 });
+        console.log('Using RPC:', url);
+        return conn;
+      } catch (e) {
+        console.log('RPC failed:', url, e.message);
+      }
+    }
+    throw new Error('All RPC endpoints are rate-limited. Try again in a minute.');
+  }
+
   async function scanWallet() {
     const addr = document.getElementById('wallet-input').value.trim();
     if (!addr || addr.length < 32) { setStatus('Please enter a valid Solana address', 'error'); return; }
@@ -368,21 +384,8 @@
     document.getElementById('scan-btn').disabled = true;
 
     try {
-      let conn;
-      let lastError;
-      // Try each RPC until one works
-      for (let i = 0; i < RPC_URLS.length; i++) {
-        try {
-          conn = new solanaWeb3.Connection(RPC_URLS[i], 'confirmed');
-          await conn.getBalance(pubkey); // test connection
-          break;
-        } catch (e) {
-          lastError = e;
-          conn = null;
-        }
-      }
-      if (!conn) throw lastError || new Error('All RPC endpoints failed');
       const pubkey = new solanaWeb3.PublicKey(addr);
+      const conn = await findWorkingConnection(pubkey);
 
       // Fetch recent transaction signatures
       const sigs = await conn.getSignaturesForAddress(pubkey, { limit: 50 });
