@@ -29,7 +29,7 @@
     /* ---- Hero ---- */
     .hero {
       min-height: 100vh; display: flex; align-items: center; justify-content: center;
-      text-align: center; padding: 40px 24px;
+      text-align: center; padding: 24px 24px 16px;
     }
     .hero-inner { max-width: 800px; }
     .hero h1 {
@@ -134,7 +134,7 @@
     .split-panel {
       display: flex; flex-direction: column; align-items: center;
       justify-content: center; text-align: center;
-      padding: 48px 32px; min-height: 360px;
+      padding: 32px 24px; min-height: 260px;
       transition: all 0.3s; cursor: pointer;
     }
     .split-problem {
@@ -220,31 +220,25 @@
       <p class="tagline">First shielded perp execution on Solana.</p>
       <p class="sub">
         Dark pools handle <em>30-50%</em> of institutional equity volume.
-        <br>On-chain perps have <em>zero equivalent</em>. Until now.
+        On-chain perps have <em>zero equivalent</em>. Until now.
       </p>
-      <div class="scroll-hint" style="margin-top:40px;">↓ SCROLL TO LEARN MORE</div>
-    </div>
-  </div>
-
-  <!-- ============================================================
-       Split-screen: Problem vs Solution
-       ============================================================ -->
-  <div class="section" style="max-width:1000px;">
-    <div class="two-col" style="gap:0;">
-      <a href="scan.html" class="split-panel split-problem" style="text-decoration:none;">
-        <div class="split-label">THE PROBLEM</div>
-        <div class="split-icon">⚠</div>
-        <h3 class="split-title" style="color:#ff00aa;">Your Trades Are 100% Public</h3>
-        <p class="split-desc">Every perp order — direction, size, timing — is visible on-chain. MEV bots see it all before they front-run you.</p>
-        <div class="split-cta" style="border-color:#ff00aa; color:#ff00aa;">Check Your Exposure →</div>
-      </a>
-      <a href="order.html" class="split-panel split-solution" style="text-decoration:none;">
-        <div class="split-label">THE SOLUTION</div>
-        <div class="split-icon">🔒</div>
-        <h3 class="split-title" style="color:#00ffcc;">Encrypt With Veil</h3>
-        <p class="split-desc">Submit an encrypted order. The solver matches privately. No one sees your side, price, or size until after execution.</p>
-        <div class="split-cta" style="border-color:#00ffcc; color:#00ffcc;">Submit Encrypted Order →</div>
-      </a>
+      <div class="two-col" style="gap:0; max-width:900px; margin:32px auto 0;">
+        <a href="scan.html" class="split-panel split-problem" style="text-decoration:none;">
+          <div class="split-label">THE PROBLEM</div>
+          <div class="split-icon">⚠</div>
+          <h3 class="split-title" style="color:#ff00aa;">Your Trades Are Public</h3>
+          <p class="split-desc">Every perp order is visible on-chain. MEV bots front-run you.</p>
+          <div class="split-cta" style="border-color:#ff00aa; color:#ff00aa;">Check Your Exposure →</div>
+        </a>
+        <a href="order.html" class="split-panel split-solution" style="text-decoration:none;">
+          <div class="split-label">THE SOLUTION</div>
+          <div class="split-icon">🔒</div>
+          <h3 class="split-title" style="color:#00ffcc;">Encrypt With Veil</h3>
+          <p class="split-desc">Submit an encrypted order. No one sees your side, price, or size.</p>
+          <div class="split-cta" style="border-color:#00ffcc; color:#00ffcc;">Submit Encrypted Order →</div>
+        </a>
+      </div>
+      <div class="scroll-hint" style="margin-top:24px;">↓ LEARN MORE</div>
     </div>
   </div>
 
