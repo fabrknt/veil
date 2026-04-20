@@ -67,7 +67,7 @@ The encryption primitives (@fabrknt/veil-core, @fabrknt/veil-orders) are product
 
 ## Demo video
 
-https://
+https://youtu.be/bL20xECSI2U
 
 ## Live product link
 
@@ -75,7 +75,7 @@ https://fabrknt.com/veil
 
 ## Pitch video (public)
 
-https://
+https://youtu.be/bL20xECSI2U
 
 ## Team location (public)
 
