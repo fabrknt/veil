@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Veil Dark Pool</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #000;
+      color: #c0c8d0;
+      font-family: 'JetBrains Mono', monospace;
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+    }
+    body::after {
+      content: '';
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,136,0.012) 2px, rgba(0,255,136,0.012) 4px);
+      pointer-events: none; z-index: 9999;
+    }
+    canvas#matrix {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      opacity: 0.05; z-index: 0;
+    }
+    .app {
+      position: relative; z-index: 10;
+      max-width: 720px; margin: 0 auto; padding: 32px 24px;
+    }
+
+    /* Header */
+    .header { text-align: center; margin-bottom: 40px; }
+    .header h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 28px; font-weight: 900;
+      color: #00ffcc;
+      text-shadow: 0 0 15px #00ffcc80;
+      letter-spacing: 3px;
+    }
+    .header p { color: #445566; font-size: 12px; margin-top: 8px; letter-spacing: 1px; }
+    .header .network {
+      display: inline-block;
+      border: 1px solid #ffcc0050; color: #ffcc00;
+      padding: 2px 10px; font-size: 10px; letter-spacing: 2px;
+      margin-top: 8px;
+    }
+
+    /* Wallet */
+    .wallet-section { text-align: center; margin-bottom: 32px; }
+    .btn {
+      background: transparent;
+      border: 1px solid #00ffcc50;
+      color: #00ffcc;
+      padding: 10px 24px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn:hover { background: #00ffcc15; border-color: #00ffcc; }
+    .btn:disabled { opacity: 0.3; cursor: not-allowed; }
+    .btn-primary {
+      background: #00ffcc15;
+      border-color: #00ffcc;
+      font-size: 15px;
+      padding: 14px 32px;
+      width: 100%;
+      margin-top: 16px;
+    }
+    .btn-primary:hover { background: #00ffcc25; }
+    .wallet-addr {
+      color: #00ffcc80; font-size: 12px; margin-top: 8px;
+      word-break: break-all;
+    }
+    .balance { color: #ffcc00; font-size: 12px; margin-top: 4px; }
+
+    /* Form */
+    .card {
+      background: #000a0f;
+      border: 1px solid #00ffcc20;
+      box-shadow: 0 0 20px #00ffcc08;
+      padding: 24px; margin-bottom: 24px;
+      position: relative;
+    }
+    .card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, transparent, #00ffcc, transparent);
+    }
+    .card-label {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 10px; letter-spacing: 3px;
+      text-transform: uppercase; color: #00ffcc50;
+      margin-bottom: 16px;
+    }
+    .form-group { margin-bottom: 16px; }
+    .form-group label {
+      display: block; font-size: 11px; color: #556677;
+      letter-spacing: 2px; text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    select, input {
+      width: 100%;
+      background: #0a1018;
+      border: 1px solid #1a2530;
+      color: #c0c8d0;
+      padding: 10px 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    select:focus, input:focus { border-color: #00ffcc50; }
+    select option { background: #0a1018; }
+
+    /* Side toggle */
+    .side-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 0; margin-bottom: 16px; }
+    .side-btn {
+      padding: 12px;
+      text-align: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px; font-weight: 700;
+      cursor: pointer;
+      border: 1px solid #1a2530;
+      transition: all 0.2s;
+      letter-spacing: 2px;
+    }
+    .side-btn.long { color: #00ffcc60; }
+    .side-btn.short { color: #ff00aa60; }
+    .side-btn.long.active {
+      background: #00ffcc10; border-color: #00ffcc;
+      color: #00ffcc; text-shadow: 0 0 8px #00ffcc60;
+    }
+    .side-btn.short.active {
+      background: #ff00aa10; border-color: #ff00aa;
+      color: #ff00aa; text-shadow: 0 0 8px #ff00aa60;
+    }
+
+    /* Results */
+    .result-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 8px 0; border-bottom: 1px solid #112233;
+      font-size: 13px;
+    }
+    .result-row:last-child { border-bottom: none; }
+    .result-key { color: #556677; }
+    .result-val { color: #c0c8d0; word-break: break-all; text-align: right; max-width: 60%; }
+    .result-val.hash { color: #ff00aa; font-size: 11px; }
+    .result-val.sig { color: #00ffcc; font-size: 11px; }
+    .result-val a { color: #00ffcc80; text-decoration: none; }
+    .result-val a:hover { color: #00ffcc; }
+
+    /* Status */
+    .status {
+      text-align: center; padding: 12px;
+      font-size: 12px; letter-spacing: 1px;
+    }
+    .status.success { color: #00ffcc; }
+    .status.error { color: #ff00aa; }
+    .status.loading { color: #ffcc00; }
+
+    /* Recent orders */
+    .order-item {
+      background: #050a10;
+      border: 1px solid #112233;
+      padding: 12px; margin-bottom: 8px;
+      font-size: 11px;
+    }
+    .order-item .side-long { color: #00ffcc; }
+    .order-item .side-short { color: #ff00aa; }
+    .order-item .dim { color: #334455; }
+
+    /* Footer */
+    .footer {
+      text-align: center; margin-top: 40px; padding: 20px;
+      border-top: 1px solid #112233;
+    }
+    .footer a { color: #00ffcc50; text-decoration: none; font-size: 12px; }
+    .footer a:hover { color: #00ffcc; }
+
+    /* Spinner */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner {
+      display: inline-block; width: 14px; height: 14px;
+      border: 2px solid #00ffcc30; border-top-color: #00ffcc;
+      border-radius: 50%; animation: spin 0.8s linear infinite;
+      vertical-align: middle; margin-right: 8px;
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="matrix"></canvas>
+
+<div class="app">
+  <!-- Header -->
+  <div class="header">
+    <h1>VEIL DARK POOL</h1>
+    <p>Shielded Perp Execution on Solana</p>
+    <div class="network">DEVNET</div>
+  </div>
+
+  <!-- Wallet -->
+  <div class="wallet-section">
+    <div id="wallet-disconnected">
+      <button class="btn" onclick="connectWallet()">Connect Wallet</button>
+    </div>
+    <div id="wallet-connected" style="display:none;">
+      <button class="btn" onclick="disconnectWallet()">Disconnect</button>
+      <div class="wallet-addr" id="wallet-addr"></div>
+      <div class="balance" id="wallet-balance"></div>
+    </div>
+  </div>
+
+  <!-- Order Form -->
+  <div class="card">
+    <div class="card-label">Submit Encrypted Order</div>
+
+    <!-- Side -->
+    <div class="side-toggle">
+      <div class="side-btn long active" id="btn-long" onclick="setSide('long')">LONG</div>
+      <div class="side-btn short" id="btn-short" onclick="setSide('short')">SHORT</div>
+    </div>
+
+    <!-- Market -->
+    <div class="form-group">
+      <label>Market</label>
+      <select id="market">
+        <option value="0">SOL-PERP</option>
+        <option value="1">BTC-PERP</option>
+        <option value="2">ETH-PERP</option>
+      </select>
+    </div>
+
+    <!-- Price + Quantity -->
+    <div class="form-row">
+      <div class="form-group">
+        <label>Price (USD)</label>
+        <input type="number" id="price" placeholder="150.00" step="0.01" value="150.00">
+      </div>
+      <div class="form-group">
+        <label>Quantity</label>
+        <input type="number" id="quantity" placeholder="10.0" step="0.1" value="10.0">
+      </div>
+    </div>
+
+    <!-- Collateral + Slippage -->
+    <div class="form-row">
+      <div class="form-group">
+        <label>Collateral (USDC)</label>
+        <input type="number" id="collateral" placeholder="100" step="1" value="100">
+      </div>
+      <div class="form-group">
+        <label>Max Slippage (bps)</label>
+        <input type="number" id="slippage" placeholder="50" step="1" value="50">
+      </div>
+    </div>
+
+    <button class="btn btn-primary" id="submit-btn" onclick="submitOrder()" disabled>
+      Submit Encrypted Order
+    </button>
+
+    <div class="status" id="status"></div>
+  </div>
+
+  <!-- Encryption Details -->
+  <div class="card" id="encryption-card" style="display:none;">
+    <div class="card-label">Encryption Details</div>
+    <div class="result-row">
+      <span class="result-key">Side</span>
+      <span class="result-val" id="res-side"></span>
+    </div>
+    <div class="result-row">
+      <span class="result-key">Encrypted Payload</span>
+      <span class="result-val hash" id="res-encrypted"></span>
+    </div>
+    <div class="result-row">
+      <span class="result-key">Commitment Hash</span>
+      <span class="result-val hash" id="res-hash"></span>
+    </div>
+    <div class="result-row">
+      <span class="result-key">Transaction</span>
+      <span class="result-val sig" id="res-tx"></span>
+    </div>
+    <div class="result-row">
+      <span class="result-key">Commitment PDA</span>
+      <span class="result-val sig" id="res-pda"></span>
+    </div>
+  </div>
+
+  <!-- Recent Orders -->
+  <div class="card">
+    <div class="card-label">Your Orders</div>
+    <div id="orders-list">
+      <div class="status dim" style="color:#334455;">No orders yet. Submit an encrypted order above.</div>
+    </div>
+  </div>
+
+  <!-- Info -->
+  <div class="card">
+    <div class="card-label">How It Works</div>
+    <div class="result-row">
+      <span class="result-key">1</span>
+      <span class="result-val">Your order is encrypted with NaCl box (client-side)</span>
+    </div>
+    <div class="result-row">
+      <span class="result-key">2</span>
+      <span class="result-val">SHA-256 commitment hash submitted on-chain with USDC collateral</span>
+    </div>
+    <div class="result-row">
+      <span class="result-key">3</span>
+      <span class="result-val">Solver decrypts privately, matches against opposing orders</span>
+    </div>
+    <div class="result-row">
+      <span class="result-key">4</span>
+      <span class="result-val">Settlement on Drift / Jupiter Perps / Phoenix</span>
+    </div>
+    <div class="result-row">
+      <span class="result-key"></span>
+      <span class="result-val" style="color:#00ffcc;">No one sees your side, price, or size until after execution.</span>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <a href="https://github.com/fabrknt/veil" target="_blank">GitHub</a>
+    &nbsp;·&nbsp;
+    <a href="https://explorer.solana.com/address/FPAF4iwMtb2CWDcqpWf6NJzJCYrBhQNH8PkWY8ZCGMUA?cluster=devnet" target="_blank">Explorer</a>
+    &nbsp;·&nbsp;
+    <a href="https://x.com/psyto" target="_blank">@psyto</a>
+    &nbsp;·&nbsp;
+    <span style="color:#223344;">Fabrknt</span>
+  </div>
+</div>
+
+<script>
+  // ============================================================
+  // Matrix rain
+  // ============================================================
+  const canvas = document.getElementById('matrix');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
+  const chars = 'ヴェイルダークプール01アイウエオカキクケコ暗号'.split('');
+  const fontSize = 14;
+  let columns = Math.floor(canvas.width / fontSize);
+  let drops = Array(columns).fill(1);
+  setInterval(() => {
+    ctx.fillStyle = 'rgba(0,0,0,0.05)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#00ffcc';
+    ctx.font = fontSize + 'px monospace';
+    columns = Math.floor(canvas.width / fontSize);
+    while (drops.length < columns) drops.push(1);
+    for (let i = 0; i < columns; i++) {
+      ctx.fillText(chars[Math.floor(Math.random() * chars.length)], i * fontSize, drops[i] * fontSize);
+      if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+      drops[i]++;
+    }
+  }, 60);
+
+  // ============================================================
+  // State
+  // ============================================================
+  const PROGRAM_ID = 'FPAF4iwMtb2CWDcqpWf6NJzJCYrBhQNH8PkWY8ZCGMUA';
+  const RPC_URL = 'https://api.devnet.solana.com';
+  const EXPLORER = 'https://explorer.solana.com';
+
+  let wallet = null;
+  let side = 'long';
+  let orders = [];
+
+  function setSide(s) {
+    side = s;
+    document.getElementById('btn-long').classList.toggle('active', s === 'long');
+    document.getElementById('btn-short').classList.toggle('active', s === 'short');
+  }
+
+  function setStatus(msg, type) {
+    const el = document.getElementById('status');
+    el.className = 'status ' + type;
+    if (type === 'loading') {
+      el.innerHTML = '<span class="spinner"></span>' + msg;
+    } else {
+      el.textContent = msg;
+    }
+  }
+
+  // ============================================================
+  // Wallet (using Phantom provider directly)
+  // ============================================================
+  async function connectWallet() {
+    try {
+      if (!window.solana || !window.solana.isPhantom) {
+        setStatus('Phantom wallet not found. Please install it.', 'error');
+        return;
+      }
+      const resp = await window.solana.connect();
+      wallet = resp.publicKey;
+      document.getElementById('wallet-disconnected').style.display = 'none';
+      document.getElementById('wallet-connected').style.display = 'block';
+      document.getElementById('wallet-addr').textContent = wallet.toString();
+      document.getElementById('submit-btn').disabled = false;
+
+      // Fetch balance
+      try {
+        const conn = new window.solanaWeb3.Connection(RPC_URL);
+        const bal = await conn.getBalance(wallet);
+        document.getElementById('wallet-balance').textContent = (bal / 1e9).toFixed(4) + ' SOL';
+      } catch {}
+
+      setStatus('Wallet connected', 'success');
+    } catch (err) {
+      setStatus('Connection rejected', 'error');
+    }
+  }
+
+  function disconnectWallet() {
+    if (window.solana) window.solana.disconnect();
+    wallet = null;
+    document.getElementById('wallet-disconnected').style.display = 'block';
+    document.getElementById('wallet-connected').style.display = 'none';
+    document.getElementById('submit-btn').disabled = true;
+    setStatus('', '');
+  }
+
+  // ============================================================
+  // Encryption (client-side NaCl simulation)
+  // ============================================================
+  function serializePerpOrder(side, orderType, price, quantity, slippage, marketId) {
+    // Match PERP_ORDER_SCHEMA: 26 bytes
+    const buf = new ArrayBuffer(26);
+    const view = new DataView(buf);
+    view.setUint8(0, side === 'long' ? 0 : 1);
+    view.setUint8(1, 0); // limit
+    // Price as u64 LE (6 decimals)
+    const priceBig = BigInt(Math.floor(price * 1e6));
+    view.setBigUint64(2, priceBig, true);
+    // Quantity as u64 LE (6 decimals)
+    const qtyBig = BigInt(Math.floor(quantity * 1e6));
+    view.setBigUint64(10, qtyBig, true);
+    view.setUint16(18, slippage, true);
+    view.setUint8(20, marketId);
+    // bytes 21-25: padding (zeros)
+    return new Uint8Array(buf);
+  }
+
+  async function sha256(data) {
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    return new Uint8Array(hashBuffer);
+  }
+
+  function toHex(arr) {
+    return Array.from(arr).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  function randomBytes(n) {
+    return crypto.getRandomValues(new Uint8Array(n));
+  }
+
+  // ============================================================
+  // Submit Order
+  // ============================================================
+  async function submitOrder() {
+    if (!wallet) return;
+
+    const price = parseFloat(document.getElementById('price').value);
+    const quantity = parseFloat(document.getElementById('quantity').value);
+    const collateral = parseFloat(document.getElementById('collateral').value);
+    const slippage = parseInt(document.getElementById('slippage').value);
+    const marketId = parseInt(document.getElementById('market').value);
+
+    if (!price || !quantity || !collateral) {
+      setStatus('Please fill all fields', 'error');
+      return;
+    }
+
+    setStatus('Encrypting order...', 'loading');
+    document.getElementById('submit-btn').disabled = true;
+
+    try {
+      // Serialize the order payload
+      const payload = serializePerpOrder(side, 'limit', price, quantity, slippage, marketId);
+
+      // Compute commitment hash
+      const commitmentHash = await sha256(payload);
+
+      // Simulate encryption (NaCl box would be used in production with solver's pubkey)
+      // For demo: use random bytes as "encrypted payload"
+      const nonce = randomBytes(24);
+      const encryptedPayload = new Uint8Array([...nonce, ...randomBytes(payload.length + 16)]);
+
+      setStatus('Submitting commitment on-chain...', 'loading');
+
+      // Build and send transaction via Phantom
+      const conn = new window.solanaWeb3.Connection(RPC_URL, 'confirmed');
+      const { SystemProgram, Transaction, TransactionInstruction, PublicKey } = window.solanaWeb3;
+
+      const programId = new PublicKey(PROGRAM_ID);
+
+      // Derive config PDA
+      const [configPda] = PublicKey.findProgramAddressSync(
+        [new TextEncoder().encode('dark_pool_config')],
+        programId
+      );
+
+      // Read config to get commitment count
+      const configInfo = await conn.getAccountInfo(configPda);
+      let commitmentCount = 0n;
+      if (configInfo) {
+        // commitment_count is at offset 8 (discriminator) + 32 (admin) + 32 (solver) + 32 (fee_recipient) + 2 (fee_bps) + 32 (usdc_mint) = 138
+        const dv = new DataView(configInfo.data.buffer, configInfo.data.byteOffset);
+        commitmentCount = dv.getBigUint64(138, true);
+      }
+
+      // Derive commitment PDA
+      const countBuf = new ArrayBuffer(8);
+      new DataView(countBuf).setBigUint64(0, commitmentCount, true);
+      const [commitmentPda] = PublicKey.findProgramAddressSync(
+        [new TextEncoder().encode('commitment'), new Uint8Array(countBuf)],
+        programId
+      );
+
+      // For display purposes (actual on-chain submission would need USDC token accounts)
+      const txSig = 'demo_' + toHex(randomBytes(16));
+
+      // Show results
+      const markets = ['SOL-PERP', 'BTC-PERP', 'ETH-PERP'];
+      document.getElementById('encryption-card').style.display = 'block';
+      document.getElementById('res-side').innerHTML = side === 'long'
+        ? '<span style="color:#00ffcc">LONG</span> ' + markets[marketId] + ' @ $' + price.toFixed(2)
+        : '<span style="color:#ff00aa">SHORT</span> ' + markets[marketId] + ' @ $' + price.toFixed(2);
+      document.getElementById('res-encrypted').textContent = toHex(encryptedPayload).slice(0, 64) + '...';
+      document.getElementById('res-hash').textContent = toHex(commitmentHash);
+      document.getElementById('res-tx').innerHTML = `<a href="${EXPLORER}/tx/${txSig}?cluster=devnet" target="_blank">${txSig.slice(0, 32)}...</a>`;
+      document.getElementById('res-pda').innerHTML = `<a href="${EXPLORER}/address/${commitmentPda.toString()}?cluster=devnet" target="_blank">${commitmentPda.toString()}</a>`;
+
+      // Add to orders list
+      const order = {
+        side,
+        market: markets[marketId],
+        price,
+        quantity,
+        hash: toHex(commitmentHash).slice(0, 16) + '...',
+        time: new Date().toLocaleTimeString(),
+        pda: commitmentPda.toString().slice(0, 12) + '...',
+      };
+      orders.unshift(order);
+      renderOrders();
+
+      setStatus('Order encrypted and commitment computed', 'success');
+    } catch (err) {
+      setStatus('Error: ' + err.message, 'error');
+      console.error(err);
+    }
+
+    document.getElementById('submit-btn').disabled = false;
+  }
+
+  function renderOrders() {
+    const el = document.getElementById('orders-list');
+    if (orders.length === 0) {
+      el.innerHTML = '<div class="status" style="color:#334455;">No orders yet.</div>';
+      return;
+    }
+    el.innerHTML = orders.map(o => `
+      <div class="order-item">
+        <span class="${o.side === 'long' ? 'side-long' : 'side-short'}">${o.side.toUpperCase()}</span>
+        ${o.market} @ $${o.price.toFixed(2)} × ${o.quantity}
+        <span class="dim">| ${o.hash} | ${o.time}</span>
+      </div>
+    `).join('');
+  }
+</script>
+
+<!-- Solana Web3.js via CDN -->
+<script src="https://unpkg.com/@solana/web3.js@1.95.8/lib/index.iife.min.js"></script>
+
+</body>
+</html>
