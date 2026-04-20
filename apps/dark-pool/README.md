@@ -144,7 +144,10 @@ apps/dark-pool/
   docs/
     HACKATHON-SUBMISSION.md      # Colosseum submission form
     HACKATHON-UPDATES.md         # Weekly updates + demo/pitch video scripts
-    SUBMISSION-DESCRIPTIONS.md   # Alternate description variants
+    ROADMAP-TO-PRODUCTION.md     # Pre-mainnet checklist (4 phases)
+    POSITIONING.md               # Dark pool vs intent solver vs Tornado Cash
+    VOICEOVER-SCRIPT-V2.md       # Demo video voiceover
+    VOICEOVER-SCRIPT-BUSINESS.md # Pitch video voiceover
 ```
 
 ## Built On
@@ -171,9 +174,12 @@ This isn't built from scratch. Veil Dark Pool composes existing production infra
 ## Roadmap
 
 - **v0 (now)**: Commit-reveal with trusted solver. Deployed on devnet.
-- **v1**: TEE (AWS Nitro Enclaves) — solver code runs in attestable enclave, no one reads decrypted orders
-- **v2**: ZK proofs — trustless matching, commitment verification without revealing order details
+- **Pre-mainnet**: Security audit, 24/7 solver deployment, live venue settlement, multisig admin. Gap is infra/ops, not technology.
+- **v1**: TEE (AWS Nitro Enclaves) + QuickNode Streams — remove trust assumption, real-time matching
+- **v2**: ZK proofs — trustless matching, no order details revealed
 - **v3**: Multi-venue fallback routing — unmatched orders forwarded to public books
+
+See [ROADMAP-TO-PRODUCTION.md](docs/ROADMAP-TO-PRODUCTION.md) for the full pre-mainnet checklist.
 
 ## Why This Matters
 

@@ -97,21 +97,15 @@ Institutional DeFi adoption is blocked by execution quality. Dark pools are tabl
 
 Pivoted from Syntx (cross-venue perp DEX) to Veil Dark Pool in Week 3 based on mentor feedback.
 
-On-chain program (Anchor, deployed on devnet):
-- 6 instructions: initialize, submit_perp_order, cancel_order, reveal_match, settle_trade, expire_order
-- 3 state accounts: DarkPoolConfig, PerpOrderCommitment, DarkTradeRecord
-- SHA-256 commitment verification against PERP_ORDER_SCHEMA
-- Program ID: FPAF4iwMtb2CWDcqpWf6NJzJCYrBhQNH8PkWY8ZCGMUA
+On-chain (Anchor, deployed on devnet): 6 instructions, 3 state accounts, SHA-256 commitment verification. Program ID: FPAF4iwMtb2CWDcqpWf6NJzJCYrBhQNH8PkWY8ZCGMUA
 
-Off-chain solver:
-- Poll → decrypt → match → settle loop
-- Price-time priority matching engine with per-market books
-- 3 settlement adapters: Drift, Jupiter Perps, Phoenix
-- REST API: /solver-pubkey, /orders, /markets, /health
+Solver: poll → decrypt → match → settle loop. Price-time priority engine. 3 settlement adapters (Drift, Jupiter Perps, Phoenix). REST API. QuickNode RPC.
 
-80 tests passing (40 matcher + 40 encryption).
-End-to-end demo passing on both localnet and devnet.
-Solver runs on QuickNode RPC.
+Web: landing page, "How Exposed Are You?" analyzer (reads real mainnet data), encrypted order demo.
+
+80 tests. E2E passing on localnet + devnet.
+
+Pre-mainnet: audit, 24/7 solver, live venue settlement, multisig. Gap is infra/ops, not technology.
 
 Foundation: Veil privacy infra (npm, 6 apps). Yogi + Kodiak live on mainnet.
 
