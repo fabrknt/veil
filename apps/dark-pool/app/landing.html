@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Veil Dark Pool — First Shielded Perp Execution on Solana</title>
+  <meta name="description" content="Dark pools handle 30-50% of institutional equity flow. Solana perps have zero equivalent. Until now.">
+  <meta property="og:title" content="Veil Dark Pool — First Shielded Perp Execution on Solana">
+  <meta property="og:description" content="Encrypt your perp order. No one sees your side, price, or size until after execution.">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #000; color: #c0c8d0;
+      font-family: 'JetBrains Mono', monospace;
+      min-height: 100vh; position: relative;
+    }
+    body::after {
+      content: ''; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,136,0.012) 2px, rgba(0,255,136,0.012) 4px);
+      pointer-events: none; z-index: 9999;
+    }
+    canvas#matrix {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      opacity: 0.04; z-index: 0;
+    }
+    .page { position: relative; z-index: 10; }
+
+    /* ---- Hero ---- */
+    .hero {
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      text-align: center; padding: 40px 24px;
+    }
+    .hero-inner { max-width: 800px; }
+    .hero h1 {
+      font-family: 'Orbitron', sans-serif; font-size: 48px; font-weight: 900;
+      color: #00ffcc; text-shadow: 0 0 20px #00ffcc80, 0 0 60px #00ffcc30;
+      letter-spacing: 4px; margin-bottom: 20px;
+    }
+    .hero .tagline {
+      font-size: 20px; color: #88aaaa; line-height: 1.7; margin-bottom: 12px;
+    }
+    .hero .sub {
+      font-size: 14px; color: #556677; margin-bottom: 40px;
+    }
+    .hero .sub em { color: #ffcc00; font-style: normal; }
+    .cta-row { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+    .btn-primary {
+      background: #ff00aa15; border: 1px solid #ff00aa;
+      color: #ff00aa; padding: 16px 32px;
+      font-family: 'JetBrains Mono', monospace; font-size: 14px;
+      cursor: pointer; letter-spacing: 1px; text-decoration: none;
+      transition: all 0.2s;
+    }
+    .btn-primary:hover { background: #ff00aa25; }
+    .btn-secondary {
+      background: #00ffcc10; border: 1px solid #00ffcc50;
+      color: #00ffcc; padding: 16px 32px;
+      font-family: 'JetBrains Mono', monospace; font-size: 14px;
+      cursor: pointer; letter-spacing: 1px; text-decoration: none;
+      transition: all 0.2s;
+    }
+    .btn-secondary:hover { background: #00ffcc20; border-color: #00ffcc; }
+    .scroll-hint {
+      margin-top: 60px; color: #223344; font-size: 12px; letter-spacing: 2px;
+      animation: bounce 2s infinite;
+    }
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(8px); }
+    }
+
+    /* ---- Sections ---- */
+    .section {
+      max-width: 900px; margin: 0 auto; padding: 80px 24px;
+    }
+    .section-label {
+      font-family: 'Orbitron', sans-serif; font-size: 11px; color: #ff00aa;
+      letter-spacing: 5px; text-transform: uppercase;
+      text-shadow: 0 0 8px #ff00aa60; margin-bottom: 12px;
+    }
+    .section h2 {
+      font-family: 'Orbitron', sans-serif; font-size: 28px; font-weight: 700;
+      color: #00ccaa; text-shadow: 0 0 10px #00ccaa50;
+      letter-spacing: 2px; margin-bottom: 28px;
+    }
+    .section p { font-size: 16px; line-height: 1.8; margin-bottom: 16px; }
+    .cyan { color: #00ffcc; text-shadow: 0 0 6px #00ffcc50; }
+    .magenta { color: #ff00aa; text-shadow: 0 0 6px #ff00aa50; }
+    .gold { color: #ffcc00; text-shadow: 0 0 6px #ffcc0050; }
+    .dim { color: #445566; }
+
+    /* ---- Flow ---- */
+    .flow {
+      display: flex; align-items: center; gap: 12px;
+      margin: 32px 0; flex-wrap: wrap; justify-content: center;
+    }
+    .flow-step {
+      background: #00ffcc08; border: 1px solid #00ffcc40;
+      padding: 20px 28px; text-align: center;
+      clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
+      flex: 1; min-width: 130px;
+    }
+    .flow-step .label { color: #00ffcc; font-size: 14px; font-weight: 700; }
+    .flow-step .sub { color: #445566; font-size: 11px; margin-top: 4px; }
+    .flow-arrow { color: #00ffcc; font-size: 22px; text-shadow: 0 0 8px #00ffcc; }
+
+    /* ---- Cards ---- */
+    .card {
+      background: #000a0f; border: 1px solid #00ffcc20;
+      box-shadow: 0 0 20px #00ffcc08; padding: 28px; margin-bottom: 20px;
+      position: relative;
+    }
+    .card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, transparent, #00ffcc, transparent);
+    }
+    .card-label {
+      font-family: 'Orbitron', sans-serif; font-size: 10px; letter-spacing: 3px;
+      text-transform: uppercase; color: #00ffcc50; margin-bottom: 16px;
+    }
+    .detail-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 8px 0; border-bottom: 1px solid #112233; font-size: 13px;
+    }
+    .detail-row:last-child { border-bottom: none; }
+    .detail-key { color: #556677; }
+    .check { color: #00ffcc; text-shadow: 0 0 8px #00ffcc; }
+
+    /* ---- Comparison ---- */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media (max-width: 700px) { .two-col { grid-template-columns: 1fr; } }
+    .card.danger { border-color: #ff00aa20; }
+    .card.danger::before { background: linear-gradient(90deg, transparent, #ff00aa, transparent); }
+    .card.danger .card-label { color: #ff00aa50; }
+
+    /* ---- Stats ---- */
+    .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+    @media (max-width: 700px) { .three-col { grid-template-columns: 1fr; } }
+    .stat-box {
+      background: #000a0f; border: 1px solid #112233;
+      padding: 24px; text-align: center;
+    }
+    .stat-box .big {
+      font-family: 'Orbitron', sans-serif; font-size: 32px; font-weight: 700;
+    }
+    .stat-box .label {
+      font-size: 10px; color: #556677; margin-top: 8px;
+      text-transform: uppercase; letter-spacing: 2px;
+    }
+
+    /* ---- Divider ---- */
+    .divider {
+      border: none; border-top: 1px solid #112233;
+      max-width: 900px; margin: 0 auto;
+    }
+
+    /* ---- Footer ---- */
+    .footer {
+      text-align: center; padding: 40px 24px;
+      border-top: 1px solid #112233; max-width: 900px; margin: 0 auto;
+    }
+    .footer a { color: #00ffcc50; text-decoration: none; font-size: 12px; }
+    .footer a:hover { color: #00ffcc; }
+    .footer .program-id { color: #223344; font-size: 10px; margin-top: 12px; letter-spacing: 1px; }
+  </style>
+</head>
+<body>
+
+<canvas id="matrix"></canvas>
+
+<div class="page">
+
+  <!-- ============================================================
+       Hero
+       ============================================================ -->
+  <div class="hero">
+    <div class="hero-inner">
+      <h1>VEIL DARK POOL</h1>
+      <p class="tagline">First shielded perp execution on Solana.</p>
+      <p class="sub">
+        Dark pools handle <em>30-50%</em> of institutional equity volume.
+        <br>On-chain perps have <em>zero equivalent</em>. Until now.
+      </p>
+      <div class="cta-row">
+        <a href="exposed.html" class="btn-primary">How Exposed Are You?</a>
+        <a href="index.html" class="btn-secondary">Submit Encrypted Order</a>
+      </div>
+      <div class="scroll-hint">↓ SCROLL TO LEARN MORE</div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       Problem
+       ============================================================ -->
+  <div class="section">
+    <div class="section-label">// The Problem</div>
+    <h2>YOUR TRADES ARE PUBLIC</h2>
+    <p>Every perp order you place on Solana is <span class="magenta">visible the moment it hits the chain</span>. MEV bots see your direction, size, and timing. They front-run you. They sandwich you. Competitors copy your strategy by watching your wallet.</p>
+    <p><a href="exposed.html" style="color:#ff00aa;">Check your exposure →</a></p>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ============================================================
+       Solution
+       ============================================================ -->
+  <div class="section">
+    <div class="section-label">// The Solution</div>
+    <h2>ENCRYPT → COMMIT → MATCH → SETTLE</h2>
+    <div class="flow">
+      <div class="flow-step"><div class="label">ENCRYPT</div><div class="sub">NaCl box</div></div>
+      <div class="flow-arrow">▶</div>
+      <div class="flow-step"><div class="label">COMMIT</div><div class="sub">SHA-256 on-chain</div></div>
+      <div class="flow-arrow">▶</div>
+      <div class="flow-step"><div class="label">MATCH</div><div class="sub">Private solver</div></div>
+      <div class="flow-arrow">▶</div>
+      <div class="flow-step"><div class="label">SETTLE</div><div class="sub">Drift / Jupiter / Phoenix</div></div>
+    </div>
+    <p>No one sees your <span class="magenta">side</span>, <span class="magenta">price</span>, or <span class="magenta">size</span> until after execution. Unmatched orders fall back to public books. Collateral returned automatically.</p>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ============================================================
+       Not Tornado Cash
+       ============================================================ -->
+  <div class="section">
+    <div class="section-label">// Legal Clarity</div>
+    <h2>CONFIDENTIALITY ≠ ANONYMITY</h2>
+    <div class="two-col">
+      <div class="card danger">
+        <div class="card-label">Tornado Cash</div>
+        <div class="detail-row"><span class="detail-key">Hides</span><span class="magenta">Who you are</span></div>
+        <div class="detail-row"><span class="detail-key">Duration</span><span>Permanent</span></div>
+        <div class="detail-row"><span class="detail-key">Audit trail</span><span>None</span></div>
+        <div class="detail-row"><span class="detail-key">Status</span><span class="magenta">OFAC sanctioned</span></div>
+      </div>
+      <div class="card">
+        <div class="card-label">Veil Dark Pool</div>
+        <div class="detail-row"><span class="detail-key">Hides</span><span class="cyan">What you trade</span></div>
+        <div class="detail-row"><span class="detail-key">Duration</span><span>Until execution only</span></div>
+        <div class="detail-row"><span class="detail-key">Audit trail</span><span>DarkTradeRecord on-chain</span></div>
+        <div class="detail-row"><span class="detail-key">Status</span><span class="cyan">SEC-regulated in TradFi</span></div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ============================================================
+       Proof
+       ============================================================ -->
+  <div class="section">
+    <div class="section-label">// Built, Not Pitched</div>
+    <h2>LIVE ON SOLANA DEVNET</h2>
+    <div class="three-col">
+      <div class="stat-box"><div class="big cyan">80</div><div class="label">Tests passing</div></div>
+      <div class="stat-box"><div class="big cyan">6</div><div class="label">On-chain instructions</div></div>
+      <div class="stat-box"><div class="big cyan">3</div><div class="label">Settlement venues</div></div>
+    </div>
+    <div class="card" style="margin-top:20px;">
+      <div class="card-label">End-to-End Verified</div>
+      <div class="detail-row"><span>Initialize dark pool</span><span class="check">✓</span></div>
+      <div class="detail-row"><span>Encrypt opposing perp orders</span><span class="check">✓</span></div>
+      <div class="detail-row"><span>Submit commitment hashes with USDC collateral</span><span class="check">✓</span></div>
+      <div class="detail-row"><span>Solver decrypts + matches privately</span><span class="check">✓</span></div>
+      <div class="detail-row"><span>reveal_match → DarkTradeRecord on-chain</span><span class="check">✓</span></div>
+      <div class="detail-row"><span>settle_trade → collateral returned</span><span class="check">✓</span></div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ============================================================
+       Built On
+       ============================================================ -->
+  <div class="section">
+    <div class="section-label">// Infrastructure</div>
+    <h2>NOT STARTING FROM ZERO</h2>
+    <div class="card">
+      <div class="card-label">Production Foundation</div>
+      <div class="detail-row"><span class="detail-key">NaCl encryption</span><span>@fabrknt/veil-core — npm published</span></div>
+      <div class="detail-row"><span class="detail-key">Order encryption</span><span>@fabrknt/veil-orders — npm published</span></div>
+      <div class="detail-row"><span class="detail-key">Drift execution</span><span>Yogi vault — live on mainnet</span></div>
+      <div class="detail-row"><span class="detail-key">Jupiter Perps</span><span>Nanuk vault — production tested</span></div>
+      <div class="detail-row"><span class="detail-key">Phoenix</span><span>Syntx adapter — production tested</span></div>
+      <div class="detail-row"><span class="detail-key">RPC</span><span>QuickNode</span></div>
+    </div>
+    <p class="dim" style="font-size:13px; margin-top:12px;">6 privacy apps · 29 @fabrknt/* packages · Built in 1 week on 4+ months of infrastructure.</p>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ============================================================
+       CTA
+       ============================================================ -->
+  <div class="section" style="text-align:center; padding:80px 24px;">
+    <h2 style="margin-bottom:16px;">TRY IT NOW</h2>
+    <p style="color:#88aaaa; margin-bottom:32px;">See how exposed your trading is — or submit your first encrypted order.</p>
+    <div class="cta-row">
+      <a href="exposed.html" class="btn-primary">Check Your Exposure</a>
+      <a href="index.html" class="btn-secondary">Submit Encrypted Order</a>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       Footer
+       ============================================================ -->
+  <div class="footer">
+    <a href="https://github.com/fabrknt/veil/tree/main/apps/dark-pool" target="_blank">GitHub</a>
+    &nbsp;·&nbsp;
+    <a href="https://explorer.solana.com/address/FPAF4iwMtb2CWDcqpWf6NJzJCYrBhQNH8PkWY8ZCGMUA?cluster=devnet" target="_blank">Explorer</a>
+    &nbsp;·&nbsp;
+    <a href="https://youtu.be/bL20xECSI2U" target="_blank">Pitch Video</a>
+    &nbsp;·&nbsp;
+    <a href="https://x.com/psyto" target="_blank">@psyto</a>
+    <div class="program-id">FPAF4iwMtb2CWDcqpWf6NJzJCYrBhQNH8PkWY8ZCGMUA</div>
+  </div>
+
+</div>
+
+<script>
+  const canvas = document.getElementById('matrix');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+  window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
+  const chars = 'ヴェイルダークプール01暗号'.split('');
+  const fontSize = 14;
+  let columns = Math.floor(canvas.width / fontSize);
+  let drops = Array(columns).fill(1);
+  setInterval(() => {
+    ctx.fillStyle = 'rgba(0,0,0,0.05)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#00ffcc';
+    ctx.font = fontSize + 'px monospace';
+    columns = Math.floor(canvas.width / fontSize);
+    while (drops.length < columns) drops.push(1);
+    for (let i = 0; i < columns; i++) {
+      ctx.fillText(chars[Math.floor(Math.random() * chars.length)], i * fontSize, drops[i] * fontSize);
+      if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+      drops[i]++;
+    }
+  }, 60);
+</script>
+
+</body>
+</html>
