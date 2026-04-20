@@ -335,7 +335,13 @@
     }
   }, 60);
 
-  const RPC_URL = 'https://api.mainnet-beta.solana.com';
+  // Mainnet RPC endpoints — tries each in order
+  const RPC_URLS = [
+    'https://api.mainnet-beta.solana.com',
+    'https://solana-rpc.publicnode.com',
+  ];
+  let rpcIndex = 0;
+  function getRpcUrl() { return RPC_URLS[rpcIndex % RPC_URLS.length]; }
   let scannedWallet = '';
 
   function setStatus(msg, type) {
@@ -362,7 +368,20 @@
     document.getElementById('scan-btn').disabled = true;
 
     try {
-      const conn = new solanaWeb3.Connection(RPC_URL, 'confirmed');
+      let conn;
+      let lastError;
+      // Try each RPC until one works
+      for (let i = 0; i < RPC_URLS.length; i++) {
+        try {
+          conn = new solanaWeb3.Connection(RPC_URLS[i], 'confirmed');
+          await conn.getBalance(pubkey); // test connection
+          break;
+        } catch (e) {
+          lastError = e;
+          conn = null;
+        }
+      }
+      if (!conn) throw lastError || new Error('All RPC endpoints failed');
       const pubkey = new solanaWeb3.PublicKey(addr);
 
       // Fetch recent transaction signatures
