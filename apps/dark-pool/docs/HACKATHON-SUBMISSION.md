@@ -197,6 +197,16 @@ No
 
 Claude Code (Opus 4.6) was used extensively as an AI pair programmer for code generation, architecture decisions, and debugging. All design decisions and strategic direction are by the human founder.
 
+## Access instructions
+
+1. Clone the repo: `git clone https://github.com/fabrknt/veil.git`
+2. Navigate to dark pool: `cd veil/apps/dark-pool`
+3. Build the Anchor program: `anchor build`
+4. Run tests: `cargo check --lib` (program compilation)
+5. Run TypeScript tests: `pnpm test:solver` (matching engine + encryption tests)
+6. Start the solver: `cd solver && npx ts-node src/index.ts`
+7. API endpoints: `GET /solver-pubkey`, `GET /health`, `GET /markets`
+
 ## X profile (public)
 
 psyto
