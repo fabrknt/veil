@@ -6,7 +6,7 @@ First dark pool for Solana perpetual futures. Encrypt your order. Submit a commi
 
 **Program ID:** [`FPAF4iwMtb2CWDcqpWf6NJzJCYrBhQNH8PkWY8ZCGMUA`](https://explorer.solana.com/address/FPAF4iwMtb2CWDcqpWf6NJzJCYrBhQNH8PkWY8ZCGMUA?cluster=devnet)
 **Live on:** Solana Devnet
-**GitHub:** [github.com/fabrknt/veil](https://github.com/fabrknt/veil)
+**GitHub:** [github.com/fabrknt/veil/apps/dark-pool](https://github.com/fabrknt/veil/tree/main/apps/dark-pool)
 
 ---
 

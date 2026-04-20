@@ -625,7 +625,7 @@ async function main() {
       </p>
       <div style="margin-top: 48px;">
         <p class="dim" style="font-size: 14px; letter-spacing: 2px;">${PROGRAM_ID}</p>
-        <p class="dim" style="font-size: 14px; letter-spacing: 2px;">github.com/fabrknt/veil</p>
+        <p class="dim" style="font-size: 14px; letter-spacing: 2px;">github.com/fabrknt/veil/apps/dark-pool</p>
         <p style="font-size: 14px; letter-spacing: 2px; color: #00ffcc60; margin-top: 16px;">@psyto · Fabrknt</p>
       </div>
     </div>

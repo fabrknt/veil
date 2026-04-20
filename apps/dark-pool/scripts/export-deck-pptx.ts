@@ -378,10 +378,10 @@ function main() {
       x: 0, y: 5.5, w: '100%', h: 0.3,
       fontSize: 10, fontFace: 'Courier New', color: DIM, align: 'center',
     });
-    slide.addText('github.com/fabrknt/veil', {
+    slide.addText('github.com/fabrknt/veil/apps/dark-pool', {
       x: 0, y: 5.9, w: '100%', h: 0.3,
       fontSize: 10, fontFace: 'Courier New', color: CYAN, align: 'center',
-      hyperlink: { url: 'https://github.com/fabrknt/veil' },
+      hyperlink: { url: 'https://github.com/fabrknt/veil/tree/main/apps/dark-pool' },
     });
     slide.addText('@psyto · Fabrknt · Tokyo, Japan', {
       x: 0, y: 6.4, w: '100%', h: 0.3,

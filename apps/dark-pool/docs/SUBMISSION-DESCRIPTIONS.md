@@ -53,7 +53,7 @@ Anchor (0.30.1), NaCl box (Curve25519-XSalsa20-Poly1305), SHA-256 commitment ver
 ## Access instructions
 
 1. Clone the repo: `git clone https://github.com/fabrknt/veil.git`
-2. Navigate to dark pool: `cd apps/dark-pool`
+2. Navigate to dark pool: `cd veil/apps/dark-pool`
 3. Build the Anchor program: `anchor build`
 4. Run tests: `cargo check --lib` (program compilation)
 5. Run TypeScript tests: `pnpm test:solver` (matching engine + encryption tests)

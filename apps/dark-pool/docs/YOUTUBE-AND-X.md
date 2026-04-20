@@ -26,7 +26,7 @@ Built on production infrastructure:
 This is not Tornado Cash. Dark pools hide what you trade (temporarily), not who you are (permanently). Full audit trail on-chain via DarkTradeRecord. Legal in TradFi — SEC-regulated under Reg ATS.
 
 Program ID: FPAF4iwMtb2CWDcqpWf6NJzJCYrBhQNH8PkWY8ZCGMUA
-GitHub: https://github.com/fabrknt/veil
+GitHub: https://github.com/fabrknt/veil/tree/main/apps/dark-pool
 Built by @psyto · Fabrknt · Tokyo, Japan
 
 Built for the Solana Frontier Hackathon (Colosseum, Apr 6 – May 11, 2026)
@@ -113,7 +113,7 @@ I build dark pools because I lose money to MEV on every rebalance.
 Submitting to @colaboratory Frontier Hackathon + @SuperteamJapan side track.
 
 Program: FPAF4iwMtb2CWDcqpWf6NJzJCYrBhQNH8PkWY8ZCGMUA
-GitHub: github.com/fabrknt/veil
+GitHub: github.com/fabrknt/veil/apps/dark-pool
 
 Dark pools handle half of institutional equity volume for a reason.
 Solana perps deserve the same infrastructure.

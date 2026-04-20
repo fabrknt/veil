@@ -55,7 +55,7 @@ DeFi
 
 ## GitHub link (public)
 
-https://github.com/fabrknt/veil
+https://github.com/fabrknt/veil/tree/main/apps/dark-pool
 
 ## Important context about your repo (500 char)
 
