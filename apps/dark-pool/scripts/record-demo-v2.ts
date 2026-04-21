@@ -600,18 +600,73 @@ async function main() {
 
   try {
     // Navigate to landing page
-    await page.goto('https://fabrknt.github.io/veil/', { waitUntil: 'networkidle2', timeout: 15000 });
-    await sleep(4000);
+    console.log('[v2] Landing page...');
+    await page.goto('https://fabrknt.github.io/veil/', { waitUntil: 'networkidle2', timeout: 20000 });
+    await sleep(3000);
 
-    // Navigate to scan page
-    await page.goto('https://fabrknt.github.io/veil/scan.html', { waitUntil: 'networkidle2', timeout: 15000 });
-    await sleep(4000);
+    // Navigate to scan page and execute a scan
+    console.log('[v2] Scan page — executing scan...');
+    await page.goto('https://fabrknt.github.io/veil/scan.html', { waitUntil: 'networkidle2', timeout: 20000 });
+    await sleep(1500);
 
-    // Navigate to order page
-    await page.goto('https://fabrknt.github.io/veil/order.html', { waitUntil: 'networkidle2', timeout: 15000 });
-    await sleep(4000);
-  } catch (err) {
-    console.log('[v2] Web UI navigation failed, continuing...');
+    // Type a known active wallet address
+    const scanInput = await page.$('#wallet-input');
+    if (scanInput) {
+      await scanInput.click();
+      await page.type('#wallet-input', 'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4', { delay: 20 });
+      await sleep(500);
+
+      // Click SCAN
+      const scanBtn = await page.$('#scan-btn');
+      if (scanBtn) await scanBtn.click();
+
+      // Wait for results to load and auto-scroll
+      await sleep(8000);
+    }
+
+    // Navigate to order page and fill a demo order
+    console.log('[v2] Order page — submitting order...');
+    await page.goto('https://fabrknt.github.io/veil/order.html', { waitUntil: 'networkidle2', timeout: 20000 });
+    await sleep(1500);
+
+    // Click SHORT side
+    const shortBtn = await page.$('#btn-short');
+    if (shortBtn) {
+      await shortBtn.click();
+      await sleep(300);
+    }
+
+    // Clear and type price
+    const priceInput = await page.$('#price');
+    if (priceInput) {
+      await priceInput.click({ clickCount: 3 });
+      await page.type('#price', '148.50', { delay: 40 });
+    }
+
+    // Clear and type quantity
+    const qtyInput = await page.$('#quantity');
+    if (qtyInput) {
+      await qtyInput.click({ clickCount: 3 });
+      await page.type('#quantity', '25.0', { delay: 40 });
+    }
+    await sleep(500);
+
+    // Click Submit
+    // Enable the button first (normally needs wallet connection)
+    await page.evaluate(() => {
+      const btn = (globalThis as any).document.getElementById('submit-btn');
+      if (btn) btn.disabled = false;
+    });
+    await sleep(300);
+
+    const submitBtn = await page.$('#submit-btn');
+    if (submitBtn) await submitBtn.click();
+
+    // Wait for encryption results and auto-scroll
+    await sleep(5000);
+
+  } catch (err: any) {
+    console.log('[v2] Web UI section error:', err.message);
   }
 
   // ===== BUILT ON (5s) =====
