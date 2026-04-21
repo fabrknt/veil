@@ -588,21 +588,11 @@ async function main() {
   // ===== LIVE WEB UI =====
   console.log('[v2] Live web UI section...');
 
-  // Landing page
-  await showSlide(page, `
-    <div style="text-align: center;">
-      <div class="step">// Live Product</div>
-      <h2>TRY IT NOW</h2>
-      <p style="color: #667788; margin-bottom: 16px;">fabrknt.github.io/veil</p>
-    </div>
-  `);
-  await sleep(2000);
-
   try {
-    // Navigate to landing page
+    // Navigate directly to landing page (no plain transition slide)
     console.log('[v2] Landing page...');
     await page.goto('https://fabrknt.github.io/veil/', { waitUntil: 'networkidle2', timeout: 20000 });
-    await sleep(3000);
+    await sleep(5000);
 
     // Navigate to scan page and execute a scan
     console.log('[v2] Scan page — executing scan...');
@@ -620,8 +610,8 @@ async function main() {
       const scanBtn = await page.$('#scan-btn');
       if (scanBtn) await scanBtn.click();
 
-      // Wait for results to load and auto-scroll
-      await sleep(8000);
+      // Wait for results to load and auto-scroll through all sections
+      await sleep(12000);
     }
 
     // Navigate to order page and fill a demo order
@@ -680,7 +670,7 @@ async function main() {
       <tr><td>Drift execution</td><td>Yogi vault</td><td><span class="cyan">mainnet live</span></td></tr>
       <tr><td>Jupiter Perps</td><td>Nanuk vault</td><td><span class="cyan">production tested</span></td></tr>
     </table>
-    <p class="dim" style="margin-top: 16px;">6 privacy apps · 29 @fabrknt/* packages · Recognized by QuickNode</p>
+    <p class="dim" style="margin-top: 16px;">6 privacy apps · 29 @fabrknt/* packages · Built in 1 week on 4+ months of infrastructure</p>
   `);
   await sleep(5000);
 
