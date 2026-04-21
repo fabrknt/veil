@@ -588,8 +588,28 @@ async function main() {
   // ===== LIVE WEB UI =====
   console.log('[v2] Live web UI section...');
 
+  // Transition slide — visually distinct break before live UI
+  await page.setContent(`
+    <html><head><style>
+      * { margin:0; } body {
+        background: #00ffcc; display: flex; align-items: center;
+        justify-content: center; min-height: 100vh;
+      }
+      h1 { font-family: 'Orbitron', sans-serif; font-size: 48px;
+        color: #000; letter-spacing: 6px; }
+      p { font-family: 'JetBrains Mono', monospace; font-size: 16px;
+        color: #003322; margin-top: 12px; letter-spacing: 2px; }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@900&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    </head><body><div style="text-align:center;">
+      <h1>LIVE PRODUCT</h1>
+      <p>fabrknt.github.io/veil</p>
+    </div></body></html>
+  `);
+  await sleep(2500);
+
   try {
-    // Navigate directly to landing page (no plain transition slide)
+    // Navigate to landing page
     console.log('[v2] Landing page...');
     await page.goto('https://fabrknt.github.io/veil/', { waitUntil: 'networkidle2', timeout: 20000 });
     await sleep(5000);
