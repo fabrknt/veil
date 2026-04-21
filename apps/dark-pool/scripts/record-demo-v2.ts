@@ -609,14 +609,35 @@ async function main() {
   await sleep(2500);
 
   try {
-    // Navigate to landing page
+    // Navigate to landing page with cyan border frame
     console.log('[v2] Landing page...');
     await page.goto('https://fabrknt.github.io/veil/', { waitUntil: 'networkidle2', timeout: 20000 });
+    // Add glowing cyan border to distinguish live UI from slides
+    await page.evaluate(() => {
+      const doc = (globalThis as any).document;
+      const frame = doc.createElement('div');
+      frame.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;border:3px solid #00ffcc;box-shadow:inset 0 0 30px #00ffcc20,0 0 30px #00ffcc10;pointer-events:none;z-index:99998;';
+      const label = doc.createElement('div');
+      label.style.cssText = 'position:fixed;top:8px;left:50%;transform:translateX(-50%);background:#00ffcc;color:#000;font-family:monospace;font-size:11px;font-weight:bold;padding:3px 16px;letter-spacing:3px;z-index:99998;pointer-events:none;';
+      label.textContent = 'LIVE — fabrknt.github.io/veil';
+      doc.body.appendChild(frame);
+      doc.body.appendChild(label);
+    });
     await sleep(5000);
 
     // Navigate to scan page and execute a scan
     console.log('[v2] Scan page — executing scan...');
     await page.goto('https://fabrknt.github.io/veil/scan.html', { waitUntil: 'networkidle2', timeout: 20000 });
+    await page.evaluate(() => {
+      const doc = (globalThis as any).document;
+      const frame = doc.createElement('div');
+      frame.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;border:3px solid #00ffcc;box-shadow:inset 0 0 30px #00ffcc20;pointer-events:none;z-index:99998;';
+      const label = doc.createElement('div');
+      label.style.cssText = 'position:fixed;top:8px;left:50%;transform:translateX(-50%);background:#00ffcc;color:#000;font-family:monospace;font-size:11px;font-weight:bold;padding:3px 16px;letter-spacing:3px;z-index:99998;pointer-events:none;';
+      label.textContent = 'LIVE — SCAN';
+      doc.body.appendChild(frame);
+      doc.body.appendChild(label);
+    });
     await sleep(1500);
 
     // Type a known active wallet address
@@ -637,6 +658,16 @@ async function main() {
     // Navigate to order page and fill a demo order
     console.log('[v2] Order page — submitting order...');
     await page.goto('https://fabrknt.github.io/veil/order.html', { waitUntil: 'networkidle2', timeout: 20000 });
+    await page.evaluate(() => {
+      const doc = (globalThis as any).document;
+      const frame = doc.createElement('div');
+      frame.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;border:3px solid #00ffcc;box-shadow:inset 0 0 30px #00ffcc20;pointer-events:none;z-index:99998;';
+      const label = doc.createElement('div');
+      label.style.cssText = 'position:fixed;top:8px;left:50%;transform:translateX(-50%);background:#00ffcc;color:#000;font-family:monospace;font-size:11px;font-weight:bold;padding:3px 16px;letter-spacing:3px;z-index:99998;pointer-events:none;';
+      label.textContent = 'LIVE — ORDER';
+      doc.body.appendChild(frame);
+      doc.body.appendChild(label);
+    });
     await sleep(1500);
 
     // Click SHORT side
