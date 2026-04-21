@@ -568,6 +568,14 @@
       renderOrders();
 
       setStatus('Order encrypted and commitment computed', 'success');
+
+      // Auto-scroll through results
+      const scrollTargets = ['encryption-card', 'orders-list'];
+      for (let i = 0; i < scrollTargets.length; i++) {
+        await new Promise(r => setTimeout(r, i === 0 ? 400 : 1200));
+        const el = document.getElementById(scrollTargets[i]);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
     } catch (err) {
       setStatus('Error: ' + err.message, 'error');
       console.error(err);
