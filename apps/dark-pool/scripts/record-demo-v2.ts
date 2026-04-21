@@ -616,7 +616,7 @@ async function main() {
     await page.evaluate(() => {
       const doc = (globalThis as any).document;
       const frame = doc.createElement('div');
-      frame.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;border:3px solid #00ffcc;box-shadow:inset 0 0 30px #00ffcc20,0 0 30px #00ffcc10;pointer-events:none;z-index:99998;';
+      frame.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;border:6px solid #00ffcc;box-shadow:inset 0 0 40px #00ffcc30,0 0 40px #00ffcc15;pointer-events:none;z-index:99998;';
       const label = doc.createElement('div');
       label.style.cssText = 'position:fixed;top:8px;left:50%;transform:translateX(-50%);background:#00ffcc;color:#000;font-family:monospace;font-size:11px;font-weight:bold;padding:3px 16px;letter-spacing:3px;z-index:99998;pointer-events:none;';
       label.textContent = 'LIVE — fabrknt.github.io/veil';
@@ -631,7 +631,7 @@ async function main() {
     await page.evaluate(() => {
       const doc = (globalThis as any).document;
       const frame = doc.createElement('div');
-      frame.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;border:3px solid #00ffcc;box-shadow:inset 0 0 30px #00ffcc20;pointer-events:none;z-index:99998;';
+      frame.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;border:6px solid #00ffcc;box-shadow:inset 0 0 40px #00ffcc30,0 0 40px #00ffcc15;pointer-events:none;z-index:99998;';
       const label = doc.createElement('div');
       label.style.cssText = 'position:fixed;top:8px;left:50%;transform:translateX(-50%);background:#00ffcc;color:#000;font-family:monospace;font-size:11px;font-weight:bold;padding:3px 16px;letter-spacing:3px;z-index:99998;pointer-events:none;';
       label.textContent = 'LIVE — SCAN';
@@ -661,7 +661,7 @@ async function main() {
     await page.evaluate(() => {
       const doc = (globalThis as any).document;
       const frame = doc.createElement('div');
-      frame.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;border:3px solid #00ffcc;box-shadow:inset 0 0 30px #00ffcc20;pointer-events:none;z-index:99998;';
+      frame.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;border:6px solid #00ffcc;box-shadow:inset 0 0 40px #00ffcc30,0 0 40px #00ffcc15;pointer-events:none;z-index:99998;';
       const label = doc.createElement('div');
       label.style.cssText = 'position:fixed;top:8px;left:50%;transform:translateX(-50%);background:#00ffcc;color:#000;font-family:monospace;font-size:11px;font-weight:bold;padding:3px 16px;letter-spacing:3px;z-index:99998;pointer-events:none;';
       label.textContent = 'LIVE — ORDER';
