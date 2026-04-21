@@ -585,6 +585,35 @@ async function main() {
   `);
   await sleep(5000);
 
+  // ===== LIVE WEB UI =====
+  console.log('[v2] Live web UI section...');
+
+  // Landing page
+  await showSlide(page, `
+    <div style="text-align: center;">
+      <div class="step">// Live Product</div>
+      <h2>TRY IT NOW</h2>
+      <p style="color: #667788; margin-bottom: 16px;">fabrknt.github.io/veil</p>
+    </div>
+  `);
+  await sleep(2000);
+
+  try {
+    // Navigate to landing page
+    await page.goto('https://fabrknt.github.io/veil/', { waitUntil: 'networkidle2', timeout: 15000 });
+    await sleep(4000);
+
+    // Navigate to scan page
+    await page.goto('https://fabrknt.github.io/veil/scan.html', { waitUntil: 'networkidle2', timeout: 15000 });
+    await sleep(4000);
+
+    // Navigate to order page
+    await page.goto('https://fabrknt.github.io/veil/order.html', { waitUntil: 'networkidle2', timeout: 15000 });
+    await sleep(4000);
+  } catch (err) {
+    console.log('[v2] Web UI navigation failed, continuing...');
+  }
+
   // ===== BUILT ON (5s) =====
   await showSlide(page, `
     <div class="step">// Infrastructure</div>
