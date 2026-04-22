@@ -128,7 +128,8 @@ Veil Dark Pool sits in a rare sweet spot:
 - **Legally sound** — temporary confidentiality with full audit trail, not anonymity
 - **Validated in crypto** — Silhouette raised $3M for the same thesis on Hyperliquid
 - **Built on existing infra** — not starting from zero
+- **Dual value** — privacy AND lower fees from internal netting (4-18 bps saved per trade)
 
-The pitch for judges: "We're not building the next Tornado Cash. We're building the on-chain equivalent of what NYSE already operates — and Solana is the first chain that can support it."
+The pitch: "Dark pool for Solana perps — private execution AND lower fees. Internal matches bypass venue fees entirely. Not Tornado Cash — the on-chain equivalent of what NYSE already operates."
 
-That distinction separates Veil Dark Pool from every other privacy project in the hackathon.
+Privacy alone = niche (only large traders care). Privacy + cost savings = universal (every trader cares about fees). The internal netting is what makes the dark pool economically compelling, not just technically interesting.

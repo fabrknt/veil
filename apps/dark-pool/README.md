@@ -1,11 +1,12 @@
-# Veil Dark Pool — Shielded Perp Execution on Solana
+# Veil Dark Pool — Private Execution + Lower Fees for Solana Perps
 
 > **Built for the [Solana Frontier Hackathon](https://www.colosseum.org/frontier) (Apr 6 – May 11, 2026)**
 
-First dark pool for Solana perpetual futures. Encrypt your order. Submit a commitment hash on-chain. The solver matches privately and settles on Drift or Jupiter Perps. No one sees your side, price, or size until after execution.
+First dark pool for Solana perpetual futures. Encrypt your order, match privately, settle on Drift, Jupiter Perps, or Phoenix. No one sees your side, price, or size until after execution. Orders that match internally bypass venue fees entirely — **saving 4-18 bps per trade** vs public execution.
 
 **Program ID:** [`FPAF4iwMtb2CWDcqpWf6NJzJCYrBhQNH8PkWY8ZCGMUA`](https://explorer.solana.com/address/FPAF4iwMtb2CWDcqpWf6NJzJCYrBhQNH8PkWY8ZCGMUA?cluster=devnet)
 **Live on:** Solana Devnet
+**Web UI:** [fabrknt.github.io/veil](https://fabrknt.github.io/veil/)
 **GitHub:** [github.com/fabrknt/veil/apps/dark-pool](https://github.com/fabrknt/veil/tree/main/apps/dark-pool)
 
 ---
@@ -16,9 +17,11 @@ First dark pool for Solana perpetual futures. Encrypt your order. Submit a commi
 Trader encrypts perp order (NaCl box)
   → Submits commitment hash + USDC collateral on-chain
     → Solver decrypts privately, feeds into matching engine
-      → Match found: reveal_match creates DarkTradeRecord on-chain
-        → settle_trade executes on Drift/Jupiter Perps, returns collateral
-          → No match? Order expires, collateral returned automatically
+      → INTERNAL MATCH: orders cross in dark pool (no venue fees, no slippage, no MEV)
+        → reveal_match creates DarkTradeRecord on-chain
+          → settle_trade returns collateral (3 bps dark pool fee only)
+      → NO MATCH: VenueRouter picks cheapest venue → fallback to public book
+          → Order expires? Collateral returned automatically
 ```
 
 ### What's Hidden vs Visible
@@ -131,24 +134,32 @@ apps/dark-pool/
     src/
       index.ts                   # Solver main loop (poll → decrypt → match → settle)
       matcher.ts                 # Price-time priority matching engine
-      api.ts                     # REST API
+      api.ts                     # REST API (/fees, /health, /markets)
       settlement/
+        router.ts                # VenueRouter — fee scoring + netting stats
         drift.ts                 # Drift SDK settlement
         jupiter-perps.ts         # Jupiter Perps settlement
         phoenix.ts               # Phoenix spot CLOB settlement
 
+  app/
+    index.html                   # Landing page (sci-fi theme)
+    scan.html                    # "How Exposed Are You?" analyzer
+    order.html                   # Encrypted order submission (professional theme)
+
+  pitch-deck/
+    business.html                # Business pitch deck (13 slides)
+    index.html                   # Technical pitch deck (12 slides)
+
   sdk/src/index.ts               # Re-exports from @fabrknt/veil-orders
   scripts/demo.ts                # End-to-end demo script
   tests/
-    matcher.test.ts              # 8 matching engine tests
-    encryption.test.ts           # 10 encryption round-trip tests
+    matcher.test.ts              # 40 matching engine tests
+    encryption.test.ts           # 40 encryption round-trip tests
   docs/
     HACKATHON-SUBMISSION.md      # Colosseum submission form
     HACKATHON-UPDATES.md         # Weekly updates + demo/pitch video scripts
     ROADMAP-TO-PRODUCTION.md     # Pre-mainnet checklist (4 phases)
     POSITIONING.md               # Dark pool vs intent solver vs Tornado Cash
-    VOICEOVER-SCRIPT-V2.md       # Demo video voiceover
-    VOICEOVER-SCRIPT-BUSINESS.md # Pitch video voiceover
 ```
 
 ## Built On
@@ -198,7 +209,10 @@ The solver exposes real-time netting stats via `GET /fees` — internal match ra
 
 ## Why This Matters
 
-In TradFi, dark pools handle 30-50% of institutional equity volume. On-chain perps ($7T/month) have zero equivalent. Every trade is visible, front-runnable, and copyable.
+Two value propositions, not one:
+
+1. **Privacy** — dark pools handle 30-50% of TradFi equity volume because large orders need execution privacy. On-chain perps ($7T/month) have zero equivalent.
+2. **Lower fees** — internal netting bypasses venue fees entirely. Every trader cares about cost. Privacy alone is niche. Privacy + cost savings is universal.
 
 Silhouette raised $3M to solve this on Hyperliquid. Nothing exists on Solana — the largest composable smart contract platform. Veil Dark Pool is the first.
 

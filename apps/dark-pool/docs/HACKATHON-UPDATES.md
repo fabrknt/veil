@@ -46,9 +46,14 @@ Syntx's VenueAdapter infrastructure lives on as the settlement layer inside Veil
   - `cancel_order`, `expire_order`: collateral recovery paths
 - Off-chain solver: poll → decrypt → match → settle loop (adapted from Veil's confidential-swap-router)
 - PerpMatcher: price-time priority matching engine with per-market order books
-- Settlement adapters for Drift and Jupiter Perps (from Yogi and Nanuk patterns)
-- 18 unit tests (8 matching engine + 10 encryption round-trip)
-- Program compiles cleanly (`cargo check` passes)
+- Settlement adapters for Drift, Jupiter Perps, and Phoenix
+- VenueRouter: scores venues by fees, routes to cheapest for fallback
+- Internal netting: matched orders bypass venue fees (save 4-18 bps per trade)
+- GET /fees API: real-time fee comparison and netting stats
+- 80 unit tests (40 matcher + 40 encryption)
+- Web UI: landing page, "How Exposed Are You?" scanner, encrypted order form
+- Deployed to devnet + GitHub Pages (fabrknt.github.io/veil)
+- Program compiles cleanly, E2E demo passing on localnet + devnet
 
 ---
 
