@@ -59,7 +59,7 @@ https://github.com/fabrknt/veil/tree/main/apps/dark-pool
 
 Veil is a privacy infrastructure monorepo. The dark pool is at apps/dark-pool/. Anchor program (6 instructions, 3 state accounts), off-chain solver (matcher + 3 settlement adapters), SDK wrapping @fabrknt/veil-orders.
 
-80 tests passing. Program deployed on Solana devnet. End-to-end demo runs: encrypt → commit → match → reveal → settle. The encryption packages are production npm modules shared across 6 other Veil apps.
+101 tests passing. Program deployed on Solana devnet. End-to-end demo runs: encrypt → commit → match → reveal → settle. The encryption packages are production npm modules shared across 6 other Veil apps.
 
 ## Demo video
 
@@ -103,7 +103,7 @@ Solver: poll → decrypt → match → settle loop. Price-time priority engine. 
 
 Web: landing page, "How Exposed Are You?" analyzer (reads real mainnet data), encrypted order demo.
 
-80 tests. E2E passing on localnet + devnet.
+101 tests. E2E passing on localnet + devnet.
 
 Pre-mainnet: audit, 24/7 solver, live venue settlement, multisig. Gap is infra/ops, not technology.
 

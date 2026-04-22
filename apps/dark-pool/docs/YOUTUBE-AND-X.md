@@ -20,7 +20,7 @@ In TradFi, dark pools handle 30-50% of institutional equity flow. On-chain perps
 Built on production infrastructure:
 • NaCl box encryption (@fabrknt/veil-core, npm published)
 • 3 settlement venues: Drift, Jupiter Perps, Phoenix
-• 80 tests passing, deployed on Solana devnet
+• 101 tests passing, deployed on Solana devnet
 • Live mainnet vaults: Yogi (Drift), Kodiak (Hyperliquid)
 
 This is not Tornado Cash. Dark pools hide what you trade (temporarily), not who you are (permanently). Full audit trail on-chain via DarkTradeRecord. Legal in TradFi — SEC-regulated under Reg ATS.
@@ -73,7 +73,7 @@ Mentor feedback: "You're competing with Drift. No edge."
 
 Week 3: Took our Veil encryption stack + perps execution experience → first dark pool for Solana perps
 
-80 tests. Deployed on devnet. 3 settlement venues. E2E passing.
+101 tests. Deployed on devnet. 3 settlement venues. E2E passing.
 ```
 
 ### Post 4

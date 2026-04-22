@@ -2,7 +2,7 @@
 
 ## Current State: Devnet Demo
 
-Program deployed on Solana devnet. End-to-end lifecycle passing (encrypt → commit → match → reveal → settle). 80 tests. 3 settlement venues wired. Web UI and "How Exposed Are You?" analyzer built. Solver runs locally.
+Program deployed on Solana devnet. End-to-end lifecycle passing (encrypt → commit → match → reveal → settle). 101 tests. 3 settlement venues wired. Web UI and "How Exposed Are You?" analyzer built. Solver runs locally.
 
 ---
 
@@ -81,7 +81,7 @@ The v0 solver can see all order details. **No mainnet deployment without TEE.**
 HAVE (hackathon)                    NEED (production)
 ├── Anchor program (devnet)         ├── Security audit
 ├── 6 instructions                  ├── Solver deployment (24/7)
-├── 80 tests                        ├── Real USDC + token accounts
+├── 101 tests                        ├── Real USDC + token accounts
 ├── 3 settlement adapters           ├── Live Drift/Jupiter settlement
 ├── Matching engine                 ├── Multisig admin
 ├── Encryption (npm published)      ├── Rate limiting
