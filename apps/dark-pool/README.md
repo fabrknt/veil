@@ -62,6 +62,7 @@ Trader encrypts perp order (NaCl box)
 ### Off-chain Solver
 
 - **PerpMatcher**: Price-time priority crossing engine with per-market order books
+- **VenueRouter**: Scores venues by fees, routes to cheapest — or skips venues entirely for internal matches
 - **DriftSettlement**: `DriftClient.placePerpOrder()` with LIMIT + MUST_POST_ONLY
 - **JupiterPerpsSettlement**: `program.methods.createIncreasePositionMarketRequest()`
 - **PhoenixSettlement**: `Phoenix.Client` swap orders on spot CLOB (for DN spot leg)
@@ -180,6 +181,20 @@ This isn't built from scratch. Veil Dark Pool composes existing production infra
 - **v3**: Multi-venue fallback routing — unmatched orders forwarded to public books
 
 See [ROADMAP-TO-PRODUCTION.md](docs/ROADMAP-TO-PRODUCTION.md) for the full pre-mainnet checklist.
+
+## Fee Savings — Internal Netting
+
+When orders match inside the dark pool, they **never touch a venue** — no Drift fees, no Jupiter fees, no slippage, no MEV.
+
+| Execution Path | Taker Fee | Slippage | MEV | Total Cost |
+|---|---|---|---|---|
+| **Public (Drift)** | 4.5 bps | 2-10 bps | 1-5 bps | 7-20 bps |
+| **Public (Jupiter)** | 6.0 bps | 2-10 bps | 1-5 bps | 9-21 bps |
+| **Dark Pool (internal match)** | 3.0 bps | 0 | 0 | **3 bps** |
+
+Every internally matched trade saves **4-18 bps** vs public execution. At scale, this is the primary value proposition alongside privacy.
+
+The solver exposes real-time netting stats via `GET /fees` — internal match rate, volume netted, and total fees saved.
 
 ## Why This Matters
 

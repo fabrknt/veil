@@ -4,13 +4,11 @@ import type { DarkPoolSolverConfig } from './config';
 
 /**
  * REST API for the dark pool solver.
- * Adapted from confidential-swap-router/solver/src/api.ts
  */
 export function startApi(solver: DarkPoolSolver, config: DarkPoolSolverConfig): void {
   const app = express();
   app.use(express.json());
 
-  // CORS
   app.use((_req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Headers', 'Content-Type');
@@ -19,8 +17,6 @@ export function startApi(solver: DarkPoolSolver, config: DarkPoolSolverConfig): 
 
   /**
    * GET /solver-pubkey
-   * Returns the solver's NaCl encryption public key.
-   * Clients use this to encrypt order payloads before submission.
    */
   app.get('/solver-pubkey', (_req, res) => {
     const pubkey = solver.getEncryptionPubkey();
@@ -32,21 +28,18 @@ export function startApi(solver: DarkPoolSolver, config: DarkPoolSolverConfig): 
 
   /**
    * GET /orders/:commitmentId/status
-   * Query the status of a commitment.
    */
   app.get('/orders/:commitmentId/status', (_req, res) => {
-    // In production: query on-chain PerpOrderCommitment by ID
     res.json({ status: 'pending', message: 'On-chain query not yet implemented' });
   });
 
   /**
    * GET /markets
-   * List supported markets and their venue configurations.
    */
   app.get('/markets', (_req, res) => {
     res.json({
       markets: [
-        { id: 0, symbol: 'SOL-PERP', venues: ['drift', 'jupiter'] },
+        { id: 0, symbol: 'SOL-PERP', venues: ['drift', 'jupiter', 'phoenix'] },
         { id: 1, symbol: 'BTC-PERP', venues: ['drift', 'jupiter'] },
         { id: 2, symbol: 'ETH-PERP', venues: ['drift', 'jupiter'] },
       ],
@@ -55,10 +48,12 @@ export function startApi(solver: DarkPoolSolver, config: DarkPoolSolverConfig): 
 
   /**
    * GET /health
-   * Solver health check with book depth stats.
    */
   app.get('/health', (_req, res) => {
     const matcher = solver.getMatcher();
+    const router = solver.getRouter();
+    const stats = router ? router.getStats() : null;
+
     res.json({
       status: 'ok',
       totalOrders: matcher.getTotalOrders(),
@@ -66,6 +61,55 @@ export function startApi(solver: DarkPoolSolver, config: DarkPoolSolverConfig): 
         'SOL-PERP': matcher.getDepth(0),
         'BTC-PERP': matcher.getDepth(1),
         'ETH-PERP': matcher.getDepth(2),
+      },
+      settlement: stats ? {
+        internalMatches: stats.internalMatches,
+        venueSettlements: stats.venueSettlements,
+        internalVolume: stats.internalVolume.toString(),
+        venueVolume: stats.venueVolume.toString(),
+        feeSavedUsd: stats.feeSavedUsd.toFixed(2),
+      } : null,
+    });
+  });
+
+  /**
+   * GET /fees
+   * Fee comparison: dark pool internal matching vs public venue execution.
+   * Shows the cost advantage of internal netting.
+   */
+  app.get('/fees', (_req, res) => {
+    const router = solver.getRouter();
+    if (!router) {
+      res.json({ error: 'Router not initialized' });
+      return;
+    }
+
+    const comparison = router.getFeeComparison();
+    const stats = router.getStats();
+
+    res.json({
+      darkPool: {
+        feeBps: comparison.darkPoolFeeBps,
+        description: 'Orders matched internally — no venue fees, no slippage, no MEV',
+      },
+      venues: comparison.venues.map(v => ({
+        name: v.name,
+        takerFeeBps: v.takerBps,
+        makerFeeBps: v.makerBps,
+        savingsVsDarkPool: v.savingsVsDarkPool + ' bps per trade',
+      })),
+      additionalSavings: {
+        slippage: comparison.estimatedSlippageSaved,
+        mev: comparison.estimatedMevSaved,
+        total: '7-20 bps per internally matched trade',
+      },
+      stats: {
+        internalMatches: stats.internalMatches,
+        venueSettlements: stats.venueSettlements,
+        totalFeeSavedUsd: stats.feeSavedUsd.toFixed(2),
+        nettingRate: stats.internalMatches + stats.venueSettlements > 0
+          ? ((stats.internalMatches / (stats.internalMatches + stats.venueSettlements)) * 100).toFixed(1) + '%'
+          : '0%',
       },
     });
   });
