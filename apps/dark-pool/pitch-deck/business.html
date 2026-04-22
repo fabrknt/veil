@@ -337,23 +337,29 @@
 <div class="slide" id="s7">
   <canvas class="matrix"></canvas>
   <div class="slide-inner">
-    <div class="step">// Revenue</div>
-    <h2>VOLUME-BASED, NOT CAPITAL-BASED</h2>
+    <div class="step">// Fee Savings + Revenue</div>
+    <h2>PRIVACY + LOWER FEES</h2>
     <div class="card" style="margin-top:24px;">
-      <div class="card-label">Revenue Streams</div>
-      <div class="verify-row"><span>Dark pool matching fees</span><span class="gold">2-5 bps per matched trade</span></div>
-      <div class="verify-row"><span>Fallback routing fees</span><span class="gold">1 bps per routed order</span></div>
-      <div class="verify-row"><span>Premium tiers (M-of-N threshold encryption)</span><span class="gold">Institutional pricing</span></div>
-      <div class="verify-row"><span>API access for vault operators</span><span class="gold">Monthly subscription</span></div>
+      <div class="card-label">Internal Match vs Public Execution</div>
+      <div class="verify-row"><span>Public (Drift taker)</span><span>4.5 bps + slippage + MEV = <span class="magenta">7-20 bps</span></span></div>
+      <div class="verify-row"><span>Public (Jupiter taker)</span><span>6.0 bps + slippage + MEV = <span class="magenta">9-21 bps</span></span></div>
+      <div class="verify-row"><span class="cyan">Dark pool (internal match)</span><span class="cyan">3.0 bps, zero slippage, zero MEV = <span class="gold">3 bps</span></span></div>
+      <div class="verify-row"><span style="color:#e2e8f0;">Savings per internal match</span><span class="gold" style="font-weight:700;">4-18 bps saved</span></div>
     </div>
-    <div class="card" style="margin-top:24px;">
-      <div class="card-label">Proven in TradFi</div>
-      <div class="verify-row"><span>IEX (dark pool exchange)</span><span>$300M+ annual revenue</span></div>
-      <div class="verify-row"><span>Liquidnet (institutional dark pool)</span><span>Acquired for $700M</span></div>
-      <div class="verify-row"><span>Fee model</span><span class="cyan">Same structure — bps on matched volume</span></div>
-      <div class="verify-row"><span>Scaling</span><span class="cyan">Revenue grows with volume, not capital</span></div>
+    <div class="two-col" style="margin-top:16px;">
+      <div class="card">
+        <div class="card-label">Revenue (3 bps matching fee)</div>
+        <div class="verify-row"><span>Matching fees</span><span class="gold">3 bps per internal match</span></div>
+        <div class="verify-row"><span>Routing fees</span><span class="gold">1 bps per fallback order</span></div>
+        <div class="verify-row"><span>Scaling</span><span class="cyan">Volume-based, not capital</span></div>
+      </div>
+      <div class="card">
+        <div class="card-label">TradFi Proof</div>
+        <div class="verify-row"><span>IEX</span><span>$300M+ annual revenue</span></div>
+        <div class="verify-row"><span>Liquidnet</span><span>Acquired for $700M</span></div>
+        <div class="verify-row"><span>Model</span><span class="cyan">Same — bps on volume</span></div>
+      </div>
     </div>
-    <p class="dim small" style="margin-top:16px;">In traditional markets, Robinhood is worth more than Nasdaq. Value accrues to the execution layer above exchanges.</p>
   </div>
   <div class="slide-num">07 / 13</div>
 </div>

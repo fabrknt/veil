@@ -11,11 +11,11 @@ Veil Dark Pool
 
 ## Brief description (500 char, public)
 
-Every perp trade on Solana is visible — front-run, sandwiched, copied. In TradFi, dark pools handle 30-50% of institutional equity flow. On-chain perps have zero equivalent.
+Every perp trade on Solana is visible — front-run, sandwiched, copied. Dark pools handle 30-50% of TradFi equity flow. On-chain perps have zero equivalent.
 
-Veil Dark Pool fixes this. Encrypt your order. Submit a commitment hash on-chain. The solver matches privately and settles on Drift, Jupiter Perps, or Phoenix. No one sees your side, price, or size until after execution. Unmatched orders fall back to public books automatically.
+Veil Dark Pool: encrypt your order, match privately, settle on Drift/Jupiter/Phoenix. No one sees your side, price, or size. Orders that match internally bypass venue fees entirely — saving 4-18 bps per trade vs public execution. Privacy + lower fees.
 
-First of its kind on Solana.
+First dark pool for Solana perps.
 
 ## Project website (public)
 
@@ -23,15 +23,15 @@ https://fabrknt.com/veil
 
 ## What are you building, and who is it for? (1000 char)
 
-A dark pool for Solana perpetual futures — the first one.
+A dark pool for Solana perpetual futures — private execution AND lower fees.
 
-You submit an encrypted perp order with USDC collateral. The solver decrypts it privately, matches you against opposing orders using a price-time priority engine, and settles the trade on Drift, Jupiter Perps, or Phoenix. If no match, your order falls back to the public book. Collateral returned either way.
+Encrypt your perp order. The solver matches privately using a price-time priority engine. Orders that cross internally bypass venue fees entirely — no Drift fees, no Jupiter fees, no slippage, no MEV. Saving 4-18 bps per trade vs public execution. Unmatched orders route to the cheapest venue via the VenueRouter.
 
-This is not anonymity — it's execution privacy. Wallets are public, orders hidden only until execution, every match recorded on-chain as a DarkTradeRecord. Same model NYSE operates under SEC regulation.
+This is not anonymity — it's execution privacy. Wallets are public, orders hidden only until execution, every match recorded on-chain as a DarkTradeRecord. Legal in TradFi — same model NYSE operates under SEC regulation.
 
-Silhouette raised $3M for this on Hyperliquid. Nothing exists on Solana. We built it in one week — we already had the privacy infra (Veil, 6 apps, npm) and live perp vaults on Drift and Hyperliquid mainnet.
+Silhouette raised $3M for this on Hyperliquid. Nothing exists on Solana. We built it in one week on existing privacy infra (Veil, 6 apps, npm) and live perp vaults on Drift and Hyperliquid mainnet.
 
-Built for vault operators losing to MEV, traders leaking strategy, and institutions waiting for execution privacy before entering DeFi.
+Built for vault operators losing to MEV, traders leaking strategy, and anyone who wants cheaper perp execution.
 
 ## Why did you decide to build this, and why build it now? (1000 char)
 
