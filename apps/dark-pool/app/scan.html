@@ -26,7 +26,7 @@
     }
     .app {
       position: relative; z-index: 10;
-      max-width: 680px; margin: 0 auto; padding: 32px 24px;
+      max-width: 860px; margin: 0 auto; padding: 24px 24px;
     }
 
     /* Header */
@@ -194,11 +194,10 @@
 </div>
 
 <div class="app">
-  <div class="header">
+  <div class="header" style="margin-bottom:20px;">
     <h1>HOW EXPOSED ARE YOU?</h1>
     <p class="subtitle">
-      Every perp trade on Solana is <em>completely public</em>.
-      <br>Paste your wallet and see what MEV bots see about you.
+      Every perp trade on Solana is <em>completely public</em>. Paste your wallet and see what MEV bots see.
     </p>
   </div>
 
@@ -215,80 +214,50 @@
 
   <!-- Results -->
   <div id="results">
-    <!-- Exposure Score -->
-    <div class="score-section">
-      <div class="score-ring">
-        <svg viewBox="0 0 120 120">
-          <circle class="bg" cx="60" cy="60" r="52"></circle>
-          <circle class="fill" id="score-circle" cx="60" cy="60" r="52"
-            stroke-dasharray="327" stroke-dashoffset="327"></circle>
-        </svg>
-        <div class="score-value" id="score-value">0%</div>
+    <!-- Top row: Score + What's Visible side by side -->
+    <div style="display:grid; grid-template-columns:200px 1fr; gap:16px; margin-bottom:16px;">
+      <!-- Exposure Score -->
+      <div style="text-align:center; display:flex; flex-direction:column; justify-content:center;">
+        <div class="score-ring">
+          <svg viewBox="0 0 120 120">
+            <circle class="bg" cx="60" cy="60" r="52"></circle>
+            <circle class="fill" id="score-circle" cx="60" cy="60" r="52"
+              stroke-dasharray="327" stroke-dashoffset="327"></circle>
+          </svg>
+          <div class="score-value" id="score-value">0%</div>
+        </div>
+        <div class="score-label" id="score-label">EXPOSURE SCORE</div>
       </div>
-      <div class="score-label" id="score-label">EXPOSURE SCORE</div>
-    </div>
 
-    <!-- What's Visible -->
-    <div class="card">
-      <div class="card-label">What MEV Bots See About You</div>
-      <div class="detail-row">
-        <span class="detail-key">Total trades found</span>
-        <span class="detail-val exposed" id="total-trades">0</span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-key">Trade direction (long/short)</span>
-        <span class="detail-val exposed" id="direction-visible">VISIBLE</span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-key">Position sizes</span>
-        <span class="detail-val exposed" id="size-visible">VISIBLE</span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-key">Entry/exit timing</span>
-        <span class="detail-val exposed" id="timing-visible">VISIBLE</span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-key">Preferred markets</span>
-        <span class="detail-val exposed" id="markets-visible">VISIBLE</span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-key">Trading patterns</span>
-        <span class="detail-val exposed" id="patterns-visible">VISIBLE</span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-key">Wallet balance</span>
-        <span class="detail-val exposed" id="balance-visible">VISIBLE</span>
+      <!-- What's Visible -->
+      <div class="card" style="margin:0;">
+        <div class="card-label">What MEV Bots See</div>
+        <div class="detail-row"><span class="detail-key">Trades found</span><span class="detail-val exposed" id="total-trades">0</span></div>
+        <div class="detail-row"><span class="detail-key">Direction</span><span class="detail-val exposed" id="direction-visible">VISIBLE</span></div>
+        <div class="detail-row"><span class="detail-key">Sizes</span><span class="detail-val exposed" id="size-visible">VISIBLE</span></div>
+        <div class="detail-row"><span class="detail-key">Timing</span><span class="detail-val exposed" id="timing-visible">VISIBLE</span></div>
+        <div class="detail-row"><span class="detail-key">Markets</span><span class="detail-val exposed" id="markets-visible">VISIBLE</span></div>
+        <div class="detail-row"><span class="detail-key">Patterns</span><span class="detail-val exposed" id="patterns-visible">VISIBLE</span></div>
+        <div class="detail-row"><span class="detail-key">Balance</span><span class="detail-val exposed" id="balance-visible">VISIBLE</span></div>
       </div>
     </div>
 
-    <!-- Trade History -->
-    <div class="card">
-      <div class="card-label">Your Recent Trades (Public On-Chain)</div>
-      <div id="trade-list"></div>
-    </div>
+    <!-- Bottom row: Risk + Trades side by side -->
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;">
+      <!-- Risk Analysis -->
+      <div class="card" style="margin:0;">
+        <div class="card-label">Risk Profile</div>
+        <div class="detail-row"><span class="detail-key">Front-run</span><span class="detail-val" id="frontrun-risk"></span></div>
+        <div class="detail-row"><span class="detail-key">Sandwich</span><span class="detail-val" id="sandwich-risk"></span></div>
+        <div class="detail-row"><span class="detail-key">Strategy copy</span><span class="detail-val" id="copy-risk"></span></div>
+        <div class="detail-row"><span class="detail-key">Liquidation</span><span class="detail-val" id="liquidation-risk"></span></div>
+        <div class="detail-row"><span class="detail-key">Est. MEV loss</span><span class="detail-val exposed" id="mev-loss"></span></div>
+      </div>
 
-    <!-- Risk Analysis -->
-    <div class="card">
-      <div class="card-label">Your Risk Profile</div>
-      <div class="detail-row">
-        <span class="detail-key">Front-run risk</span>
-        <span class="detail-val" id="frontrun-risk"></span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-key">Sandwich attack risk</span>
-        <span class="detail-val" id="sandwich-risk"></span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-key">Strategy copy risk</span>
-        <span class="detail-val" id="copy-risk"></span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-key">Liquidation hunt risk</span>
-        <span class="detail-val" id="liquidation-risk"></span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-key">Estimated MEV loss</span>
-        <span class="detail-val exposed" id="mev-loss"></span>
+      <!-- Recent Trades (compact) -->
+      <div class="card" style="margin:0; max-height:220px; overflow-y:auto;">
+        <div class="card-label">Recent Trades (Public)</div>
+        <div id="trade-list"></div>
       </div>
     </div>
 
