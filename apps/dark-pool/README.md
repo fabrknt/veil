@@ -185,11 +185,11 @@ This isn't built from scratch. Veil Dark Pool composes existing production infra
 
 ## Roadmap
 
-- **v0 (now)**: Commit-reveal with trusted solver. Deployed on devnet.
-- **Pre-mainnet**: Security audit, 24/7 solver deployment, live venue settlement, multisig admin. Gap is infra/ops, not technology.
-- **v1**: TEE (AWS Nitro Enclaves) + QuickNode Streams — remove trust assumption, real-time matching
-- **v2**: ZK proofs — trustless matching, no order details revealed
-- **v3**: Multi-venue fallback routing — unmatched orders forwarded to public books
+- **v0 (now)**: Commit-reveal with trusted solver. Deployed on devnet. Solver can see order details — explicitly documented risk.
+- **v1 (blocks mainnet)**: TEE (AWS Nitro Enclaves) — remove trusted solver assumption. **No mainnet without this.** On-chain attestation proof.
+- **v1.5**: Security audit, 24/7 solver deployment, regulatory/legal framework, KYC integration plan.
+- **v2**: ZK proofs — fully trustless matching, no order details revealed to anyone
+- **v3**: Multi-venue fallback routing — unmatched orders forwarded to cheapest public book
 
 See [ROADMAP-TO-PRODUCTION.md](docs/ROADMAP-TO-PRODUCTION.md) for the full pre-mainnet checklist.
 

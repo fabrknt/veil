@@ -88,7 +88,7 @@ Trader A (known wallet) → encrypt(LONG SOL $150) → [private match] → settl
 | Use case | Transfer tokens privately | Trade without leaking strategy |
 | When privacy matters | Before and after tx | Only before execution |
 | After settlement | No trace of connection | Full audit trail (DarkTradeRecord) |
-| Regulatory stance | Sanctioned by OFAC | Legal in TradFi (SEC-regulated) |
+| Regulatory stance | Sanctioned by OFAC | Follows TradFi model (regulatory TBD) |
 | Counterparty | Same user (self-transfer) | Another trader |
 
 ### The Critical Legal Distinction
@@ -102,11 +102,13 @@ Trader A (known wallet) → encrypt(LONG SOL $150) → [private match] → settl
 3. **Full audit trail** — every trade is recorded and reportable
 4. **Purpose is fair execution** — prevent front-running, not hide identity
 
-Veil Dark Pool follows the TradFi model:
+Veil Dark Pool follows the TradFi model structurally:
 - Trader wallets are visible on-chain
 - Orders are hidden only during matching
 - DarkTradeRecord is permanent proof of execution
 - After settlement, everything is auditable
+
+**Important caveat:** TradFi dark pools operate under Reg ATS with KYC, licensing, and reporting obligations. Veil currently allows permissionless wallet participation. Full regulatory compliance — including jurisdiction selection, KYC integration, and legal entity — is required before mainnet. The structural model is sound; the regulatory framework is TBD.
 
 ### Could They Be Combined?
 
@@ -133,3 +135,27 @@ Veil Dark Pool sits in a rare sweet spot:
 The pitch: "Dark pool for Solana perps — private execution AND lower fees. Internal matches bypass venue fees entirely. Not Tornado Cash — the on-chain equivalent of what NYSE already operates."
 
 Privacy alone = niche (only large traders care). Privacy + cost savings = universal (every trader cares about fees). The internal netting is what makes the dark pool economically compelling, not just technically interesting.
+
+---
+
+## Known Risks — Addressed Honestly
+
+### Solver Trust (Critical)
+
+The v0 solver is trusted — it can see all decrypted order details. The commit-reveal scheme prevents order modification but **does not prevent front-running by the solver**. This is the same trust model as Silhouette v1 and every TradFi dark pool operator.
+
+**Mitigation path:** TEE (AWS Nitro Enclaves) is the #1 post-hackathon priority. No mainnet deployment without removing the trust assumption. The roadmap explicitly blocks mainnet on TEE completion.
+
+**Why it's acceptable for a hackathon:** The cryptographic primitives (encryption, commitment verification) are proven. The trust boundary is clearly documented. TEE integration is an engineering task, not a research problem.
+
+### Liquidity Fragmentation (Cold Start)
+
+The dark pool's value scales with internal matching rate. At low volume, most orders fall back to public venues — exposing the previously hidden order details. For large orders where privacy matters most, fallback defeats the purpose.
+
+**This is the classic cold-start problem every dark pool faces.** TradFi dark pools solved it by starting with institutional flow (large orders that benefit most from privacy). Veil's strategy is the same: start with vault operators (our own vaults first), then institutional desks.
+
+The fee savings help here — even if an order falls back, the VenueRouter picks the cheapest venue. Users benefit from routing regardless of matching rate.
+
+### Regulatory Status (TBD)
+
+The TradFi dark pool model (temporary confidentiality, full audit trail) is structurally sound. But claiming "legal" while allowing anonymous wallets is inconsistent with TradFi's KYC/licensing requirements. Regulatory framework — including jurisdiction, KYC integration, and legal entity — is explicitly TBD, not claimed as resolved.

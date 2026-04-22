@@ -25,34 +25,38 @@ Program deployed on Solana devnet. End-to-end lifecycle passing (encrypt → com
 
 ---
 
-## Phase 2: Production Users (2-4 months)
+## Phase 2: TEE + Production (2-4 months) — CRITICAL
 
-### Should Have
+### Remove Trusted Solver (Blocks Mainnet)
 
-| Item | Status | What's needed |
+The v0 solver can see all order details. **No mainnet deployment without TEE.**
+
+| Item | Status | What it unlocks |
 |---|---|---|
-| Fallback routing | Not built | Route unmatched orders to public books after TTL expiry |
-| WebSocket status updates | REST only | Real-time order status (pending → matched → settled) |
+| **TEE (AWS Nitro Enclaves)** | **Not started** | **Remove trusted solver — operators cannot see orders** |
+| **On-chain attestation** | Not started | Prove solver runs in verified enclave |
+| QuickNode Streams | Planned | Real-time commitment detection (~200ms vs 2s polling) |
+| Fallback routing | Not built | Route unmatched orders to public books after TTL |
 | Production web UI | Demo only | Connect to real solver API + on-chain tx submission |
-| Solver monitoring | None | Health checks, auto-restart, alerting (PagerDuty/Slack) |
-| Transaction retry logic | None | Handle RPC failures, tx expiry, blockhash refresh |
-| Fee collection pipeline | On-chain logic exists | Wire fee recipient, accounting, reporting |
+| Solver monitoring | None | Health checks, auto-restart, alerting |
+| Transaction retry logic | None | Handle RPC failures, tx expiry |
 
 ### First customers: Our own vaults (Yogi on Drift, Kodiak on Hyperliquid)
 
 ---
 
-## Phase 3: Scale (4-8 months)
+## Phase 3: Scale + Compliance (4-8 months)
 
-### TEE + Performance
+### Production Infrastructure
 
 | Item | Status | What it unlocks |
 |---|---|---|
-| TEE (AWS Nitro Enclaves) | Not started | Remove trusted solver assumption — attestation on-chain |
-| QuickNode Streams | Planned | Real-time commitment detection (~200ms vs 2s polling) |
-| Persistent order storage | In-memory only | Survive solver restarts, order history |
+| WebSocket status updates | REST only | Real-time order status |
+| Fee collection pipeline | On-chain logic exists | Wire fee recipient, accounting |
+| Persistent order storage | In-memory only | Survive solver restarts |
 | Multi-venue fallback | Not built | Auto-route to best public book on no match |
 | Analytics dashboard | Not built | Volume, match rate, latency, fee revenue |
+| **Legal/regulatory framework** | **TBD** | **Jurisdiction, KYC integration, compliance plan** |
 
 ### Target: Institutional users, third-party vault operators
 

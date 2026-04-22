@@ -27,7 +27,7 @@ A dark pool for Solana perpetual futures — private execution AND lower fees.
 
 Encrypt your perp order. The solver matches privately using a price-time priority engine. Orders that cross internally bypass venue fees entirely — no Drift fees, no Jupiter fees, no slippage, no MEV. Saving 4-18 bps per trade vs public execution. Unmatched orders route to the cheapest venue via the VenueRouter.
 
-This is not anonymity — it's execution privacy. Wallets are public, orders hidden only until execution, every match recorded on-chain as a DarkTradeRecord. Legal in TradFi — same model NYSE operates under SEC regulation.
+This is not anonymity — it's execution privacy. Wallets are public, orders hidden only until execution, every match recorded on-chain as a DarkTradeRecord. Follows the TradFi dark pool model of temporary confidentiality with full audit trail.
 
 Silhouette raised $3M for this on Hyperliquid. Nothing exists on Solana. We built it in one week on existing privacy infra (Veil, 6 apps, npm) and live perp vaults on Drift and Hyperliquid mainnet.
 
@@ -79,9 +79,9 @@ Japan
 
 ## Is there anything else judges should know? (500 char)
 
-This is not Tornado Cash. Tornado Cash hides who you are — permanently, no audit trail, OFAC sanctioned. Veil hides what you trade — temporarily, full audit trail (DarkTradeRecord on-chain), legal in TradFi. NYSE, NASDAQ, every major broker operates dark pools under Reg ATS.
+The v0 solver is trusted — we're explicit about this. The commit-reveal scheme prevents order modification but not front-running by the solver. TEE (AWS Nitro) is the #1 post-hackathon priority, not a "nice to have." No mainnet without removing the trust assumption.
 
-We're not building a novel anonymity tool. We're bringing a proven, regulated financial infrastructure on-chain. The business model is validated: IEX ($300M revenue), Liquidnet (acquired for $700M). Same fee structure.
+Not Tornado Cash: Veil hides what you trade (temporarily, full audit trail), not who you are (permanently, no trail). Follows TradFi dark pool model — regulatory framework TBD, not claimed as resolved.
 
 ## How do you know people need this? (1000 char)
 
