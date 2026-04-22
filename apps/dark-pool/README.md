@@ -20,7 +20,8 @@ Trader encrypts perp order (NaCl box)
       → INTERNAL MATCH: orders cross in dark pool (no venue fees, no slippage, no MEV)
         → reveal_match creates DarkTradeRecord on-chain
           → settle_trade returns collateral (3 bps dark pool fee only)
-      → NO MATCH: VenueRouter picks cheapest venue → fallback to public book
+      → NO COUNTERPARTY: match against Darkflow encrypted AMM pool (private, LP-backed)
+      → NO MATCH AT ALL: VenueRouter picks cheapest venue → fallback to public book
           → Order expires? Collateral returned automatically
 ```
 

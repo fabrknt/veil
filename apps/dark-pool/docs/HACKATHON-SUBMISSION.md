@@ -25,13 +25,13 @@ https://fabrknt.com/veil
 
 A dark pool for Solana perpetual futures — private execution AND lower fees.
 
-Encrypt your perp order. The solver matches privately using a price-time priority engine. Orders that cross internally bypass venue fees entirely — no Drift fees, no Jupiter fees, no slippage, no MEV. Saving 4-18 bps per trade vs public execution. Unmatched orders route to the cheapest venue via the VenueRouter.
+Encrypt your perp order. The solver matches privately. Orders that cross internally bypass venue fees — saving 4-18 bps per trade. No counterparty? Orders match against Darkflow's encrypted AMM pool (same monorepo) — LPs provide always-available liquidity. Both paths are private. Last resort: VenueRouter picks cheapest public venue.
 
-This is not anonymity — it's execution privacy. Wallets are public, orders hidden only until execution, every match recorded on-chain as a DarkTradeRecord. Follows the TradFi dark pool model of temporary confidentiality with full audit trail.
+Not anonymity — execution privacy. Wallets public, orders hidden until execution, every match on-chain as DarkTradeRecord. Follows TradFi dark pool model — regulatory TBD.
 
-Silhouette raised $3M for this on Hyperliquid. Nothing exists on Solana. We built it in one week on existing privacy infra (Veil, 6 apps, npm) and live perp vaults on Drift and Hyperliquid mainnet.
+Silhouette raised $3M for this on Hyperliquid. Nothing exists on Solana. Built in one week on existing privacy infra (Veil, 6 apps, npm) and live perp vaults on Drift and Hyperliquid mainnet.
 
-Built for vault operators losing to MEV, traders leaking strategy, and anyone who wants cheaper perp execution.
+Built for vault operators, traders leaking strategy, and anyone wanting cheaper perp execution.
 
 ## Why did you decide to build this, and why build it now? (1000 char)
 
