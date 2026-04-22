@@ -66,7 +66,7 @@
 
 ## [Slide 10] The Pivot — 12 seconds
 
-"Started this hackathon building a cross-venue perp DEX. Mentors said: you're competing with Drift, no edge. So I pivoted. Took the Veil encryption stack, added a matching engine, built the first dark pool for Solana perps. In one week."
+"Started this hackathon building a cross-venue perp DEX. Mentors said: you're competing with Drift, no edge. So I pivoted. Took the Veil encryption stack, added a matching engine, built the first dark pool for Solana perps."
 
 ---
 

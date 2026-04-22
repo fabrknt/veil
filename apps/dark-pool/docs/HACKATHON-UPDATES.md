@@ -91,7 +91,7 @@ Syntx's VenueAdapter infrastructure lives on as the settlement layer inside Veil
 
 ### Section 5: Close (20s)
 
-"No dark pool exists for Solana perps. Silhouette built one for Hyperliquid and raised $3M. We built the Solana equivalent in one week — because we already had the privacy infrastructure."
+"No dark pool exists for Solana perps. Silhouette built one for Hyperliquid and raised $3M. Nothing exists on Solana — until now."
 
 "Veil Dark Pool — shielded perp execution on Solana. First of its kind."
 
@@ -121,7 +121,7 @@ Syntx's VenueAdapter infrastructure lives on as the settlement layer inside Veil
 
 "We started this hackathon building Syntx — a cross-venue perp DEX. Mentor feedback was direct: you're competing with Drift and Jupiter, and you have no edge. But they loved the privacy angle."
 
-"So we pivoted. Took our proven Veil encryption stack, added a perp order schema and matching engine, and built the first dark pool for Solana perps. In one week."
+"So we pivoted. Took our proven Veil encryption stack, added a perp order schema and matching engine, and built the first dark pool for Solana perps."
 
 ### Market Opportunity (20s)
 

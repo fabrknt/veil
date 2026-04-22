@@ -91,7 +91,7 @@
 
 ## [1:14–1:19] Built On Slide
 
-"This was built in one week — because the infrastructure already existed. NaCl encryption and order schemas published on npm. Drift execution from Yogi, our funding rate vault on mainnet. Jupiter Perps from Nanuk. Phoenix from Syntx. All production-tested."
+"Built on production infrastructure that already existed. NaCl encryption and order schemas published on npm. Drift execution from Yogi, our funding rate vault on mainnet. Jupiter Perps from Nanuk. Phoenix from Syntx. All production-tested."
 
 ---
 

@@ -29,7 +29,7 @@ Encrypt your perp order. The solver matches privately. Orders that cross interna
 
 Not anonymity — execution privacy. Wallets public, orders hidden until execution, every match on-chain as DarkTradeRecord. Follows TradFi dark pool model — regulatory TBD.
 
-Silhouette raised $3M for this on Hyperliquid. Nothing exists on Solana. Built in one week on existing privacy infra (Veil, 6 apps, npm) and live perp vaults on Drift and Hyperliquid mainnet.
+Silhouette raised $3M for this on Hyperliquid. Nothing exists on Solana. Built on existing privacy infra (Veil, 6 apps, npm) and live perp vaults on Drift and Hyperliquid mainnet.
 
 Built for vault operators, traders leaking strategy, and anyone wanting cheaper perp execution.
 
@@ -41,7 +41,7 @@ But we had something no one else on Solana had: production privacy infrastructur
 
 The pivot was obvious: stop competing with DEXs, start building infrastructure they all need. Silhouette proved dark pools work on Hyperliquid ($3M raised). Nothing exists on Solana. Every perp trade on Solana leaks intent and loses value to MEV.
 
-Why now: Solana finally has multiple mature perp venues (Drift, Jupiter Perps, Phoenix). The liquidity is here. The privacy layer is missing. We already had the primitives — it took one week to compose them into a dark pool.
+Why now: Solana finally has multiple mature perp venues (Drift, Jupiter Perps, Phoenix). The liquidity is here. The privacy layer is missing. We already had the primitives.
 
 ## What technologies are you using or integrating with?
 
@@ -136,7 +136,7 @@ Same fee model as IEX ($300M annual revenue) and Liquidnet (acquired for $700M).
 Solo founder, part-time since January 2026.
 Veil privacy infrastructure: 3+ months (6 apps, npm packages).
 Perps vault infrastructure: 4+ months (Yogi on Drift, Kodiak on Hyperliquid).
-Dark pool specifically: 1 week (pivoted Week 3 based on mentor feedback).
+Dark pool: pivoted Week 3 based on mentor feedback. Built on existing Veil primitives.
 29 @fabrknt/* packages represent 4+ months of accumulated infrastructure.
 The dark pool was fast because the primitives already existed.
 

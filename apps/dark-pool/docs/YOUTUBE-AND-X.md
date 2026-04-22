@@ -60,7 +60,7 @@ Why this matters:
 • Silhouette raised $3M for this on Hyperliquid
 • Nothing exists on Solana
 
-We built the Solana equivalent in one week.
+Nothing exists on Solana.
 ```
 
 ### Post 3
