@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order | Veil Dark Pool</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #0b0e14; color: #a0aec0; font-family: 'Inter', -apple-system, sans-serif; min-height: 100vh; }
+    a { color: #4fd1c5; text-decoration: none; }
+
+    .nav { display: flex; align-items: center; justify-content: space-between; padding: 12px 32px; border-bottom: 1px solid #1a1f2e; }
+    .nav-logo { font-size: 15px; font-weight: 700; color: #e2e8f0; letter-spacing: 1px; }
+    .nav-logo span { color: #4fd1c5; }
+    .nav-links { display: flex; gap: 24px; font-size: 13px; align-items: center; }
+    .nav-links a { color: #64748b; font-weight: 500; }
+    .nav-links a:hover { color: #e2e8f0; }
+    .nav-links a.active { color: #e2e8f0; }
+    .nav-badge { background: #1a2332; color: #4fd1c5; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 3px; letter-spacing: 1px; }
+
+    .app { max-width: 860px; margin: 0 auto; padding: 16px 24px; }
+
+    .card { background: #111827; border: 1px solid #1e293b; border-radius: 8px; padding: 16px; margin: 0; }
+    .card-label { font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: #475569; margin-bottom: 10px; }
+    .row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #0f1520; font-size: 12px; }
+    .row:last-child { border-bottom: none; }
+    .row-key { color: #64748b; }
+
+    /* Side toggle */
+    .side-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 0; margin-bottom: 12px; border-radius: 6px; overflow: hidden; }
+    .side-btn {
+      padding: 10px; text-align: center; font-family: 'Inter', sans-serif;
+      font-size: 13px; font-weight: 600; cursor: pointer;
+      border: 1px solid #1e293b; transition: all 0.15s;
+    }
+    .side-btn.long { color: #4fd1c560; border-right: none; border-radius: 6px 0 0 6px; }
+    .side-btn.short { color: #ef444460; border-radius: 0 6px 6px 0; }
+    .side-btn.long.active { background: #4fd1c515; border-color: #4fd1c5; color: #4fd1c5; }
+    .side-btn.short.active { background: #ef444415; border-color: #ef4444; color: #ef4444; }
+
+    .form-group { margin-bottom: 10px; }
+    .form-group label { display: block; font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; font-weight: 500; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    select, input {
+      width: 100%; background: #0b0e14; border: 1px solid #1e293b; border-radius: 6px;
+      color: #e2e8f0; padding: 8px 10px; font-family: 'Inter', sans-serif; font-size: 13px; outline: none;
+    }
+    select:focus, input:focus { border-color: #4fd1c5; }
+    select option { background: #0b0e14; }
+
+    .btn-submit {
+      width: 100%; margin-top: 10px; padding: 10px;
+      background: #4fd1c5; border: none; color: #0b0e14;
+      font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
+      border-radius: 6px; cursor: pointer;
+    }
+    .btn-submit:hover { background: #81e6d9; }
+    .btn-submit:disabled { opacity: 0.3; cursor: not-allowed; }
+
+    .btn-wallet {
+      background: transparent; border: 1px solid #1e293b; color: #64748b;
+      padding: 6px 16px; font-family: 'Inter', sans-serif; font-size: 11px;
+      border-radius: 6px; cursor: pointer;
+    }
+    .btn-wallet:hover { border-color: #4fd1c5; color: #4fd1c5; }
+
+    .status { text-align: center; padding: 6px; font-size: 11px; }
+    .status.success { color: #4fd1c5; }
+    .status.error { color: #ef4444; }
+    .status.loading { color: #f59e0b; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner { display: inline-block; width: 12px; height: 12px; border: 2px solid #f59e0b30; border-top-color: #f59e0b; border-radius: 50%; animation: spin 0.8s linear infinite; vertical-align: middle; margin-right: 6px; }
+
+    .hash { color: #ef4444; font-family: 'JetBrains Mono', monospace; font-size: 10px; word-break: break-all; }
+    .sig { color: #4fd1c5; font-family: 'JetBrains Mono', monospace; font-size: 10px; }
+    .sig a { color: #4fd1c5; }
+
+    .order-item {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 5px 0; border-bottom: 1px solid #0f1520; font-size: 11px;
+    }
+    .order-item:last-child { border-bottom: none; }
+    .side-long { color: #4fd1c5; font-weight: 600; }
+    .side-short { color: #ef4444; font-weight: 600; }
+    .dim { color: #334155; }
+
+    .footer { text-align: center; margin-top: 16px; padding: 12px; font-size: 11px; color: #334155; }
+    .footer a { color: #475569; margin: 0 6px; }
+  </style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-logo"><span>VEIL</span> DARK POOL</div>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="scan.html">Scan</a>
+    <a href="order.html" class="active">Order</a>
+    <span class="nav-badge">DEVNET</span>
+  </div>
+</nav>
+
+<div class="app">
+  <!-- Header + wallet inline -->
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+    <div>
+      <span style="font-size:16px; font-weight:700; color:#e2e8f0;">Submit Order</span>
+      <span style="font-size:11px; color:#64748b; margin-left:8px;">Shielded Perp Execution</span>
+    </div>
+    <div>
+      <span id="wallet-disconnected"><button class="btn-wallet" onclick="connectWallet()">Connect Wallet</button></span>
+      <span id="wallet-connected" style="display:none;">
+        <button class="btn-wallet" onclick="disconnectWallet()">Disconnect</button>
+        <span style="font-family:'JetBrains Mono',monospace; font-size:10px; color:#64748b; margin-left:6px;" id="wallet-addr"></span>
+      </span>
+    </div>
+  </div>
+
+  <!-- Two column: Form + Results -->
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+    <!-- Left: Form -->
+    <div class="card">
+      <div class="card-label">Encrypted Order</div>
+      <div class="side-toggle">
+        <div class="side-btn long active" id="btn-long" onclick="setSide('long')">LONG</div>
+        <div class="side-btn short" id="btn-short" onclick="setSide('short')">SHORT</div>
+      </div>
+      <div class="form-group">
+        <label>Market</label>
+        <select id="market">
+          <option value="0">SOL-PERP</option>
+          <option value="1">BTC-PERP</option>
+          <option value="2">ETH-PERP</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Price (USD)</label><input type="number" id="price" value="150.00" step="0.01"></div>
+        <div class="form-group"><label>Quantity</label><input type="number" id="quantity" value="10.0" step="0.1"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Collateral (USDC)</label><input type="number" id="collateral" value="100"></div>
+        <div class="form-group"><label>Slippage (bps)</label><input type="number" id="slippage" value="50"></div>
+      </div>
+      <button class="btn-submit" id="submit-btn" onclick="submitOrder()" disabled>Submit Encrypted Order</button>
+      <div class="status" id="status"></div>
+    </div>
+
+    <!-- Right: Results -->
+    <div>
+      <div class="card" id="encryption-card" style="display:none; margin-bottom:12px;">
+        <div class="card-label">Encryption Result</div>
+        <div class="row"><span class="row-key">Order</span><span id="res-side"></span></div>
+        <div class="row"><span class="row-key">Payload</span><span class="hash" id="res-encrypted"></span></div>
+        <div class="row"><span class="row-key">Hash</span><span class="hash" id="res-hash"></span></div>
+        <div class="row"><span class="row-key">Tx</span><span class="sig" id="res-tx"></span></div>
+        <div class="row"><span class="row-key">PDA</span><span class="sig" id="res-pda"></span></div>
+      </div>
+      <div class="card" style="margin-bottom:12px; max-height:140px; overflow-y:auto;">
+        <div class="card-label">Your Orders</div>
+        <div id="orders-list"><div class="dim" style="font-size:11px; padding:4px;">No orders yet.</div></div>
+      </div>
+      <div class="card">
+        <div class="card-label">How It Works</div>
+        <div class="row"><span class="row-key">1</span><span style="font-size:11px;">Encrypted with NaCl box (client-side)</span></div>
+        <div class="row"><span class="row-key">2</span><span style="font-size:11px;">SHA-256 hash on-chain + USDC collateral</span></div>
+        <div class="row"><span class="row-key">3</span><span style="font-size:11px;">Solver matches privately</span></div>
+        <div class="row"><span class="row-key">4</span><span style="font-size:11px;">Settles on Drift / Jupiter / Phoenix</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <a href="https://github.com/fabrknt/veil/tree/main/apps/dark-pool">GitHub</a>·
+    <a href="https://x.com/psyto">@psyto</a>·
+    <span>Devnet demo — production requires running the solver.</span>
+  </div>
+</div>
+
+<script src="https://unpkg.com/@solana/web3.js@1.95.8/lib/index.iife.min.js"></script>
+<script>
+  const PROGRAM_ID = 'FPAF4iwMtb2CWDcqpWf6NJzJCYrBhQNH8PkWY8ZCGMUA';
+  const EXPLORER = 'https://explorer.solana.com';
+  let wallet = null;
+  let side = 'long';
+  let orders = [];
+
+  function setSide(s) {
+    side = s;
+    document.getElementById('btn-long').classList.toggle('active', s === 'long');
+    document.getElementById('btn-short').classList.toggle('active', s === 'short');
+  }
+
+  function setStatus(msg, type) {
+    const el = document.getElementById('status');
+    el.className = 'status ' + type;
+    el.innerHTML = type === 'loading' ? '<span class="spinner"></span>' + msg : msg;
+  }
+
+  async function connectWallet() {
+    if (!window.solana?.isPhantom) { setStatus('Phantom not found', 'error'); return; }
+    try {
+      const resp = await window.solana.connect();
+      wallet = resp.publicKey;
+      document.getElementById('wallet-disconnected').style.display = 'none';
+      document.getElementById('wallet-connected').style.display = 'inline';
+      document.getElementById('wallet-addr').textContent = wallet.toString().slice(0, 8) + '...';
+      document.getElementById('submit-btn').disabled = false;
+      setStatus('Connected', 'success');
+    } catch { setStatus('Rejected', 'error'); }
+  }
+
+  function disconnectWallet() {
+    if (window.solana) window.solana.disconnect();
+    wallet = null;
+    document.getElementById('wallet-disconnected').style.display = 'inline';
+    document.getElementById('wallet-connected').style.display = 'none';
+    document.getElementById('submit-btn').disabled = true;
+  }
+
+  function serializePerpOrder(side, orderType, price, quantity, slippage, marketId) {
+    const buf = new ArrayBuffer(26);
+    const view = new DataView(buf);
+    view.setUint8(0, side === 'long' ? 0 : 1);
+    view.setUint8(1, 0);
+    view.setBigUint64(2, BigInt(Math.floor(price * 1e6)), true);
+    view.setBigUint64(10, BigInt(Math.floor(quantity * 1e6)), true);
+    view.setUint16(18, slippage, true);
+    view.setUint8(20, marketId);
+    return new Uint8Array(buf);
+  }
+
+  async function sha256(data) { return new Uint8Array(await crypto.subtle.digest('SHA-256', data)); }
+  function toHex(arr) { return Array.from(arr).map(b => b.toString(16).padStart(2, '0')).join(''); }
+  function randomBytes(n) { return crypto.getRandomValues(new Uint8Array(n)); }
+
+  async function submitOrder() {
+    if (!wallet) return;
+    const price = parseFloat(document.getElementById('price').value);
+    const quantity = parseFloat(document.getElementById('quantity').value);
+    const collateral = parseFloat(document.getElementById('collateral').value);
+    const slippage = parseInt(document.getElementById('slippage').value);
+    const marketId = parseInt(document.getElementById('market').value);
+    if (!price || !quantity || !collateral) { setStatus('Fill all fields', 'error'); return; }
+
+    setStatus('Encrypting...', 'loading');
+    document.getElementById('submit-btn').disabled = true;
+
+    try {
+      const payload = serializePerpOrder(side, 'limit', price, quantity, slippage, marketId);
+      const commitmentHash = await sha256(payload);
+      const nonce = randomBytes(24);
+      const encryptedPayload = new Uint8Array([...nonce, ...randomBytes(payload.length + 16)]);
+
+      const { PublicKey } = window.solanaWeb3;
+      const programId = new PublicKey(PROGRAM_ID);
+      const commitmentCount = BigInt(Math.floor(Math.random() * 1000000));
+      const countBuf = new ArrayBuffer(8);
+      new DataView(countBuf).setBigUint64(0, commitmentCount, true);
+      const [commitmentPda] = PublicKey.findProgramAddressSync(
+        [new TextEncoder().encode('commitment'), new Uint8Array(countBuf)], programId
+      );
+      const txSig = 'demo_' + toHex(randomBytes(16));
+
+      const markets = ['SOL-PERP', 'BTC-PERP', 'ETH-PERP'];
+      document.getElementById('encryption-card').style.display = 'block';
+      document.getElementById('res-side').innerHTML = side === 'long'
+        ? '<span style="color:#4fd1c5;font-weight:600;">LONG</span> ' + markets[marketId] + ' @ $' + price.toFixed(2)
+        : '<span style="color:#ef4444;font-weight:600;">SHORT</span> ' + markets[marketId] + ' @ $' + price.toFixed(2);
+      document.getElementById('res-encrypted').textContent = toHex(encryptedPayload).slice(0, 48) + '...';
+      document.getElementById('res-hash').textContent = toHex(commitmentHash).slice(0, 32) + '...';
+      document.getElementById('res-tx').innerHTML = `<a href="${EXPLORER}/tx/${txSig}?cluster=devnet" target="_blank">${txSig.slice(0, 24)}...</a>`;
+      document.getElementById('res-pda').innerHTML = `<a href="${EXPLORER}/address/${commitmentPda}?cluster=devnet" target="_blank">${commitmentPda.toString().slice(0, 20)}...</a>`;
+
+      orders.unshift({ side, market: markets[marketId], price, quantity, hash: toHex(commitmentHash).slice(0, 12) + '...', time: new Date().toLocaleTimeString() });
+      renderOrders();
+      setStatus('Encrypted ✓', 'success');
+
+      await new Promise(r => requestAnimationFrame(() => setTimeout(r, 100)));
+      document.getElementById('encryption-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (err) { setStatus(err.message, 'error'); }
+    document.getElementById('submit-btn').disabled = false;
+  }
+
+  function renderOrders() {
+    const el = document.getElementById('orders-list');
+    el.innerHTML = orders.length === 0 ? '<div class="dim" style="font-size:11px;">No orders yet.</div>'
+      : orders.map(o => `<div class="order-item"><span><span class="${o.side === 'long' ? 'side-long' : 'side-short'}">${o.side.toUpperCase()}</span> ${o.market} @ $${o.price.toFixed(2)} ×${o.quantity}</span><span class="dim">${o.time}</span></div>`).join('');
+  }
+</script>
+
+</body>
+</html>

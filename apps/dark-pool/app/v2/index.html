@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Veil Dark Pool</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #0b0e14; color: #a0aec0; font-family: 'Inter', -apple-system, sans-serif; min-height: 100vh; }
+    a { color: #4fd1c5; text-decoration: none; }
+    a:hover { color: #81e6d9; }
+
+    .nav { display: flex; align-items: center; justify-content: space-between; padding: 12px 32px; border-bottom: 1px solid #1a1f2e; }
+    .nav-logo { font-size: 15px; font-weight: 700; color: #e2e8f0; letter-spacing: 1px; }
+    .nav-logo span { color: #4fd1c5; }
+    .nav-links { display: flex; gap: 24px; font-size: 13px; align-items: center; }
+    .nav-links a { color: #64748b; font-weight: 500; }
+    .nav-links a:hover, .nav-links a.active { color: #e2e8f0; }
+    .nav-badge { background: #1a2332; color: #4fd1c5; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 3px; letter-spacing: 1px; }
+
+    .hero { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: calc(100vh - 49px); padding: 40px 24px; text-align: center; }
+    .hero h1 { font-size: 42px; font-weight: 700; color: #e2e8f0; margin-bottom: 12px; line-height: 1.2; }
+    .hero h1 span { color: #4fd1c5; }
+    .hero .tagline { font-size: 17px; color: #64748b; max-width: 520px; line-height: 1.6; margin-bottom: 8px; }
+    .hero .stat { font-size: 14px; color: #94a3b8; margin-bottom: 40px; }
+    .hero .stat em { color: #f59e0b; font-style: normal; font-weight: 600; }
+
+    .split { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: #1a1f2e; max-width: 720px; width: 100%; border-radius: 8px; overflow: hidden; }
+    .split-panel { padding: 36px 28px; text-align: center; transition: background 0.2s; cursor: pointer; display: block; }
+    .split-left { background: #0f1218; }
+    .split-left:hover { background: #131820; }
+    .split-right { background: #0f1218; }
+    .split-right:hover { background: #131820; }
+    .split-label { font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: #475569; margin-bottom: 12px; }
+    .split-title { font-size: 17px; font-weight: 600; margin-bottom: 8px; }
+    .split-title.danger { color: #ef4444; }
+    .split-title.safe { color: #4fd1c5; }
+    .split-desc { font-size: 13px; color: #64748b; line-height: 1.5; margin-bottom: 20px; }
+    .split-icon { font-size: 28px; margin-bottom: 12px; }
+    .split-btn { display: inline-block; padding: 8px 20px; font-size: 12px; font-weight: 600; border-radius: 4px; transition: all 0.2s; }
+    .split-btn.danger { border: 1px solid #ef444440; color: #ef4444; }
+    .split-btn.danger:hover { background: #ef444415; }
+    .split-btn.safe { border: 1px solid #4fd1c540; color: #4fd1c5; }
+    .split-btn.safe:hover { background: #4fd1c515; }
+
+    .scroll-hint { margin-top: 32px; color: #334155; font-size: 12px; }
+
+    .section { max-width: 760px; margin: 0 auto; padding: 60px 24px; }
+    .section-label { font-size: 11px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: #4fd1c5; margin-bottom: 8px; }
+    .section h2 { font-size: 24px; font-weight: 700; color: #e2e8f0; margin-bottom: 20px; }
+    .section p { font-size: 15px; line-height: 1.7; margin-bottom: 14px; }
+    .danger-text { color: #ef4444; }
+    .safe-text { color: #4fd1c5; }
+    .divider { border: none; border-top: 1px solid #1a1f2e; max-width: 760px; margin: 0 auto; }
+
+    .flow { display: flex; align-items: center; gap: 8px; margin: 24px 0; justify-content: center; flex-wrap: wrap; }
+    .flow-step { background: #111827; border: 1px solid #1e293b; padding: 14px 20px; border-radius: 6px; text-align: center; flex: 1; min-width: 120px; }
+    .flow-step .label { font-size: 13px; font-weight: 600; color: #4fd1c5; }
+    .flow-step .sub { font-size: 10px; color: #475569; margin-top: 3px; }
+    .flow-arrow { color: #334155; font-size: 16px; }
+
+    .card { background: #111827; border: 1px solid #1e293b; border-radius: 8px; padding: 20px; margin-bottom: 16px; }
+    .card-label { font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: #475569; margin-bottom: 12px; }
+    .card.danger { border-color: #ef444430; }
+    .row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #1a1f2e; font-size: 13px; }
+    .row:last-child { border-bottom: none; }
+    .row-key { color: #64748b; }
+    .check { color: #4fd1c5; }
+
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+    @media (max-width: 700px) { .two-col, .split, .three-col { grid-template-columns: 1fr; } }
+
+    .stat-box { background: #111827; border: 1px solid #1e293b; border-radius: 8px; padding: 20px; text-align: center; }
+    .stat-box .big { font-size: 28px; font-weight: 700; color: #4fd1c5; }
+    .stat-box .label { font-size: 10px; color: #475569; margin-top: 6px; text-transform: uppercase; letter-spacing: 1px; }
+
+    .footer { text-align: center; padding: 32px; border-top: 1px solid #1a1f2e; font-size: 12px; color: #334155; }
+    .footer a { color: #475569; margin: 0 8px; }
+    .footer a:hover { color: #4fd1c5; }
+    .footer .pid { margin-top: 8px; font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #1e293b; }
+  </style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-logo"><span>VEIL</span> DARK POOL</div>
+  <div class="nav-links">
+    <a href="index.html" class="active">Home</a>
+    <a href="scan.html">Scan</a>
+    <a href="order.html">Order</a>
+    <span class="nav-badge">DEVNET</span>
+  </div>
+</nav>
+
+<div class="hero">
+  <h1>Shielded Perp Execution<br>on <span>Solana</span></h1>
+  <p class="tagline">The first dark pool for on-chain perpetual futures. Encrypt your order. Match privately. Settle on Drift, Jupiter, or Phoenix.</p>
+  <p class="stat">Dark pools handle <em>30-50%</em> of institutional equity flow. On-chain perps have <em>zero equivalent</em>.</p>
+  <div class="split">
+    <a href="scan.html" class="split-panel split-left">
+      <div class="split-label">The Problem</div>
+      <div class="split-icon">⚠️</div>
+      <div class="split-title danger">Your Trades Are Public</div>
+      <div class="split-desc">Every perp order is visible on-chain. MEV bots front-run you.</div>
+      <span class="split-btn danger">Check Exposure →</span>
+    </a>
+    <a href="order.html" class="split-panel split-right">
+      <div class="split-label">The Solution</div>
+      <div class="split-icon">🔒</div>
+      <div class="split-title safe">Encrypt With Veil</div>
+      <div class="split-desc">Submit an encrypted order. No one sees your side, price, or size.</div>
+      <span class="split-btn safe">Submit Order →</span>
+    </a>
+  </div>
+  <div class="scroll-hint">↓ Learn More</div>
+</div>
+
+<hr class="divider">
+
+<div class="section">
+  <div class="section-label">How It Works</div>
+  <h2>Four Steps to Private Execution</h2>
+  <div class="flow">
+    <div class="flow-step"><div class="label">Encrypt</div><div class="sub">NaCl box</div></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step"><div class="label">Commit</div><div class="sub">SHA-256 on-chain</div></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step"><div class="label">Match</div><div class="sub">Private solver</div></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step"><div class="label">Settle</div><div class="sub">Drift / Jupiter / Phoenix</div></div>
+  </div>
+  <p>No one sees your <span class="danger-text">side</span>, <span class="danger-text">price</span>, or <span class="danger-text">size</span> until after execution. Unmatched orders fall back to public books.</p>
+</div>
+
+<hr class="divider">
+
+<div class="section">
+  <div class="section-label">Legal Clarity</div>
+  <h2>Confidentiality ≠ Anonymity</h2>
+  <div class="two-col">
+    <div class="card danger">
+      <div class="card-label">Tornado Cash</div>
+      <div class="row"><span class="row-key">Hides</span><span class="danger-text">Who you are</span></div>
+      <div class="row"><span class="row-key">Duration</span><span>Permanent</span></div>
+      <div class="row"><span class="row-key">Audit trail</span><span>None</span></div>
+      <div class="row"><span class="row-key">Status</span><span class="danger-text">OFAC sanctioned</span></div>
+    </div>
+    <div class="card">
+      <div class="card-label">Veil Dark Pool</div>
+      <div class="row"><span class="row-key">Hides</span><span class="safe-text">What you trade</span></div>
+      <div class="row"><span class="row-key">Duration</span><span>Until execution only</span></div>
+      <div class="row"><span class="row-key">Audit trail</span><span>DarkTradeRecord on-chain</span></div>
+      <div class="row"><span class="row-key">Status</span><span class="safe-text">SEC-regulated in TradFi</span></div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<div class="section">
+  <div class="section-label">Proof</div>
+  <h2>Live on Solana Devnet</h2>
+  <div class="three-col">
+    <div class="stat-box"><div class="big">80</div><div class="label">Tests Passing</div></div>
+    <div class="stat-box"><div class="big">6</div><div class="label">Instructions</div></div>
+    <div class="stat-box"><div class="big">3</div><div class="label">Venues</div></div>
+  </div>
+  <div class="card" style="margin-top:16px;">
+    <div class="card-label">End-to-End Verified</div>
+    <div class="row"><span>Initialize dark pool</span><span class="check">✓</span></div>
+    <div class="row"><span>Encrypt opposing orders</span><span class="check">✓</span></div>
+    <div class="row"><span>Submit commitments + collateral</span><span class="check">✓</span></div>
+    <div class="row"><span>Decrypt + match privately</span><span class="check">✓</span></div>
+    <div class="row"><span>reveal_match → DarkTradeRecord</span><span class="check">✓</span></div>
+    <div class="row"><span>settle_trade → collateral returned</span><span class="check">✓</span></div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<div class="section" style="text-align:center; padding:48px 24px;">
+  <h2 style="margin-bottom:12px;">Try It Now</h2>
+  <p style="color:#64748b; margin-bottom:24px;">See how exposed you are — or submit your first encrypted order.</p>
+  <div style="display:flex; gap:12px; justify-content:center;">
+    <a href="scan.html" class="split-btn danger" style="padding:10px 24px;">Check Exposure →</a>
+    <a href="order.html" class="split-btn safe" style="padding:10px 24px;">Submit Order →</a>
+  </div>
+</div>
+
+<div class="footer">
+  <a href="https://github.com/fabrknt/veil/tree/main/apps/dark-pool">GitHub</a>
+  <a href="https://explorer.solana.com/address/FPAF4iwMtb2CWDcqpWf6NJzJCYrBhQNH8PkWY8ZCGMUA?cluster=devnet">Explorer</a>
+  <a href="https://youtu.be/bL20xECSI2U">Video</a>
+  <a href="https://x.com/psyto">@psyto</a>
+  <div class="pid">FPAF4iwMtb2CWDcqpWf6NJzJCYrBhQNH8PkWY8ZCGMUA</div>
+  <div style="margin-top:4px;">Devnet demo — production requires running the solver.</div>
+</div>
+
+</body>
+</html>
