@@ -7,7 +7,7 @@
   <meta name="description" content="Dark pools handle 30-50% of institutional equity flow. Solana perps have zero equivalent. Until now.">
   <meta property="og:title" content="Veil Dark Pool — First Shielded Perp Execution on Solana">
   <meta property="og:description" content="Encrypt your perp order. No one sees your side, price, or size until after execution.">
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -203,9 +203,28 @@
     .footer a { color: #00ffcc50; text-decoration: none; font-size: 12px; }
     .footer a:hover { color: #00ffcc; }
     .footer .program-id { color: #223344; font-size: 10px; margin-top: 12px; letter-spacing: 1px; }
+
+    /* Professional nav bar */
+    .pro-nav { display: flex; align-items: center; justify-content: space-between; padding: 12px 32px; border-bottom: 1px solid #1a1f2e; background: #0b0e14; position: relative; z-index: 100; }
+    .pro-nav-logo { font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 700; color: #e2e8f0; letter-spacing: 1px; }
+    .pro-nav-logo span { color: #4fd1c5; }
+    .pro-nav-links { display: flex; gap: 24px; font-size: 13px; align-items: center; font-family: 'Inter', sans-serif; }
+    .pro-nav-links a { color: #64748b; text-decoration: none; font-weight: 500; }
+    .pro-nav-links a:hover, .pro-nav-links a.active { color: #e2e8f0; }
+    .pro-nav-badge { background: #1a2332; color: #4fd1c5; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 3px; letter-spacing: 1px; }
   </style>
 </head>
 <body>
+
+<nav class="pro-nav">
+  <div class="pro-nav-logo"><span>VEIL</span> DARK POOL</div>
+  <div class="pro-nav-links">
+    <a href="index.html" class="active">Home</a>
+    <a href="scan.html">Scan</a>
+    <a href="order.html">Order</a>
+    <span class="pro-nav-badge">DEVNET</span>
+  </div>
+</nav>
 
 <canvas id="matrix"></canvas>
 

@@ -7,7 +7,7 @@
   <meta name="description" content="See how much of your Solana perp trading activity is visible on-chain. Every trade you make is public — here's exactly what MEV bots see.">
   <meta property="og:title" content="How Exposed Are You? — Veil Dark Pool">
   <meta property="og:description" content="Paste your Solana wallet and see what MEV bots see about your trades.">
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -173,25 +173,28 @@
 
     /* Hidden by default */
     #results { display: none; }
-    .nav {
-      display: flex; justify-content: center; gap: 24px;
-      padding: 14px; font-size: 11px; letter-spacing: 1px;
-      position: relative; z-index: 10;
-    }
-    .nav a { color: #445566; text-decoration: none; transition: color 0.2s; }
-    .nav a:hover { color: #00ffcc; }
-    .nav a.active { color: #ff00aa; text-shadow: 0 0 6px #ff00aa50; }
+    .pro-nav { display: flex; align-items: center; justify-content: space-between; padding: 12px 32px; border-bottom: 1px solid #1a1f2e; background: #0b0e14; position: relative; z-index: 100; }
+    .pro-nav-logo { font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 700; color: #e2e8f0; letter-spacing: 1px; }
+    .pro-nav-logo span { color: #4fd1c5; }
+    .pro-nav-links { display: flex; gap: 24px; font-size: 13px; align-items: center; font-family: 'Inter', sans-serif; }
+    .pro-nav-links a { color: #64748b; text-decoration: none; font-weight: 500; }
+    .pro-nav-links a:hover, .pro-nav-links a.active { color: #e2e8f0; }
+    .pro-nav-badge { background: #1a2332; color: #4fd1c5; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 3px; letter-spacing: 1px; }
   </style>
 </head>
 <body>
 
-<canvas id="matrix"></canvas>
+<nav class="pro-nav">
+  <div class="pro-nav-logo"><span>VEIL</span> DARK POOL</div>
+  <div class="pro-nav-links">
+    <a href="index.html">Home</a>
+    <a href="scan.html" class="active">Scan</a>
+    <a href="order.html">Order</a>
+    <span class="pro-nav-badge">DEVNET</span>
+  </div>
+</nav>
 
-<div class="nav">
-  <a href="index.html">Home</a>
-  <a href="scan.html" class="active">Scan</a>
-  <a href="order.html">Order</a>
-</div>
+<canvas id="matrix"></canvas>
 
 <div class="app">
   <div class="header" style="margin-bottom:20px;">
