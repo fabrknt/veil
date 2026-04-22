@@ -27,7 +27,7 @@
     }
     .app {
       position: relative; z-index: 10;
-      max-width: 720px; margin: 0 auto; padding: 32px 24px;
+      max-width: 860px; margin: 0 auto; padding: 16px 24px;
     }
 
     /* Header */
@@ -211,131 +211,84 @@
 </div>
 
 <div class="app">
-  <!-- Header -->
-  <div class="header">
-    <h1>VEIL DARK POOL</h1>
-    <p>Shielded Perp Execution on Solana</p>
-    <div class="network">DEVNET</div>
+  <!-- Header (compact) -->
+  <div style="text-align:center; margin-bottom:12px;">
+    <h1 style="font-family:'Orbitron',sans-serif; font-size:22px; color:#00ffcc; text-shadow:0 0 15px #00ffcc80; letter-spacing:3px;">VEIL DARK POOL</h1>
+    <span style="font-size:11px; color:#556677;">Shielded Perp Execution</span>
+    <span class="network" style="margin-left:8px;">DEVNET</span>
   </div>
 
-  <!-- Wallet -->
-  <div class="wallet-section">
+  <!-- Wallet (inline) -->
+  <div style="text-align:center; margin-bottom:12px;">
     <div id="wallet-disconnected">
-      <button class="btn" onclick="connectWallet()">Connect Wallet</button>
+      <button class="btn" onclick="connectWallet()" style="padding:6px 16px; font-size:11px;">Connect Wallet</button>
     </div>
     <div id="wallet-connected" style="display:none;">
-      <button class="btn" onclick="disconnectWallet()">Disconnect</button>
-      <div class="wallet-addr" id="wallet-addr"></div>
-      <div class="balance" id="wallet-balance"></div>
+      <button class="btn" onclick="disconnectWallet()" style="padding:4px 12px; font-size:10px;">Disconnect</button>
+      <span class="wallet-addr" id="wallet-addr" style="font-size:10px; margin-left:8px;"></span>
+      <span class="balance" id="wallet-balance" style="font-size:10px; margin-left:8px;"></span>
     </div>
   </div>
 
-  <!-- Order Form -->
-  <div class="card">
-    <div class="card-label">Submit Encrypted Order</div>
-
-    <!-- Side -->
-    <div class="side-toggle">
-      <div class="side-btn long active" id="btn-long" onclick="setSide('long')">LONG</div>
-      <div class="side-btn short" id="btn-short" onclick="setSide('short')">SHORT</div>
-    </div>
-
-    <!-- Market -->
-    <div class="form-group">
-      <label>Market</label>
-      <select id="market">
-        <option value="0">SOL-PERP</option>
-        <option value="1">BTC-PERP</option>
-        <option value="2">ETH-PERP</option>
-      </select>
-    </div>
-
-    <!-- Price + Quantity -->
-    <div class="form-row">
-      <div class="form-group">
-        <label>Price (USD)</label>
-        <input type="number" id="price" placeholder="150.00" step="0.01" value="150.00">
-      </div>
-      <div class="form-group">
-        <label>Quantity</label>
-        <input type="number" id="quantity" placeholder="10.0" step="0.1" value="10.0">
-      </div>
-    </div>
-
-    <!-- Collateral + Slippage -->
-    <div class="form-row">
-      <div class="form-group">
-        <label>Collateral (USDC)</label>
-        <input type="number" id="collateral" placeholder="100" step="1" value="100">
-      </div>
-      <div class="form-group">
-        <label>Max Slippage (bps)</label>
-        <input type="number" id="slippage" placeholder="50" step="1" value="50">
+  <!-- Two-column: Form left, Results right -->
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+    <!-- Left: Order Form -->
+    <div>
+      <div class="card" style="margin:0;">
+        <div class="card-label">Submit Encrypted Order</div>
+        <div class="side-toggle">
+          <div class="side-btn long active" id="btn-long" onclick="setSide('long')">LONG</div>
+          <div class="side-btn short" id="btn-short" onclick="setSide('short')">SHORT</div>
+        </div>
+        <div class="form-group">
+          <label>Market</label>
+          <select id="market">
+            <option value="0">SOL-PERP</option>
+            <option value="1">BTC-PERP</option>
+            <option value="2">ETH-PERP</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Price (USD)</label><input type="number" id="price" value="150.00" step="0.01"></div>
+          <div class="form-group"><label>Quantity</label><input type="number" id="quantity" value="10.0" step="0.1"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Collateral (USDC)</label><input type="number" id="collateral" value="100" step="1"></div>
+          <div class="form-group"><label>Slippage (bps)</label><input type="number" id="slippage" value="50" step="1"></div>
+        </div>
+        <button class="btn btn-primary" id="submit-btn" onclick="submitOrder()" disabled>Submit Encrypted Order</button>
+        <div class="status" id="status"></div>
       </div>
     </div>
 
-    <button class="btn btn-primary" id="submit-btn" onclick="submitOrder()" disabled>
-      Submit Encrypted Order
-    </button>
+    <!-- Right: Results + How It Works -->
+    <div>
+      <!-- Encryption Details (shown after submit) -->
+      <div class="card" id="encryption-card" style="display:none; margin:0 0 12px 0;">
+        <div class="card-label">Encryption Result</div>
+        <div class="result-row"><span class="result-key">Side</span><span class="result-val" id="res-side"></span></div>
+        <div class="result-row"><span class="result-key">Payload</span><span class="result-val hash" id="res-encrypted" style="font-size:10px;"></span></div>
+        <div class="result-row"><span class="result-key">Hash</span><span class="result-val hash" id="res-hash" style="font-size:10px;"></span></div>
+        <div class="result-row"><span class="result-key">Tx</span><span class="result-val sig" id="res-tx" style="font-size:10px;"></span></div>
+        <div class="result-row"><span class="result-key">PDA</span><span class="result-val sig" id="res-pda" style="font-size:10px;"></span></div>
+      </div>
 
-    <div class="status" id="status"></div>
-  </div>
+      <!-- Orders (shown after submit, otherwise How It Works) -->
+      <div class="card" id="orders-card" style="margin:0 0 12px 0; max-height:150px; overflow-y:auto;">
+        <div class="card-label">Your Orders</div>
+        <div id="orders-list">
+          <div style="color:#334455; font-size:11px;">No orders yet.</div>
+        </div>
+      </div>
 
-  <!-- Encryption Details -->
-  <div class="card" id="encryption-card" style="display:none;">
-    <div class="card-label">Encryption Details</div>
-    <div class="result-row">
-      <span class="result-key">Side</span>
-      <span class="result-val" id="res-side"></span>
-    </div>
-    <div class="result-row">
-      <span class="result-key">Encrypted Payload</span>
-      <span class="result-val hash" id="res-encrypted"></span>
-    </div>
-    <div class="result-row">
-      <span class="result-key">Commitment Hash</span>
-      <span class="result-val hash" id="res-hash"></span>
-    </div>
-    <div class="result-row">
-      <span class="result-key">Transaction</span>
-      <span class="result-val sig" id="res-tx"></span>
-    </div>
-    <div class="result-row">
-      <span class="result-key">Commitment PDA</span>
-      <span class="result-val sig" id="res-pda"></span>
-    </div>
-  </div>
-
-  <!-- Recent Orders -->
-  <div class="card">
-    <div class="card-label">Your Orders</div>
-    <div id="orders-list">
-      <div class="status dim" style="color:#334455;">No orders yet. Submit an encrypted order above.</div>
-    </div>
-  </div>
-
-  <!-- Info -->
-  <div class="card">
-    <div class="card-label">How It Works</div>
-    <div class="result-row">
-      <span class="result-key">1</span>
-      <span class="result-val">Your order is encrypted with NaCl box (client-side)</span>
-    </div>
-    <div class="result-row">
-      <span class="result-key">2</span>
-      <span class="result-val">SHA-256 commitment hash submitted on-chain with USDC collateral</span>
-    </div>
-    <div class="result-row">
-      <span class="result-key">3</span>
-      <span class="result-val">Solver decrypts privately, matches against opposing orders</span>
-    </div>
-    <div class="result-row">
-      <span class="result-key">4</span>
-      <span class="result-val">Settlement on Drift / Jupiter Perps / Phoenix</span>
-    </div>
-    <div class="result-row">
-      <span class="result-key"></span>
-      <span class="result-val" style="color:#00ffcc;">No one sees your side, price, or size until after execution.</span>
+      <!-- How It Works (compact) -->
+      <div class="card" style="margin:0;">
+        <div class="card-label">How It Works</div>
+        <div class="result-row"><span class="result-key" style="width:16px;">1</span><span class="result-val" style="font-size:11px;">Encrypted with NaCl box (client-side)</span></div>
+        <div class="result-row"><span class="result-key" style="width:16px;">2</span><span class="result-val" style="font-size:11px;">SHA-256 hash on-chain + USDC collateral</span></div>
+        <div class="result-row"><span class="result-key" style="width:16px;">3</span><span class="result-val" style="font-size:11px;">Solver matches privately</span></div>
+        <div class="result-row"><span class="result-key" style="width:16px;">4</span><span class="result-val" style="font-size:11px;">Settles on Drift / Jupiter / Phoenix</span></div>
+      </div>
     </div>
   </div>
 
