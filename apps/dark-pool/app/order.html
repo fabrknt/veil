@@ -462,28 +462,13 @@
       const nonce = randomBytes(24);
       const encryptedPayload = new Uint8Array([...nonce, ...randomBytes(payload.length + 16)]);
 
-      setStatus('Submitting commitment on-chain...', 'loading');
+      setStatus('Computing commitment...', 'loading');
 
-      // Build and send transaction via Phantom
-      const conn = new window.solanaWeb3.Connection(RPC_URL, 'confirmed');
-      const { SystemProgram, Transaction, TransactionInstruction, PublicKey } = window.solanaWeb3;
-
+      const { PublicKey } = window.solanaWeb3;
       const programId = new PublicKey(PROGRAM_ID);
 
-      // Derive config PDA
-      const [configPda] = PublicKey.findProgramAddressSync(
-        [new TextEncoder().encode('dark_pool_config')],
-        programId
-      );
-
-      // Read config to get commitment count
-      const configInfo = await conn.getAccountInfo(configPda);
-      let commitmentCount = 0n;
-      if (configInfo) {
-        // commitment_count is at offset 8 (discriminator) + 32 (admin) + 32 (solver) + 32 (fee_recipient) + 2 (fee_bps) + 32 (usdc_mint) = 138
-        const dv = new DataView(configInfo.data.buffer, configInfo.data.byteOffset);
-        commitmentCount = dv.getBigUint64(138, true);
-      }
+      // Demo mode: use random commitment count (production would read from on-chain config)
+      const commitmentCount = BigInt(Math.floor(Math.random() * 1000000));
 
       // Derive commitment PDA
       const countBuf = new ArrayBuffer(8);
