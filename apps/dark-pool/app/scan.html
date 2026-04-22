@@ -406,12 +406,15 @@
       const balance = await conn.getBalance(pubkey);
       const balanceSol = (balance / 1e9).toFixed(4);
 
-      // Fetch token accounts
-      const tokenAccounts = await conn.getParsedTokenAccountsByOwner(pubkey, {
-        programId: new solanaWeb3.PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'),
-      });
+      // Token account count — skip if RPC blocks it
+      let tokenCount = 0;
+      try {
+        const tokenAccounts = await conn.getParsedTokenAccountsByOwner(pubkey, {
+          programId: new solanaWeb3.PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'),
+        });
+        tokenCount = tokenAccounts.value.length;
+      } catch { /* some RPCs block this call */ }
 
-      const tokenCount = tokenAccounts.value.length;
       const tradeCount = sigs.length;
 
       // Analyze transaction patterns
