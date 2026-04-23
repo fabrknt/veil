@@ -36,6 +36,7 @@ import {
   PerpOrderPayload,
 } from '@fabrknt/veil-orders';
 import { PerpMatcher } from '../solver/src/matcher';
+import { VenueRouter } from '../solver/src/settlement/router';
 import { createHash } from 'crypto';
 
 // ----- Config -----
@@ -202,17 +203,16 @@ async function main() {
   }
   console.log('[setup] All accounts funded');
 
-  // Create USDC mock mint
+  // Create fresh USDC mock mint (new keypairs each run = fresh state)
   console.log('[setup] Creating mock USDC mint...');
   const usdcMint = await createMint(connection, admin, admin.publicKey, null, 6);
   console.log('[setup] USDC mint:', usdcMint.toBase58());
 
-  // Create token accounts and mint USDC
   const traderAUsdc = await createAssociatedTokenAccount(connection, traderA, usdcMint, traderA.publicKey);
   const traderBUsdc = await createAssociatedTokenAccount(connection, traderB, usdcMint, traderB.publicKey);
   const feeUsdc = await createAssociatedTokenAccount(connection, admin, usdcMint, admin.publicKey);
 
-  await mintTo(connection, admin, usdcMint, traderAUsdc, admin, 1000_000_000); // 1000 USDC
+  await mintTo(connection, admin, usdcMint, traderAUsdc, admin, 1000_000_000);
   await mintTo(connection, admin, usdcMint, traderBUsdc, admin, 1000_000_000);
   console.log('[setup] Minted 1000 USDC each to Trader A and B');
   console.log();
@@ -228,17 +228,27 @@ async function main() {
     1_000_000_000_000n,  // max 1M USDC
   );
 
-  const initTx = buildInstruction('initialize', initData, [
-    { pubkey: admin.publicKey, isSigner: true, isWritable: true },
-    { pubkey: configPda, isSigner: false, isWritable: true },
-    { pubkey: usdcMint, isSigner: false, isWritable: false },
-    { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
-    { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
-  ]);
-
-  const initSig = await sendAndConfirmTransaction(connection, initTx, [admin]);
-  console.log('[1/6] Dark pool initialized:', initSig);
-  console.log('       Config PDA:', configPda.toBase58());
+  // Check if config already exists
+  // Note: re-runs on same validator will fail at submit_perp_order because
+  // the USDC mint changes. Use --reset flag on solana-test-validator for clean runs.
+  const existingConfig = await connection.getAccountInfo(configPda);
+  let initSig: string;
+  if (existingConfig) {
+    console.log('[1/6] Dark pool already initialized (use --reset for clean run)');
+    initSig = 'already_initialized';
+    console.log('       Config PDA:', configPda.toBase58());
+  } else {
+    const initTx = buildInstruction('initialize', initData, [
+      { pubkey: admin.publicKey, isSigner: true, isWritable: true },
+      { pubkey: configPda, isSigner: false, isWritable: true },
+      { pubkey: usdcMint, isSigner: false, isWritable: false },
+      { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
+      { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+    ]);
+    initSig = await sendAndConfirmTransaction(connection, initTx, [admin]);
+    console.log('[1/6] Dark pool initialized:', initSig);
+    console.log('       Config PDA:', configPda.toBase58());
+  }
   console.log();
 
   // ===== Step 2: Encrypt Orders =====
@@ -290,8 +300,18 @@ async function main() {
 
   const collateral = 100_000_000n; // 100 USDC each
 
-  // Trader A submits (commitment_id = 0)
-  const [commitA] = findCommitmentPda(0);
+  // Read current commitment count from config (supports re-runs)
+  let commitmentCount = 0;
+  const configData = await connection.getAccountInfo(configPda);
+  if (configData) {
+    // commitment_count is at offset: 8 (disc) + 32 (admin) + 32 (solver) + 32 (fee_recipient) + 2 (fee_bps) + 32 (usdc_mint) = 138
+    const dv = new DataView(configData.data.buffer, configData.data.byteOffset);
+    commitmentCount = Number(dv.getBigUint64(138, true));
+    console.log('       Current commitment count:', commitmentCount);
+  }
+
+  // Trader A submits
+  const [commitA] = findCommitmentPda(commitmentCount);
   const [vaultA] = findCollateralVaultPda(commitA);
   const submitAData = encodeSubmitPerpOrder(
     collateral, 0, 3600,
@@ -316,8 +336,8 @@ async function main() {
   console.log('       Commitment PDA:', commitA.toBase58());
   console.log('       Collateral vault:', vaultA.toBase58());
 
-  // Trader B submits (commitment_id = 1)
-  const [commitB] = findCommitmentPda(1);
+  // Trader B submits
+  const [commitB] = findCommitmentPda(commitmentCount + 1);
   const [vaultB] = findCollateralVaultPda(commitB);
   const submitBData = encodeSubmitPerpOrder(
     collateral, 0, 3600,
@@ -358,7 +378,7 @@ async function main() {
   // Feed into matching engine
   const matcher = new PerpMatcher();
   matcher.addOrder({
-    commitmentId: 0,
+    commitmentId: commitmentCount,
     commitmentPda: commitA,
     trader: traderA.publicKey,
     marketId: 0,
@@ -374,7 +394,7 @@ async function main() {
   });
 
   const match = matcher.addOrder({
-    commitmentId: 1,
+    commitmentId: commitmentCount + 1,
     commitmentPda: commitB,
     trader: traderB.publicKey,
     marketId: 0,
@@ -401,10 +421,31 @@ async function main() {
   console.log('       Ask commitment:', match.askOrder.commitmentId);
   console.log();
 
+  // Record internal netting via VenueRouter
+  const router = new VenueRouter();
+  router.recordInternalMatch(match);
+  const fees = router.getFeeComparison();
+  const stats = router.getStats();
+  console.log('       --- Fee Savings (Internal Netting) ---');
+  console.log(`       Dark pool fee:     ${fees.darkPoolFeeBps} bps`);
+  console.log(`       Drift taker fee:   ${fees.venues.find(v => v.id === 'drift')?.takerBps} bps`);
+  console.log(`       Jupiter taker fee: ${fees.venues.find(v => v.id === 'jupiter')?.takerBps} bps`);
+  console.log(`       Saved vs venue:    ${stats.feeSavedBps.toFixed(1)} bps ($${stats.feeSavedUsd.toFixed(2)})`);
+  console.log(`       Internal matches:  ${stats.internalMatches}`);
+  console.log(`       Venue settlements: ${stats.venueSettlements}`);
+  console.log();
+
   // ===== Step 5: Reveal Match On-Chain =====
   console.log('[5/6] Calling reveal_match on-chain...');
 
-  const [tradePda] = findTradePda(0);
+  // Read trade_count from config (offset: 138 + 8 = 146)
+  let tradeCount = 0;
+  const configData2 = await connection.getAccountInfo(configPda);
+  if (configData2) {
+    const dv = new DataView(configData2.data.buffer, configData2.data.byteOffset);
+    tradeCount = Number(dv.getBigUint64(146, true));
+  }
+  const [tradePda] = findTradePda(tradeCount);
   const revealData = encodeRevealMatch(
     0, 0, BigInt(decryptedA.price.toString()), BigInt(decryptedA.quantity.toString()), decryptedA.maxSlippageBps, 0,
     1, 0, BigInt(decryptedB.price.toString()), BigInt(decryptedB.quantity.toString()), decryptedB.maxSlippageBps, 0,
@@ -450,6 +491,51 @@ async function main() {
   const settleSig = await sendAndConfirmTransaction(connection, settleTx, [solver]);
   console.log('       settle_trade tx:', settleSig);
   console.log('       Venue tx sig recorded:', venueTxSig);
+  console.log();
+
+  // ===== Bonus: Cancel Order Demo =====
+  console.log('[bonus] Testing cancel_order...');
+
+  // Submit a third order, then cancel it
+  const [commitC] = findCommitmentPda(commitmentCount + 2);
+  const [vaultC] = findCollateralVaultPda(commitC);
+  const submitCData = encodeSubmitPerpOrder(
+    collateral, 0, 3600,
+    encOrderA.payloadHash, // reuse payload for simplicity
+    encOrderA.userPublicKey,
+    encOrderA.encryptedBytes,
+  );
+
+  const submitCTx = buildInstruction('submit_perp_order', submitCData, [
+    { pubkey: traderA.publicKey, isSigner: true, isWritable: true },
+    { pubkey: configPda, isSigner: false, isWritable: true },
+    { pubkey: commitC, isSigner: false, isWritable: true },
+    { pubkey: vaultC, isSigner: false, isWritable: true },
+    { pubkey: traderAUsdc, isSigner: false, isWritable: true },
+    { pubkey: usdcMint, isSigner: false, isWritable: false },
+    { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
+    { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+  ]);
+  await sendAndConfirmTransaction(connection, submitCTx, [traderA]);
+  console.log('       Submitted order C (to be cancelled)');
+
+  // Now cancel it
+  const cancelDiscriminator = createHash('sha256').update('global:cancel_order').digest().slice(0, 8);
+  const cancelTx = new Transaction();
+  cancelTx.add({
+    programId: PROGRAM_ID,
+    keys: [
+      { pubkey: traderA.publicKey, isSigner: true, isWritable: true },
+      { pubkey: commitC, isSigner: false, isWritable: true },
+      { pubkey: vaultC, isSigner: false, isWritable: true },
+      { pubkey: traderAUsdc, isSigner: false, isWritable: true },
+      { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
+    ],
+    data: cancelDiscriminator,
+  });
+  const cancelSig = await sendAndConfirmTransaction(connection, cancelTx, [traderA]);
+  console.log('       cancel_order tx:', cancelSig);
+  console.log('       Collateral returned to Trader A ✓');
   console.log();
 
   // ===== Summary =====
