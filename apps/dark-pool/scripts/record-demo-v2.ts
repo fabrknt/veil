@@ -795,39 +795,40 @@ function getCachedOutput(): string {
 ============================================================
 
 [setup] Funder: AmSYugrtHAEZi3TDj3HP7qbjY1hw6uv1df1oFDMxKeb1
-[setup] Admin: E8jVdq1mEmXBwbQd1WKfDSQWmvWJmEZZeedu26jXXoeu
-[setup] Solver: ExJWNzNe8T8q7SffKm2mpwG9STaR6bJxCenWypATqb9H
-[setup] Trader A: 9sxvkdRvnZbZ6zev6DefTobAK9HsVSEdXbfYvd1uJjUQ
-[setup] Trader B: 2LjQUtwew2gbXmGyNoRKruSzZN9ykvDnFMe5faAF7q4N
+[setup] Admin: sxLKrML1Gq5133ht15D4LY31b5G9EbXkXhqjF3vC4yD
+[setup] Solver: 9nE1TZsBGM4Rn29B2rcWZh9cqUAHFZm8e2tMh59PzFe3
+[setup] Trader A: Ebd2rgjJJ7BSxB7dH8gxgvcYmR2n5au5H4fvNQdGzty6
+[setup] Trader B: AjUkg6tFfz4XsV92XhzdDP8VYU4ihzSp49RZCgrTdBKQ
 
 [setup] Funding accounts...
-       Funded 0.5 SOL to E8jVdq1m...
-       Funded 0.5 SOL to ExJWNzNe...
-       Funded 0.5 SOL to 9sxvkdRv...
-       Funded 0.5 SOL to 2LjQUtwe...
+       Funded 0.5 SOL to sxLKrML1...
+       Funded 0.5 SOL to 9nE1TZsB...
+       Funded 0.5 SOL to Ebd2rgjJ...
+       Funded 0.5 SOL to AjUkg6tF...
 [setup] All accounts funded
 [setup] Creating mock USDC mint...
-[setup] USDC mint: 6TqLoWh4BaC1Rvc6xsrtyX6FzTdvnpfqMnBehaKZEkBb
+[setup] USDC mint: FrSGq44R15ScE6qmNE5khxQzefTc8hzqmaEk2FWb5qwh
 [setup] Minted 1000 USDC each to Trader A and B
 
 [1/6] Initializing dark pool...
-[1/6] Dark pool initialized: 5MvuBm8hrrzHhWJwDrt1KvM9FDtbh12BJHxyrNR4JwJn
+[1/6] Dark pool initialized: 5Ch9hgHh4VwgKZUL1PF1TquJTHbKEthpVGEGZUxtm4td
        Config PDA: 3XaRpGVgQRezxtNAyVWbWPLWVJjepQ9VHQy5togKUuxT
 
 [2/6] Encrypting perp orders...
        Trader A order: LONG SOL-PERP @ $150, qty=10
-       Encrypted payload: 855bce67ea68b0a62ea6a1ecccb8835c5de37a11...
+       Encrypted payload: 55c4ced37d0a1b5e7e1e020426c171a8a7207d69...
        Commitment hash: fd9481d97d0d23d3121c...
 
        Trader B order: SHORT SOL-PERP @ $149, qty=10
-       Encrypted payload: 41ec4db6e510d5c8c6a733c86ebf69b0d639a12b...
+       Encrypted payload: 74023ec6c2424f392f4ab37d0353aab2b8378fda...
        Commitment hash: 9615f4a5e19d2a889a1d...
 
 [3/6] Submitting commitments on-chain...
-       Trader A commitment submitted: xN9LTzrW5q1e1jAqtZte15YhRX6HBRETHrXfmAQqy8o
+       Current commitment count: 0
+       Trader A commitment submitted: 5wEbzHEEzy8CUC6Cguw2ZyyV4kNV9HPmyodHo9KxS5iz
        Commitment PDA: 9kJwEkLGeiM1ybyLHFquhXnkg6cpiS1X87AxqjSjCokW
        Collateral vault: 9WEqCFJaegRimkFCFhpKgVZYqttgDYrhgMhHNN8s2YmP
-       Trader B commitment submitted: 2QFPMvLnVqvfDPc17bGKqQRTwqT79avhueDrFpLP2tXx
+       Trader B commitment submitted: 4d48pYiFmib5bAzzVn4uFt9hB5jWkoeHnVXsYS7VuLB4
        Commitment PDA: E87yYztsLoFPmx6ehgieAGSAvr38fFEGw1uPdNWMynCs
 
 [4/6] Solver decrypting orders...
@@ -839,13 +840,26 @@ function getCachedOutput(): string {
        Bid commitment: 0
        Ask commitment: 1
 
+       --- Fee Savings (Internal Netting) ---
+       Dark pool fee:     3 bps
+       Drift taker fee:   4.5 bps
+       Jupiter taker fee: 6 bps
+       Saved vs venue:    1.0 bps
+       Internal matches:  1
+       Venue settlements: 0
+
 [5/6] Calling reveal_match on-chain...
-       reveal_match tx: 34or5sbzf493LdYCs62YGoFmP6LukSp2THQxg6yFUtEY
+       reveal_match tx: 5VezSdASaupu3KH5SdnPKKy4gAWo9BvGQN7UJRAurKBZ
        DarkTradeRecord PDA: EaDgnoiX7TWZHwSYUVvfbYA5JQYbZj8ujR2V4GzFgtdQ
 
 [6/6] Calling settle_trade on-chain...
-       settle_trade tx: 2QTPBXgEvF7ZQqNmCn2fvDzzCoGFMaEcFpPUzaqbeaFm
-       Venue tx sig recorded: drift_devnet_1776516087232
+       settle_trade tx: 21J4vNakzVBtWoihPDCW9BnLUhZmGzjCub2z2yistJb5
+       Venue tx sig recorded: drift_devnet_1776912103819
+
+[bonus] Testing cancel_order...
+       Submitted order C (to be cancelled)
+       cancel_order tx: 4GaEeTsFcWyyrF8jxBGuqnFHzzYmXvAnLKVNjjjC8GHq
+       Collateral returned to Trader A ✓
 
 ============================================================
   DEMO COMPLETE
@@ -860,9 +874,9 @@ function getCachedOutput(): string {
   Explorer links:
   Config: https://explorer.solana.com/address/3XaRpGVgQRezxtNAyVWbWPLWVJjepQ9VHQy5togKUuxT?cluster=devnet
   Trade:  https://explorer.solana.com/address/EaDgnoiX7TWZHwSYUVvfbYA5JQYbZj8ujR2V4GzFgtdQ?cluster=devnet
-  Init:   https://explorer.solana.com/tx/5MvuBm8hrrzHhWJwDrt1KvM9FDtbh12BJHxyrNR4JwJn?cluster=devnet
-  Reveal: https://explorer.solana.com/tx/34or5sbzf493LdYCs62YGoFmP6LukSp2THQxg6yFUtEY?cluster=devnet
-  Settle: https://explorer.solana.com/tx/2QTPBXgEvF7ZQqNmCn2fvDzzCoGFMaEcFpPUzaqbeaFm?cluster=devnet`;
+  Init:   https://explorer.solana.com/tx/5Ch9hgHh4VwgKZUL1PF1TquJTHbKEthpVGEGZUxtm4td?cluster=devnet
+  Reveal: https://explorer.solana.com/tx/5VezSdASaupu3KH5SdnPKKy4gAWo9BvGQN7UJRAurKBZ?cluster=devnet
+  Settle: https://explorer.solana.com/tx/21J4vNakzVBtWoihPDCW9BnLUhZmGzjCub2z2yistJb5?cluster=devnet`;
 }
 
 main().catch(err => {
