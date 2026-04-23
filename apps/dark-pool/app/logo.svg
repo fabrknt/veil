@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="glow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00ffcc;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#00aa88;stop-opacity:1" />
+    </linearGradient>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="0" stdDeviation="8" flood-color="#00ffcc" flood-opacity="0.4"/>
+    </filter>
+    <filter id="glow-filter">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background circle -->
+  <circle cx="256" cy="256" r="240" fill="#0b0e14" stroke="#1a1f2e" stroke-width="2"/>
+
+  <!-- Outer ring -->
+  <circle cx="256" cy="256" r="200" fill="none" stroke="#1a1f2e" stroke-width="1.5"/>
+
+  <!-- V shape (Veil) — angular, sharp, like a shield/veil -->
+  <g filter="url(#shadow)">
+    <!-- Left arm of V -->
+    <polygon points="156,140 196,140 256,300 236,300" fill="url(#glow)" opacity="0.9"/>
+    <!-- Right arm of V -->
+    <polygon points="356,140 316,140 256,300 276,300" fill="url(#glow)" opacity="0.9"/>
+  </g>
+
+  <!-- Hidden order lines (encrypted data visualization) -->
+  <g opacity="0.15" stroke="#00ffcc" stroke-width="1" fill="none">
+    <line x1="170" y1="180" x2="250" y2="180"/>
+    <line x1="262" y1="180" x2="342" y2="180"/>
+    <line x1="185" y1="200" x2="245" y2="200"/>
+    <line x1="267" y1="200" x2="327" y2="200"/>
+    <line x1="200" y1="220" x2="240" y2="220"/>
+    <line x1="272" y1="220" x2="312" y2="220"/>
+    <line x1="215" y1="240" x2="245" y2="240"/>
+    <line x1="267" y1="240" x2="297" y2="240"/>
+    <line x1="228" y1="260" x2="248" y2="260"/>
+    <line x1="264" y1="260" x2="284" y2="260"/>
+  </g>
+
+  <!-- Lock icon at the bottom of V -->
+  <g transform="translate(256, 340)" filter="url(#glow-filter)">
+    <!-- Lock body -->
+    <rect x="-18" y="-4" width="36" height="28" rx="4" fill="#0b0e14" stroke="#00ffcc" stroke-width="2"/>
+    <!-- Lock shackle -->
+    <path d="M-10,-4 L-10,-14 A10,10 0 0,1 10,-14 L10,-4" fill="none" stroke="#00ffcc" stroke-width="2.5" stroke-linecap="round"/>
+    <!-- Keyhole -->
+    <circle cx="0" cy="8" r="4" fill="#00ffcc"/>
+    <rect x="-2" y="10" width="4" height="8" rx="1" fill="#00ffcc"/>
+  </g>
+
+  <!-- "VEIL" text -->
+  <text x="256" y="420" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="900" font-size="36" letter-spacing="12" fill="#00ffcc" filter="url(#glow-filter)">VEIL</text>
+
+  <!-- "DARK POOL" text -->
+  <text x="256" y="450" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="600" font-size="16" letter-spacing="6" fill="#4a6670">DARK POOL</text>
+</svg>
