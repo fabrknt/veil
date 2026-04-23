@@ -19,7 +19,7 @@ First dark pool for Solana perps.
 
 ## Project website (public)
 
-https://fabrknt.com/veil
+https://fabrknt.github.io/veil/
 
 ## What are you building, and who is it for? (1000 char)
 
@@ -67,7 +67,7 @@ https://youtu.be/bL20xECSI2U
 
 ## Live product link
 
-https://fabrknt.com/veil
+https://fabrknt.github.io/veil/
 
 ## Pitch video (public)
 
