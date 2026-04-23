@@ -433,13 +433,13 @@ async function main() {
   await showSlide(page, `
     <div style="text-align: center;">
       <h1>VEIL DARK POOL</h1>
-      <h2>SHIELDED PERP EXECUTION ON SOLANA</h2>
-      <h3>Solana Frontier Hackathon 2026</h3>
+      <h2>PRIVATE EXECUTION + LOWER FEES</h2>
+      <h3>First dark pool for Solana perps · Internal matches save 4-18 bps</h3>
       <div style="margin-top: 48px;">
-        <span class="badge">NaCl Encryption</span>
-        <span class="badge">Anchor</span>
+        <span class="badge">101 Tests</span>
         <span class="badge">Drift</span>
-        <span class="badge">Jupiter Perps</span>
+        <span class="badge">Jupiter</span>
+        <span class="badge">Phoenix</span>
         <span class="badge">Devnet Live</span>
       </div>
     </div>
@@ -450,9 +450,9 @@ async function main() {
   await showSlide(page, `
     <div class="step">// The Problem</div>
     <h2>Every perp trade on Solana is public</h2>
-    <p>Your order hits the chain. MEV bots <span class="magenta">front-run</span> it. Competitors <span class="magenta">copy</span> your strategy.</p>
+    <p>Your order hits the chain. MEV bots <span class="magenta">front-run</span> it. Competitors <span class="magenta">copy</span> your strategy. You pay <span class="magenta">7-21 bps</span> in venue fees + slippage + MEV.</p>
     <p style="margin-top: 24px;">In TradFi, dark pools handle <span class="gold">30-50%</span> of institutional equity flow.</p>
-    <p>On-chain perps (<span class="gold">$7T/month</span>) have <span class="magenta">zero equivalent</span> on Solana.</p>
+    <p>On-chain perps have <span class="magenta">zero equivalent</span> — no privacy layer, no fee savings from internal matching.</p>
   `);
   await sleep(5000);
 
@@ -467,9 +467,9 @@ async function main() {
       <div class="flow-arrow">▶</div>
       <div class="flow-step"><div class="cyan">MATCH</div><div class="dim" style="font-size:12px; margin-top:4px;">Private solver</div></div>
       <div class="flow-arrow">▶</div>
-      <div class="flow-step"><div class="cyan">SETTLE</div><div class="dim" style="font-size:12px; margin-top:4px;">Drift / Jupiter</div></div>
+      <div class="flow-step"><div class="cyan">SETTLE</div><div class="dim" style="font-size:12px; margin-top:4px;">Drift / Jupiter / Phoenix</div></div>
     </div>
-    <p style="margin-top: 32px;">No one sees your <span class="magenta">side</span>, <span class="magenta">price</span>, or <span class="magenta">size</span> until after execution.</p>
+    <p style="margin-top: 32px;">No one sees your <span class="magenta">side</span>, <span class="magenta">price</span>, or <span class="magenta">size</span>. Internal matches save <span class="gold">4-18 bps</span> vs public execution.</p>
   `);
   await sleep(5000);
 
@@ -720,8 +720,9 @@ async function main() {
       <tr><td>Order encryption</td><td>@fabrknt/veil-orders</td><td><span class="cyan">npm published</span></td></tr>
       <tr><td>Drift execution</td><td>Yogi vault</td><td><span class="cyan">mainnet live</span></td></tr>
       <tr><td>Jupiter Perps</td><td>Nanuk vault</td><td><span class="cyan">production tested</span></td></tr>
+      <tr><td>Phoenix</td><td>Syntx adapter</td><td><span class="cyan">production tested</span></td></tr>
     </table>
-    <p class="dim" style="margin-top: 16px;">6 privacy apps · 29 @fabrknt/* packages · Built in 1 week on 4+ months of infrastructure</p>
+    <p class="dim" style="margin-top: 16px;">6 privacy apps · 29 @fabrknt/* packages · 101 tests passing</p>
   `);
   await sleep(5000);
 
@@ -732,9 +733,9 @@ async function main() {
     <div class="glow-border">
       <table>
         <tr><td><span class="cyan">v0 NOW</span></td><td>Commit-reveal + trusted solver</td><td><span class="gold">Deployed on devnet</span></td></tr>
-        <tr><td><span class="dim">v1</span></td><td>TEE (AWS Nitro Enclaves)</td><td class="dim">Remove trust assumption</td></tr>
-        <tr><td><span class="dim">v2</span></td><td>ZK proofs</td><td class="dim">Trustless matching</td></tr>
-        <tr><td><span class="dim">v3</span></td><td>Multi-venue fallback</td><td class="dim">Unmatched → public book</td></tr>
+        <tr><td><span class="dim">v1</span></td><td>TEE (AWS Nitro)</td><td class="dim">#1 priority — blocks mainnet</td></tr>
+        <tr><td><span class="dim">v2</span></td><td>ZK proofs</td><td class="dim">Fully trustless matching</td></tr>
+        <tr><td><span class="dim">v3</span></td><td>Darkflow pool integration</td><td class="dim">Solve cold-start</td></tr>
       </table>
     </div>
   `);
@@ -746,7 +747,7 @@ async function main() {
       <h1>VEIL DARK POOL</h1>
       <p style="margin-top: 24px; font-size: 22px; color: #88aaaa;">
         Dark pools handle half of institutional equity volume for a reason.
-        <br><span class="cyan">Solana perps deserve the same infrastructure.</span>
+        <br><span class="cyan">Solana perps deserve the same infrastructure — with lower fees.</span>
       </p>
       <div style="margin-top: 48px;">
         <p class="dim" style="font-size: 14px; letter-spacing: 2px;">${PROGRAM_ID}</p>
