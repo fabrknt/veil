@@ -1,0 +1,15 @@
+services:
+  solver:
+    build:
+      context: ../..
+      dockerfile: apps/dark-pool/Dockerfile
+    ports:
+      - "3040:3040"
+    volumes:
+      - solver-data:/data
+    env_file:
+      - .env
+    restart: unless-stopped
+
+volumes:
+  solver-data:
