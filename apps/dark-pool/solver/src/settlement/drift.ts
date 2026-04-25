@@ -12,7 +12,7 @@ import {
   initialize,
 } from '@drift-labs/sdk';
 import { VenueSettlement, SettlementResult } from './types';
-import { MatchResult } from '../matcher';
+import { MatchResult, DecryptedPerpOrder } from '../matcher';
 
 /**
  * Market index mapping for Drift Protocol.
@@ -121,6 +121,38 @@ export class DriftSettlement implements VenueSettlement {
       };
     } catch (err: any) {
       console.error(`[drift] Settlement failed:`, err);
+      return { txSignature: '', success: false, error: err.message };
+    }
+  }
+
+  async placeOrder(order: DecryptedPerpOrder): Promise<SettlementResult> {
+    if (!this.driftClient) {
+      return { txSignature: '', success: false, error: 'DriftClient not initialized' };
+    }
+
+    const marketIndex = DRIFT_MARKET_MAP[order.marketId];
+    if (marketIndex === undefined) {
+      return { txSignature: '', success: false, error: `Unknown market ${order.marketId}` };
+    }
+
+    const direction = order.side === 'long' ? PositionDirection.LONG : PositionDirection.SHORT;
+    const baseAssetAmount = order.remainingQty.mul(new BN(1000));
+
+    console.log(`[drift] Fallback ${order.side}: market=${marketIndex} qty=${order.remainingQty.toString()}`);
+
+    try {
+      const tx = await this.driftClient.placePerpOrder({
+        orderType: order.orderType === 'market' ? OrderType.MARKET : OrderType.LIMIT,
+        marketType: MarketType.PERP,
+        marketIndex,
+        direction,
+        baseAssetAmount,
+        price: order.price,
+        reduceOnly: false,
+        postOnly: PostOnlyParams.MUST_POST_ONLY,
+      });
+      return { txSignature: tx, success: true };
+    } catch (err: any) {
       return { txSignature: '', success: false, error: err.message };
     }
   }

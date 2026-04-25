@@ -129,6 +129,34 @@ export class PerpMatcher {
   }
 
   /**
+   * Remove and return orders that have exceeded the fallback TTL
+   * but are not yet expired. These should be routed to a public venue.
+   */
+  removeStale(fallbackTtlMs: number, nowMs: number): DecryptedPerpOrder[] {
+    const stale: DecryptedPerpOrder[] = [];
+    const cutoff = nowMs - fallbackTtlMs;
+
+    for (const [, book] of this.books) {
+      book.bids = book.bids.filter(o => {
+        if (o.receivedAt <= cutoff) {
+          stale.push(o);
+          return false;
+        }
+        return true;
+      });
+      book.asks = book.asks.filter(o => {
+        if (o.receivedAt <= cutoff) {
+          stale.push(o);
+          return false;
+        }
+        return true;
+      });
+    }
+
+    return stale;
+  }
+
+  /**
    * Remove and return all expired orders (for fallback routing).
    */
   removeExpired(now: number): DecryptedPerpOrder[] {

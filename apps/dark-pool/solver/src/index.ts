@@ -13,6 +13,7 @@ import { PerpMatcher, DecryptedPerpOrder, MatchResult } from './matcher';
 import { loadConfig, DarkPoolSolverConfig } from './config';
 import { startApi } from './api';
 import { VenueRouter } from './settlement/router';
+import { withRetry } from './retry';
 
 const CONFIG_SEED = Buffer.from('dark_pool_config');
 const COMMITMENT_SEED = Buffer.from('commitment');
@@ -87,7 +88,23 @@ export class DarkPoolSolver {
           await this.processMatch(match);
         }
 
-        // 3. Handle expired orders (fallback)
+        // 3. Route stale orders to venue fallback
+        const stale = this.matcher.removeStale(this.config.fallbackTtlMs, Date.now());
+        for (const order of stale) {
+          console.log(`[solver] Order ${order.commitmentId} stale (${Date.now() - order.receivedAt}ms), routing to venue fallback`);
+          try {
+            const result = await this.router.routeSingleOrder(order, this.config.defaultVenue);
+            if (result.success) {
+              console.log(`[solver] Fallback settlement: tx=${result.txSignature}`);
+            } else {
+              console.error(`[solver] Fallback failed for order ${order.commitmentId}: ${result.error}`);
+            }
+          } catch (err: any) {
+            console.error(`[solver] Fallback routing error for order ${order.commitmentId}: ${err.message}`);
+          }
+        }
+
+        // 4. Handle expired orders
         const now = Math.floor(Date.now() / 1000);
         const expired = this.matcher.removeExpired(now);
         for (const order of expired) {
@@ -198,14 +215,31 @@ export class DarkPoolSolver {
     );
     console.log(`[solver] Internal settlement — no venue fees, no slippage, no MEV`);
 
-    // Build and send reveal_match + settle_trade transactions
+    // Build and send reveal_match + settle_trade transactions with retry
     try {
-      await this.callRevealMatch(match);
-      await this.callSettleTrade(match);
+      await withRetry(
+        () => this.callRevealMatch(match),
+        {
+          maxAttempts: this.config.maxRetryAttempts,
+          onRetry: (attempt, err) => {
+            console.warn(`[solver] reveal_match retry ${attempt}: ${err.message}`);
+          },
+        },
+      );
+
+      await withRetry(
+        () => this.callSettleTrade(match),
+        {
+          maxAttempts: this.config.maxRetryAttempts,
+          onRetry: (attempt, err) => {
+            console.warn(`[solver] settle_trade retry ${attempt}: ${err.message}`);
+          },
+        },
+      );
+
       console.log(`[solver] On-chain settlement complete`);
     } catch (err: any) {
-      console.error(`[solver] On-chain settlement failed: ${err.message}`);
-      // Match was recorded in netting stats regardless — on-chain settlement is best-effort
+      console.error(`[solver] On-chain settlement failed after ${this.config.maxRetryAttempts} attempts: ${err.message}`);
     }
   }
 

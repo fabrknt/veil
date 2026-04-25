@@ -1,4 +1,4 @@
-import { MatchResult } from '../matcher';
+import { MatchResult, DecryptedPerpOrder } from '../matcher';
 
 /**
  * Settlement result from executing a matched dark pool trade on a venue.
@@ -28,4 +28,10 @@ export interface VenueSettlement {
    * The adapter places opposing orders for buyer and seller.
    */
   executeMatch(match: MatchResult): Promise<SettlementResult>;
+
+  /**
+   * Place a single unmatched order on the public venue as a fallback.
+   * Called when an order exceeds the fallback TTL without matching internally.
+   */
+  placeOrder(order: DecryptedPerpOrder): Promise<SettlementResult>;
 }

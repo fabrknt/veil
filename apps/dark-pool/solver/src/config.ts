@@ -16,6 +16,10 @@ export interface DarkPoolSolverConfig {
   apiPort: number;
   /** Settlement venue: 'drift' | 'jupiter' | 'phoenix' */
   defaultVenue: 'drift' | 'jupiter' | 'phoenix';
+  /** How long (ms) an unmatched order sits before fallback routing to a public venue */
+  fallbackTtlMs: number;
+  /** Max retry attempts for on-chain settlement transactions */
+  maxRetryAttempts: number;
 }
 
 /**
@@ -47,6 +51,8 @@ export function loadConfig(): DarkPoolSolverConfig {
     pollIntervalMs: Number(process.env.POLL_INTERVAL_MS) || 2000,
     apiPort: Number(process.env.API_PORT) || 3040,
     defaultVenue: (process.env.DEFAULT_VENUE as 'drift' | 'jupiter' | 'phoenix') || 'drift',
+    fallbackTtlMs: Number(process.env.FALLBACK_TTL_MS) || 120_000,
+    maxRetryAttempts: Number(process.env.MAX_RETRY_ATTEMPTS) || 3,
   };
 }
 

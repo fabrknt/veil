@@ -3,6 +3,7 @@ import { Keypair } from '@solana/web3.js';
 import BN from 'bn.js';
 import { VenueRouter } from '../solver/src/settlement/router';
 import { DecryptedPerpOrder, MatchResult } from '../solver/src/matcher';
+import { VenueSettlement } from '../solver/src/settlement/types';
 
 function makeMatch(overrides: Partial<MatchResult> = {}): MatchResult {
   const defaultOrder: DecryptedPerpOrder = {
@@ -158,6 +159,7 @@ describe('VenueRouter', () => {
         name: 'drift',
         initialize: async () => {},
         executeMatch: async () => ({ txSignature: 'mock_sig', success: true }),
+        placeOrder: async () => ({ txSignature: 'mock_place_sig', success: true }),
       };
       router.addVenue(mockVenue);
 
@@ -171,6 +173,7 @@ describe('VenueRouter', () => {
         name: 'drift',
         initialize: async () => {},
         executeMatch: async () => ({ txSignature: 'sig', success: true }),
+        placeOrder: async () => ({ txSignature: 'sig', success: true }),
       };
       router.addVenue(mockVenue);
       await router.routeToVenue(makeMatch());
@@ -186,11 +189,13 @@ describe('VenueRouter', () => {
         name: 'drift',
         initialize: async () => {},
         executeMatch: async () => { selectedVenue = 'drift'; return { txSignature: 'sig', success: true }; },
+        placeOrder: async () => { selectedVenue = 'drift'; return { txSignature: 'sig', success: true }; },
       };
       const phoenixVenue = {
         name: 'phoenix',
         initialize: async () => {},
         executeMatch: async () => { selectedVenue = 'phoenix'; return { txSignature: 'sig', success: true }; },
+        placeOrder: async () => { selectedVenue = 'phoenix'; return { txSignature: 'sig', success: true }; },
       };
       router.addVenue(driftVenue);
       router.addVenue(phoenixVenue);
@@ -206,11 +211,13 @@ describe('VenueRouter', () => {
         name: 'drift',
         initialize: async () => {},
         executeMatch: async () => { selectedVenue = 'drift'; return { txSignature: 'sig', success: true }; },
+        placeOrder: async () => { selectedVenue = 'drift'; return { txSignature: 'sig', success: true }; },
       };
       const phoenixVenue = {
         name: 'phoenix',
         initialize: async () => {},
         executeMatch: async () => { selectedVenue = 'phoenix'; return { txSignature: 'sig', success: true }; },
+        placeOrder: async () => { selectedVenue = 'phoenix'; return { txSignature: 'sig', success: true }; },
       };
       router.addVenue(driftVenue);
       router.addVenue(phoenixVenue);
@@ -224,6 +231,7 @@ describe('VenueRouter', () => {
         name: 'drift',
         initialize: async () => {},
         executeMatch: async () => ({ txSignature: '', success: false, error: 'fail' }),
+        placeOrder: async () => ({ txSignature: '', success: false, error: 'fail' }),
       };
       router.addVenue(failVenue);
       await router.routeToVenue(makeMatch());
@@ -243,6 +251,7 @@ describe('VenueRouter', () => {
         name: 'drift',
         initialize: async () => {},
         executeMatch: async () => ({ txSignature: 'sig', success: true }),
+        placeOrder: async () => ({ txSignature: 'sig', success: true }),
       };
       router.addVenue(mockVenue);
 
@@ -262,6 +271,116 @@ describe('VenueRouter', () => {
       const stats2 = router.getStats();
       stats1.internalMatches = 999;
       expect(stats2.internalMatches).to.equal(1);
+    });
+  });
+
+  // ============================================================
+  // Single Order Fallback
+  // ============================================================
+
+  describe('single order fallback', () => {
+    function makeOrder(overrides: Partial<DecryptedPerpOrder> = {}): DecryptedPerpOrder {
+      return {
+        commitmentId: 1,
+        commitmentPda: Keypair.generate().publicKey,
+        trader: Keypair.generate().publicKey,
+        marketId: 0,
+        side: 'long',
+        orderType: 'limit',
+        price: new BN(100_000_000),
+        quantity: new BN(1_000_000),
+        remainingQty: new BN(1_000_000),
+        maxSlippageBps: 50,
+        expiresAt: Math.floor(Date.now() / 1000) + 3600,
+        collateral: new BN(100_000_000),
+        receivedAt: Date.now(),
+        ...overrides,
+      };
+    }
+
+    it('should fail with no venues registered', async () => {
+      const result = await router.routeSingleOrder(makeOrder());
+      expect(result.success).to.be.false;
+      expect(result.error).to.include('No venues available');
+    });
+
+    it('should route to registered venue', async () => {
+      const mockVenue = {
+        name: 'drift',
+        initialize: async () => {},
+        executeMatch: async () => ({ txSignature: '', success: true }),
+        placeOrder: async () => ({ txSignature: 'fallback_sig', success: true }),
+      };
+      router.addVenue(mockVenue);
+
+      const result = await router.routeSingleOrder(makeOrder());
+      expect(result.success).to.be.true;
+      expect(result.txSignature).to.equal('fallback_sig');
+    });
+
+    it('should pick cheapest venue', async () => {
+      let selectedVenue = '';
+      router.addVenue({
+        name: 'drift',
+        initialize: async () => {},
+        executeMatch: async () => ({ txSignature: '', success: true }),
+        placeOrder: async () => { selectedVenue = 'drift'; return { txSignature: 'sig', success: true }; },
+      });
+      router.addVenue({
+        name: 'phoenix',
+        initialize: async () => {},
+        executeMatch: async () => ({ txSignature: '', success: true }),
+        placeOrder: async () => { selectedVenue = 'phoenix'; return { txSignature: 'sig', success: true }; },
+      });
+
+      await router.routeSingleOrder(makeOrder());
+      expect(selectedVenue).to.equal('phoenix');
+    });
+
+    it('should use preferred venue when specified', async () => {
+      let selectedVenue = '';
+      router.addVenue({
+        name: 'drift',
+        initialize: async () => {},
+        executeMatch: async () => ({ txSignature: '', success: true }),
+        placeOrder: async () => { selectedVenue = 'drift'; return { txSignature: 'sig', success: true }; },
+      });
+      router.addVenue({
+        name: 'phoenix',
+        initialize: async () => {},
+        executeMatch: async () => ({ txSignature: '', success: true }),
+        placeOrder: async () => { selectedVenue = 'phoenix'; return { txSignature: 'sig', success: true }; },
+      });
+
+      await router.routeSingleOrder(makeOrder(), 'drift');
+      expect(selectedVenue).to.equal('drift');
+    });
+
+    it('should track venue stats on success', async () => {
+      router.addVenue({
+        name: 'drift',
+        initialize: async () => {},
+        executeMatch: async () => ({ txSignature: '', success: true }),
+        placeOrder: async () => ({ txSignature: 'sig', success: true }),
+      });
+
+      await router.routeSingleOrder(makeOrder());
+      const stats = router.getStats();
+      expect(stats.venueSettlements).to.equal(1);
+      expect(stats.venueVolume.toNumber()).to.be.greaterThan(0);
+    });
+
+    it('should not track stats on failure', async () => {
+      router.addVenue({
+        name: 'drift',
+        initialize: async () => {},
+        executeMatch: async () => ({ txSignature: '', success: true }),
+        placeOrder: async () => ({ txSignature: '', success: false, error: 'fail' }),
+      });
+
+      await router.routeSingleOrder(makeOrder());
+      const stats = router.getStats();
+      expect(stats.venueSettlements).to.equal(0);
     });
   });
 });

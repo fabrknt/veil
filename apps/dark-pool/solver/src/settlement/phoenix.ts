@@ -8,7 +8,7 @@ import {
 import * as Phoenix from '@ellipsis-labs/phoenix-sdk';
 import BN from 'bn.js';
 import { VenueSettlement, SettlementResult } from './types';
-import { MatchResult } from '../matcher';
+import { MatchResult, DecryptedPerpOrder } from '../matcher';
 
 /**
  * Phoenix market addresses on Solana.
@@ -122,6 +122,37 @@ export class PhoenixSettlement implements VenueSettlement {
       };
     } catch (err: any) {
       console.error('[phoenix] Settlement failed:', err);
+      return { txSignature: '', success: false, error: err.message };
+    }
+  }
+
+  async placeOrder(order: DecryptedPerpOrder): Promise<SettlementResult> {
+    const marketAddr = PHOENIX_MARKET_MAP[order.marketId];
+    if (!marketAddr) {
+      return { txSignature: '', success: false, error: `No Phoenix market for id ${order.marketId}` };
+    }
+    if (!this.client) {
+      return { txSignature: '', success: false, error: 'Phoenix client not initialized' };
+    }
+
+    const marketKey = marketAddr.toBase58();
+    console.log(`[phoenix] Fallback ${order.side}: market=${order.marketId} qty=${order.remainingQty.toString()}`);
+
+    try {
+      await this.client.refreshMarket(marketKey);
+      const marketState = this.client.marketStates.get(marketKey);
+      if (!marketState) {
+        return { txSignature: '', success: false, error: `Market state not found: ${marketKey}` };
+      }
+
+      const fillAmount = Number(order.remainingQty.toString()) / 1_000_000;
+      const side = order.side === 'long' ? Phoenix.Side.Bid : Phoenix.Side.Ask;
+      const packet = marketState.getSwapOrderPacket({ side, inAmount: fillAmount, slippage: 0.005 });
+      const ix = marketState.createSwapInstruction(packet, this.solverKeypair.publicKey);
+      const tx = new Transaction().add(ix);
+      const sig = await sendAndConfirmTransaction(this.connection, tx, [this.solverKeypair]);
+      return { txSignature: sig, success: true };
+    } catch (err: any) {
       return { txSignature: '', success: false, error: err.message };
     }
   }

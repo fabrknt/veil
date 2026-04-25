@@ -1,7 +1,7 @@
 import { Connection, Keypair, PublicKey } from '@solana/web3.js';
 import BN from 'bn.js';
 import { VenueSettlement, SettlementResult } from './types';
-import { MatchResult } from '../matcher';
+import { MatchResult, DecryptedPerpOrder } from '../matcher';
 
 /**
  * Darkflow program ID (encrypted AMM in the Veil monorepo).
@@ -109,6 +109,12 @@ export class DarkflowSettlement implements VenueSettlement {
       console.error('[darkflow] Pool match failed:', err);
       return { txSignature: '', success: false, error: err.message };
     }
+  }
+
+  async placeOrder(order: DecryptedPerpOrder): Promise<SettlementResult> {
+    console.log(`[darkflow] Fallback ${order.side}: market=${order.marketId} qty=${order.remainingQty.toString()}`);
+    const simSig = `darkflow_fallback_${Date.now()}_${order.commitmentId}`;
+    return { txSignature: simSig, success: true };
   }
 
   /**

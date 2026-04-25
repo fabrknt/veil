@@ -11,7 +11,7 @@ import {
 } from '@solana/spl-token';
 import { AnchorProvider, BN, Program, Wallet } from '@coral-xyz/anchor';
 import { VenueSettlement, SettlementResult } from './types';
-import { MatchResult } from '../matcher';
+import { MatchResult, DecryptedPerpOrder } from '../matcher';
 
 /**
  * Jupiter Perps program constants.
@@ -264,6 +264,28 @@ export class JupiterPerpsSettlement implements VenueSettlement {
 
     console.log(`[jupiter] ${side} position request submitted: ${sig}`);
     return sig;
+  }
+
+  async placeOrder(order: DecryptedPerpOrder): Promise<SettlementResult> {
+    const marketConfig = JUPITER_MARKET_MAP[order.marketId];
+    if (!marketConfig) {
+      return { txSignature: '', success: false, error: `Unknown market ${order.marketId}` };
+    }
+
+    console.log(`[jupiter] Fallback ${order.side}: ${marketConfig.symbol} qty=${order.remainingQty.toString()}`);
+
+    try {
+      const sig = await this.submitPositionRequest(
+        marketConfig.custody,
+        order.side,
+        order.remainingQty,
+        order.remainingQty,
+        order.maxSlippageBps,
+      );
+      return { txSignature: sig, success: true };
+    } catch (err: any) {
+      return { txSignature: '', success: false, error: err.message };
+    }
   }
 
   async shutdown(): Promise<void> {

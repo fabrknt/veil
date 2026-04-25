@@ -1,7 +1,7 @@
 import { Connection } from '@solana/web3.js';
 import BN from 'bn.js';
 import { VenueSettlement, SettlementResult } from './types';
-import { MatchResult } from '../matcher';
+import { MatchResult, DecryptedPerpOrder } from '../matcher';
 
 /**
  * Fee structure per venue (in basis points).
@@ -108,6 +108,42 @@ export class VenueRouter {
     if (result.success) {
       this.stats.venueSettlements++;
       const volume = match.execPrice.mul(match.fillQty).div(new BN(1_000_000));
+      this.stats.venueVolume = this.stats.venueVolume.add(volume);
+      this.stats.totalVolume = this.stats.totalVolume.add(volume);
+    }
+
+    return result;
+  }
+
+  /**
+   * Route a single unmatched order to the best venue as fallback.
+   * Called when an order exceeds the fallback TTL without matching internally.
+   */
+  async routeSingleOrder(order: DecryptedPerpOrder, preferredVenue?: string): Promise<SettlementResult> {
+    let venue: VenueSettlement | undefined;
+
+    if (preferredVenue && this.venues.has(preferredVenue)) {
+      venue = this.venues.get(preferredVenue);
+    } else {
+      const scored = Array.from(this.venues.entries())
+        .map(([name, v]) => ({ name, venue: v, fee: VENUE_FEES[name]?.takerBps ?? 100 }))
+        .sort((a, b) => a.fee - b.fee);
+
+      if (scored.length > 0) {
+        venue = scored[0].venue;
+        console.log(`[router] Fallback venue: ${scored[0].name} (${scored[0].fee} bps)`);
+      }
+    }
+
+    if (!venue) {
+      return { txSignature: '', success: false, error: 'No venues available for fallback' };
+    }
+
+    const result = await venue.placeOrder(order);
+
+    if (result.success) {
+      this.stats.venueSettlements++;
+      const volume = order.price.mul(order.remainingQty).div(new BN(1_000_000));
       this.stats.venueVolume = this.stats.venueVolume.add(volume);
       this.stats.totalVolume = this.stats.totalVolume.add(volume);
     }

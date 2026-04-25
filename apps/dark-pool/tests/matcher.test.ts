@@ -455,6 +455,68 @@ describe('PerpMatcher', () => {
   });
 
   // ============================================================
+  // Stale Order Extraction
+  // ============================================================
+
+  describe('stale order extraction', () => {
+    it('should extract orders older than fallback TTL', () => {
+      const oldTime = Date.now() - 200_000; // 200s ago
+      matcher.addOrder(makeOrder({ commitmentId: 1, side: 'long', price: new BN(99_000_000), receivedAt: oldTime }));
+      matcher.addOrder(makeOrder({ commitmentId: 2, side: 'short', price: new BN(101_000_000), receivedAt: oldTime }));
+
+      const stale = matcher.removeStale(120_000, Date.now()); // 120s TTL
+      expect(stale).to.have.length(2);
+      expect(matcher.getTotalOrders()).to.equal(0);
+    });
+
+    it('should keep orders newer than fallback TTL', () => {
+      const recentTime = Date.now() - 10_000; // 10s ago
+      matcher.addOrder(makeOrder({ commitmentId: 1, side: 'long', price: new BN(99_000_000), receivedAt: recentTime }));
+
+      const stale = matcher.removeStale(120_000, Date.now());
+      expect(stale).to.have.length(0);
+      expect(matcher.getTotalOrders()).to.equal(1);
+    });
+
+    it('should extract stale from both sides', () => {
+      const oldTime = Date.now() - 200_000;
+      const recentTime = Date.now() - 10_000;
+
+      matcher.addOrder(makeOrder({ commitmentId: 1, side: 'long', price: new BN(99_000_000), receivedAt: oldTime }));
+      matcher.addOrder(makeOrder({ commitmentId: 2, side: 'long', price: new BN(98_000_000), receivedAt: recentTime }));
+      matcher.addOrder(makeOrder({ commitmentId: 3, side: 'short', price: new BN(101_000_000), receivedAt: oldTime }));
+
+      const stale = matcher.removeStale(120_000, Date.now());
+      expect(stale).to.have.length(2);
+      expect(stale.map(o => o.commitmentId).sort()).to.deep.equal([1, 3]);
+      expect(matcher.getTotalOrders()).to.equal(1);
+    });
+
+    it('should extract stale across multiple markets', () => {
+      const oldTime = Date.now() - 200_000;
+      matcher.addOrder(makeOrder({ commitmentId: 1, side: 'long', price: new BN(99_000_000), marketId: 0, receivedAt: oldTime }));
+      matcher.addOrder(makeOrder({ commitmentId: 2, side: 'short', price: new BN(101_000_000), marketId: 1, receivedAt: oldTime }));
+
+      const stale = matcher.removeStale(120_000, Date.now());
+      expect(stale).to.have.length(2);
+    });
+
+    it('should handle exact TTL boundary', () => {
+      const now = Date.now();
+      const exactCutoff = now - 120_000;
+      matcher.addOrder(makeOrder({ commitmentId: 1, side: 'long', price: new BN(99_000_000), receivedAt: exactCutoff }));
+
+      const stale = matcher.removeStale(120_000, now);
+      expect(stale).to.have.length(1);
+    });
+
+    it('should return empty for empty book', () => {
+      const stale = matcher.removeStale(120_000, Date.now());
+      expect(stale).to.have.length(0);
+    });
+  });
+
+  // ============================================================
   // getTotalOrders / getDepth
   // ============================================================
 
