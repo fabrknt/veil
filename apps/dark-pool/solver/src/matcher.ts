@@ -192,6 +192,17 @@ export class PerpMatcher {
   }
 
   /**
+   * Return all orders across all books (for persistence snapshot).
+   */
+  getAllOrders(): DecryptedPerpOrder[] {
+    const all: DecryptedPerpOrder[] = [];
+    for (const [, book] of this.books) {
+      all.push(...book.bids, ...book.asks);
+    }
+    return all;
+  }
+
+  /**
    * Get total order count across all markets.
    */
   getTotalOrders(): number {

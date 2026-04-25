@@ -20,6 +20,8 @@ export interface DarkPoolSolverConfig {
   fallbackTtlMs: number;
   /** Max retry attempts for on-chain settlement transactions */
   maxRetryAttempts: number;
+  /** Path to SQLite database file for persistent state */
+  dbPath: string;
 }
 
 /**
@@ -53,6 +55,7 @@ export function loadConfig(): DarkPoolSolverConfig {
     defaultVenue: (process.env.DEFAULT_VENUE as 'drift' | 'jupiter' | 'phoenix') || 'drift',
     fallbackTtlMs: Number(process.env.FALLBACK_TTL_MS) || 120_000,
     maxRetryAttempts: Number(process.env.MAX_RETRY_ATTEMPTS) || 3,
+    dbPath: process.env.SOLVER_DB_PATH || './dark-pool-solver.db',
   };
 }
 

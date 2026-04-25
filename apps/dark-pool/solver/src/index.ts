@@ -14,6 +14,7 @@ import { loadConfig, DarkPoolSolverConfig } from './config';
 import { startApi } from './api';
 import { VenueRouter } from './settlement/router';
 import { withRetry } from './retry';
+import { SolverStore } from './store';
 
 const CONFIG_SEED = Buffer.from('dark_pool_config');
 const COMMITMENT_SEED = Buffer.from('commitment');
@@ -31,6 +32,7 @@ export class DarkPoolSolver {
   private router: VenueRouter;
   private isRunning = false;
   private processedCommitments: Set<string> = new Set();
+  private store: SolverStore;
   private program: Program;
 
   constructor(config: DarkPoolSolverConfig) {
@@ -38,6 +40,7 @@ export class DarkPoolSolver {
     this.connection = new Connection(config.rpcUrl, 'confirmed');
     this.matcher = new PerpMatcher();
     this.router = new VenueRouter();
+    this.store = new SolverStore(config.dbPath);
 
     const wallet = new Wallet(config.keypair);
     const provider = new AnchorProvider(this.connection, wallet, {
@@ -54,6 +57,9 @@ export class DarkPoolSolver {
     console.log(`[solver] RPC: ${this.config.rpcUrl}`);
     console.log(`[solver] Encryption pubkey: ${Buffer.from(this.config.encryptionKeypair.publicKey).toString('base64')}`);
     console.log(`[solver] Default venue: ${this.config.defaultVenue}`);
+    console.log(`[solver] DB: ${this.config.dbPath}`);
+
+    this.restoreState();
 
     this.isRunning = true;
     this.runLoop();
@@ -61,7 +67,9 @@ export class DarkPoolSolver {
 
   stop(): void {
     this.isRunning = false;
-    console.log('[solver] Stopped');
+    this.persistState();
+    this.store.close();
+    console.log('[solver] Stopped, state persisted');
   }
 
   getMatcher(): PerpMatcher {
@@ -74,6 +82,31 @@ export class DarkPoolSolver {
 
   getRouter(): VenueRouter {
     return this.router;
+  }
+
+  private restoreState(): void {
+    this.processedCommitments = this.store.loadAllProcessed();
+    console.log(`[solver] Restored ${this.processedCommitments.size} processed commitments`);
+
+    const orders = this.store.loadOrders();
+    for (const order of orders) {
+      const match = this.matcher.addOrder(order);
+      if (match) {
+        this.processMatch(match);
+      }
+    }
+    console.log(`[solver] Restored ${orders.length} orders into matcher`);
+
+    const stats = this.store.loadStats();
+    if (stats) {
+      this.router.restoreStats(stats);
+      console.log(`[solver] Restored stats: ${stats.internalMatches} internal, ${stats.venueSettlements} venue`);
+    }
+  }
+
+  private persistState(): void {
+    this.store.saveOrders(this.matcher.getAllOrders());
+    this.store.saveStats(this.router.getStats());
   }
 
   private async runLoop(): Promise<void> {
@@ -111,6 +144,9 @@ export class DarkPoolSolver {
           console.log(`[solver] Order ${order.commitmentId} expired, marking on-chain`);
           // In production: call expire_order instruction
         }
+
+        // 5. Persist state to disk
+        this.persistState();
       } catch (err) {
         console.error('[solver] Loop error:', err);
       }
@@ -175,9 +211,11 @@ export class DarkPoolSolver {
           }
 
           this.processedCommitments.add(key);
+          this.store.markProcessed(key);
         } catch (err) {
           console.error(`[solver] Failed to process commitment ${key}:`, err);
           this.processedCommitments.add(key); // Don't retry failed decryptions
+          this.store.markProcessed(key);
         }
       }
     } catch (err) {
@@ -331,6 +369,10 @@ function sleep(ms: number): Promise<void> {
 async function main() {
   const config = loadConfig();
   const solver = new DarkPoolSolver(config);
+
+  // Graceful shutdown
+  process.on('SIGINT', () => { solver.stop(); process.exit(0); });
+  process.on('SIGTERM', () => { solver.stop(); process.exit(0); });
 
   // Start API server
   startApi(solver, config);

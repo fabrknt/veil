@@ -39,6 +39,11 @@ test-ledger/
 target/
 *.so
 
+# SQLite databases
+*.db
+*.db-wal
+*.db-shm
+
 # Hardhat
 artifacts/
 cache/

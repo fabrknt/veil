@@ -159,6 +159,13 @@ export class VenueRouter {
   }
 
   /**
+   * Restore stats from persistent storage (called on startup).
+   */
+  restoreStats(stats: SettlementStats): void {
+    this.stats = { ...stats };
+  }
+
+  /**
    * Get fee comparison for display.
    */
   getFeeComparison(): FeeComparison {
