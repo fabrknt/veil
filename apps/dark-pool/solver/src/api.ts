@@ -29,8 +29,32 @@ export function startApi(solver: DarkPoolSolver, config: DarkPoolSolverConfig): 
   /**
    * GET /orders/:commitmentId/status
    */
-  app.get('/orders/:commitmentId/status', (_req, res) => {
-    res.json({ status: 'pending', message: 'On-chain query not yet implemented' });
+  app.get('/orders/:commitmentId/status', (req, res) => {
+    const commitmentId = parseInt(req.params.commitmentId, 10);
+    if (isNaN(commitmentId)) {
+      res.status(400).json({ error: 'Invalid commitmentId' });
+      return;
+    }
+
+    const store = solver.getStore();
+    const current = store.getOrderStatus(commitmentId);
+    if (!current) {
+      res.status(404).json({ error: 'Order not found', commitmentId });
+      return;
+    }
+
+    const history = store.getOrderHistory(commitmentId);
+    res.json({
+      commitmentId,
+      status: current.status,
+      details: current.details,
+      updatedAt: current.timestamp,
+      history: history.map(e => ({
+        status: e.status,
+        details: e.details,
+        timestamp: e.timestamp,
+      })),
+    });
   });
 
   /**

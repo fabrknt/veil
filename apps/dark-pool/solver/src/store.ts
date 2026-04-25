@@ -4,6 +4,15 @@ import BN from 'bn.js';
 import { DecryptedPerpOrder } from './matcher';
 import { SettlementStats } from './settlement/router';
 
+export type OrderStatus = 'received' | 'in_book' | 'matched' | 'settled' | 'expired' | 'fallback_routed' | 'failed';
+
+export interface OrderEvent {
+  commitmentId: number;
+  status: OrderStatus;
+  details: string | null;
+  timestamp: number;
+}
+
 export class SolverStore {
   private db: Database.Database;
 
@@ -124,6 +133,39 @@ export class SolverStore {
     };
   }
 
+  // --- Order Events ---
+
+  recordOrderEvent(commitmentId: number, status: OrderStatus, details?: string): void {
+    this.db.prepare(
+      'INSERT INTO order_events (commitment_id, status, details, timestamp) VALUES (?, ?, ?, ?)',
+    ).run(commitmentId, status, details ?? null, Date.now());
+  }
+
+  getOrderStatus(commitmentId: number): OrderEvent | null {
+    const row = this.db.prepare(
+      'SELECT * FROM order_events WHERE commitment_id = ? ORDER BY id DESC LIMIT 1',
+    ).get(commitmentId) as any;
+    if (!row) return null;
+    return {
+      commitmentId: row.commitment_id,
+      status: row.status as OrderStatus,
+      details: row.details,
+      timestamp: row.timestamp,
+    };
+  }
+
+  getOrderHistory(commitmentId: number): OrderEvent[] {
+    const rows = this.db.prepare(
+      'SELECT * FROM order_events WHERE commitment_id = ? ORDER BY id ASC',
+    ).all(commitmentId) as any[];
+    return rows.map(r => ({
+      commitmentId: r.commitment_id,
+      status: r.status as OrderStatus,
+      details: r.details,
+      timestamp: r.timestamp,
+    }));
+  }
+
   // --- Schema ---
 
   private migrate(): void {
@@ -148,6 +190,16 @@ export class SolverStore {
         collateral TEXT NOT NULL,
         received_at INTEGER NOT NULL
       );
+
+      CREATE TABLE IF NOT EXISTS order_events (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        commitment_id INTEGER NOT NULL,
+        status TEXT NOT NULL,
+        details TEXT,
+        timestamp INTEGER NOT NULL
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_order_events_commitment ON order_events(commitment_id);
 
       CREATE TABLE IF NOT EXISTS settlement_stats (
         id INTEGER PRIMARY KEY CHECK (id = 1),

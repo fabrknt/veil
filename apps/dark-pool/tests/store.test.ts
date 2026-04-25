@@ -188,4 +188,64 @@ describe('SolverStore', () => {
       expect(store.loadStats()).to.be.null;
     });
   });
+
+  // ============================================================
+  // Order Events
+  // ============================================================
+
+  describe('order events', () => {
+    it('should record and retrieve order status', () => {
+      store.recordOrderEvent(42, 'received', 'long limit market=0');
+
+      const status = store.getOrderStatus(42);
+      expect(status).to.not.be.null;
+      expect(status!.commitmentId).to.equal(42);
+      expect(status!.status).to.equal('received');
+      expect(status!.details).to.equal('long limit market=0');
+    });
+
+    it('should return latest status', () => {
+      store.recordOrderEvent(1, 'received');
+      store.recordOrderEvent(1, 'in_book');
+      store.recordOrderEvent(1, 'matched', 'price=100 qty=1');
+
+      const status = store.getOrderStatus(1);
+      expect(status!.status).to.equal('matched');
+    });
+
+    it('should return full history in order', () => {
+      store.recordOrderEvent(1, 'received');
+      store.recordOrderEvent(1, 'in_book');
+      store.recordOrderEvent(1, 'matched');
+      store.recordOrderEvent(1, 'settled');
+
+      const history = store.getOrderHistory(1);
+      expect(history).to.have.length(4);
+      expect(history.map(e => e.status)).to.deep.equal(['received', 'in_book', 'matched', 'settled']);
+    });
+
+    it('should return null for unknown order', () => {
+      expect(store.getOrderStatus(999)).to.be.null;
+    });
+
+    it('should return empty history for unknown order', () => {
+      expect(store.getOrderHistory(999)).to.deep.equal([]);
+    });
+
+    it('should handle details as null', () => {
+      store.recordOrderEvent(1, 'expired');
+      const status = store.getOrderStatus(1);
+      expect(status!.details).to.be.null;
+    });
+
+    it('should track multiple orders independently', () => {
+      store.recordOrderEvent(1, 'received');
+      store.recordOrderEvent(1, 'matched');
+      store.recordOrderEvent(2, 'received');
+      store.recordOrderEvent(2, 'expired');
+
+      expect(store.getOrderStatus(1)!.status).to.equal('matched');
+      expect(store.getOrderStatus(2)!.status).to.equal('expired');
+    });
+  });
 });

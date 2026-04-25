@@ -383,4 +383,100 @@ describe('VenueRouter', () => {
       expect(stats.venueSettlements).to.equal(0);
     });
   });
+
+  // ============================================================
+  // Venue Cascade (fallback on failure)
+  // ============================================================
+
+  describe('venue cascade', () => {
+    it('should cascade to next venue when first fails (routeToVenue)', async () => {
+      let selectedVenue = '';
+      router.addVenue({
+        name: 'phoenix',
+        initialize: async () => {},
+        executeMatch: async () => ({ txSignature: '', success: false, error: 'phoenix down' }),
+        placeOrder: async () => ({ txSignature: '', success: false, error: 'phoenix down' }),
+      });
+      router.addVenue({
+        name: 'drift',
+        initialize: async () => {},
+        executeMatch: async () => { selectedVenue = 'drift'; return { txSignature: 'drift_sig', success: true }; },
+        placeOrder: async () => { selectedVenue = 'drift'; return { txSignature: 'drift_sig', success: true }; },
+      });
+
+      const result = await router.routeToVenue(makeMatch());
+      expect(result.success).to.be.true;
+      expect(selectedVenue).to.equal('drift');
+    });
+
+    it('should cascade to next venue when first fails (routeSingleOrder)', async () => {
+      function makeOrder(overrides: Partial<DecryptedPerpOrder> = {}): DecryptedPerpOrder {
+        return {
+          commitmentId: 1, commitmentPda: Keypair.generate().publicKey, trader: Keypair.generate().publicKey,
+          marketId: 0, side: 'long', orderType: 'limit', price: new BN(100_000_000),
+          quantity: new BN(1_000_000), remainingQty: new BN(1_000_000), maxSlippageBps: 50,
+          expiresAt: Math.floor(Date.now() / 1000) + 3600, collateral: new BN(100_000_000), receivedAt: Date.now(), ...overrides,
+        };
+      }
+
+      let selectedVenue = '';
+      router.addVenue({
+        name: 'phoenix',
+        initialize: async () => {},
+        executeMatch: async () => ({ txSignature: '', success: false, error: 'down' }),
+        placeOrder: async () => ({ txSignature: '', success: false, error: 'down' }),
+      });
+      router.addVenue({
+        name: 'drift',
+        initialize: async () => {},
+        executeMatch: async () => ({ txSignature: '', success: true }),
+        placeOrder: async () => { selectedVenue = 'drift'; return { txSignature: 'sig', success: true }; },
+      });
+
+      const result = await router.routeSingleOrder(makeOrder());
+      expect(result.success).to.be.true;
+      expect(selectedVenue).to.equal('drift');
+    });
+
+    it('should return failure when all venues fail', async () => {
+      router.addVenue({
+        name: 'phoenix',
+        initialize: async () => {},
+        executeMatch: async () => ({ txSignature: '', success: false, error: 'down' }),
+        placeOrder: async () => ({ txSignature: '', success: false, error: 'down' }),
+      });
+      router.addVenue({
+        name: 'drift',
+        initialize: async () => {},
+        executeMatch: async () => ({ txSignature: '', success: false, error: 'also down' }),
+        placeOrder: async () => ({ txSignature: '', success: false, error: 'also down' }),
+      });
+
+      const result = await router.routeToVenue(makeMatch());
+      expect(result.success).to.be.false;
+      expect(result.error).to.include('All venues failed');
+    });
+
+    it('should try preferred venue first then cascade', async () => {
+      const tried: string[] = [];
+      router.addVenue({
+        name: 'phoenix',
+        initialize: async () => {},
+        executeMatch: async () => { tried.push('phoenix'); return { txSignature: 'phoenix_sig', success: true }; },
+        placeOrder: async () => ({ txSignature: '', success: true }),
+      });
+      router.addVenue({
+        name: 'drift',
+        initialize: async () => {},
+        executeMatch: async () => { tried.push('drift'); return { txSignature: '', success: false, error: 'fail' }; },
+        placeOrder: async () => ({ txSignature: '', success: true }),
+      });
+
+      const result = await router.routeToVenue(makeMatch(), 'drift');
+      // Drift tried first (preferred), fails, cascades to phoenix
+      expect(tried).to.deep.equal(['drift', 'phoenix']);
+      expect(result.success).to.be.true;
+      expect(result.txSignature).to.equal('phoenix_sig');
+    });
+  });
 });

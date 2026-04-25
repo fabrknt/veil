@@ -75,80 +75,60 @@ export class VenueRouter {
 
   /**
    * Route a trade to the best venue for settlement.
-   * Picks the venue with lowest fees for the given market.
+   * Tries venues in fee order; if one fails, cascades to the next.
    */
   async routeToVenue(match: MatchResult, preferredVenue?: string): Promise<SettlementResult> {
-    // Pick venue: preferred → lowest fee → first available
-    let venue: VenueSettlement | undefined;
+    const ranked = this.rankVenues(preferredVenue);
 
-    if (preferredVenue && this.venues.has(preferredVenue)) {
-      venue = this.venues.get(preferredVenue);
-    } else {
-      // Score venues by fee (lowest first)
-      const scored = Array.from(this.venues.entries())
-        .map(([name, v]) => ({
-          name,
-          venue: v,
-          fee: VENUE_FEES[name]?.takerBps ?? 100,
-        }))
-        .sort((a, b) => a.fee - b.fee);
-
-      if (scored.length > 0) {
-        venue = scored[0].venue;
-        console.log(`[router] Best venue: ${scored[0].name} (${scored[0].fee} bps taker fee)`);
-      }
-    }
-
-    if (!venue) {
+    if (ranked.length === 0) {
       return { txSignature: '', success: false, error: 'No venues available' };
     }
 
-    const result = await venue.executeMatch(match);
+    for (const { name, venue, fee } of ranked) {
+      console.log(`[router] Trying venue: ${name} (${fee} bps taker fee)`);
+      const result = await venue.executeMatch(match);
 
-    if (result.success) {
-      this.stats.venueSettlements++;
-      const volume = match.execPrice.mul(match.fillQty).div(new BN(1_000_000));
-      this.stats.venueVolume = this.stats.venueVolume.add(volume);
-      this.stats.totalVolume = this.stats.totalVolume.add(volume);
+      if (result.success) {
+        this.stats.venueSettlements++;
+        const volume = match.execPrice.mul(match.fillQty).div(new BN(1_000_000));
+        this.stats.venueVolume = this.stats.venueVolume.add(volume);
+        this.stats.totalVolume = this.stats.totalVolume.add(volume);
+        return result;
+      }
+
+      console.warn(`[router] Venue ${name} failed: ${result.error}, trying next`);
     }
 
-    return result;
+    return { txSignature: '', success: false, error: 'All venues failed' };
   }
 
   /**
    * Route a single unmatched order to the best venue as fallback.
-   * Called when an order exceeds the fallback TTL without matching internally.
+   * Tries venues in fee order; if one fails, cascades to the next.
    */
   async routeSingleOrder(order: DecryptedPerpOrder, preferredVenue?: string): Promise<SettlementResult> {
-    let venue: VenueSettlement | undefined;
+    const ranked = this.rankVenues(preferredVenue);
 
-    if (preferredVenue && this.venues.has(preferredVenue)) {
-      venue = this.venues.get(preferredVenue);
-    } else {
-      const scored = Array.from(this.venues.entries())
-        .map(([name, v]) => ({ name, venue: v, fee: VENUE_FEES[name]?.takerBps ?? 100 }))
-        .sort((a, b) => a.fee - b.fee);
-
-      if (scored.length > 0) {
-        venue = scored[0].venue;
-        console.log(`[router] Fallback venue: ${scored[0].name} (${scored[0].fee} bps)`);
-      }
-    }
-
-    if (!venue) {
+    if (ranked.length === 0) {
       return { txSignature: '', success: false, error: 'No venues available for fallback' };
     }
 
-    const result = await venue.placeOrder(order);
+    for (const { name, venue, fee } of ranked) {
+      console.log(`[router] Trying fallback venue: ${name} (${fee} bps)`);
+      const result = await venue.placeOrder(order);
 
-    if (result.success) {
-      this.stats.venueSettlements++;
-      const volume = order.price.mul(order.remainingQty).div(new BN(1_000_000));
-      this.stats.venueVolume = this.stats.venueVolume.add(volume);
-      this.stats.totalVolume = this.stats.totalVolume.add(volume);
+      if (result.success) {
+        this.stats.venueSettlements++;
+        const volume = order.price.mul(order.remainingQty).div(new BN(1_000_000));
+        this.stats.venueVolume = this.stats.venueVolume.add(volume);
+        this.stats.totalVolume = this.stats.totalVolume.add(volume);
+        return result;
+      }
+
+      console.warn(`[router] Fallback venue ${name} failed: ${result.error}, trying next`);
     }
 
-    return result;
+    return { txSignature: '', success: false, error: 'All venues failed for fallback' };
   }
 
   /**
@@ -163,6 +143,25 @@ export class VenueRouter {
    */
   restoreStats(stats: SettlementStats): void {
     this.stats = { ...stats };
+  }
+
+  /**
+   * Rank venues by fee, with preferred venue first if specified.
+   */
+  private rankVenues(preferredVenue?: string): { name: string; venue: VenueSettlement; fee: number }[] {
+    const scored = Array.from(this.venues.entries())
+      .map(([name, v]) => ({ name, venue: v, fee: VENUE_FEES[name]?.takerBps ?? 100 }))
+      .sort((a, b) => a.fee - b.fee);
+
+    if (preferredVenue) {
+      const prefIdx = scored.findIndex(s => s.name === preferredVenue);
+      if (prefIdx > 0) {
+        const [pref] = scored.splice(prefIdx, 1);
+        scored.unshift(pref);
+      }
+    }
+
+    return scored;
   }
 
   /**

@@ -84,6 +84,10 @@ export class DarkPoolSolver {
     return this.router;
   }
 
+  getStore(): SolverStore {
+    return this.store;
+  }
+
   private restoreState(): void {
     this.processedCommitments = this.store.loadAllProcessed();
     console.log(`[solver] Restored ${this.processedCommitments.size} processed commitments`);
@@ -129,8 +133,10 @@ export class DarkPoolSolver {
             const result = await this.router.routeSingleOrder(order, this.config.defaultVenue);
             if (result.success) {
               console.log(`[solver] Fallback settlement: tx=${result.txSignature}`);
+              this.store.recordOrderEvent(order.commitmentId, 'fallback_routed', `tx=${result.txSignature}`);
             } else {
               console.error(`[solver] Fallback failed for order ${order.commitmentId}: ${result.error}`);
+              this.store.recordOrderEvent(order.commitmentId, 'failed', result.error);
             }
           } catch (err: any) {
             console.error(`[solver] Fallback routing error for order ${order.commitmentId}: ${err.message}`);
@@ -142,6 +148,7 @@ export class DarkPoolSolver {
         const expired = this.matcher.removeExpired(now);
         for (const order of expired) {
           console.log(`[solver] Order ${order.commitmentId} expired, marking on-chain`);
+          this.store.recordOrderEvent(order.commitmentId, 'expired');
           // In production: call expire_order instruction
         }
 
@@ -203,11 +210,14 @@ export class DarkPoolSolver {
           };
 
           console.log(`[solver] New order: id=${order.commitmentId} ${order.side} ${order.orderType} market=${order.marketId} qty=${order.quantity.toString()}`);
+          this.store.recordOrderEvent(order.commitmentId, 'received', `${order.side} ${order.orderType} market=${order.marketId}`);
 
           // Try to match immediately
           const match = this.matcher.addOrder(order);
           if (match) {
             await this.processMatch(match);
+          } else {
+            this.store.recordOrderEvent(order.commitmentId, 'in_book');
           }
 
           this.processedCommitments.add(key);
@@ -245,6 +255,8 @@ export class DarkPoolSolver {
 
     // Record internal netting — this trade bypassed venue fees entirely
     this.router.recordInternalMatch(match);
+    this.store.recordOrderEvent(match.bidOrder.commitmentId, 'matched', `price=${match.execPrice.toString()} qty=${match.fillQty.toString()}`);
+    this.store.recordOrderEvent(match.askOrder.commitmentId, 'matched', `price=${match.execPrice.toString()} qty=${match.fillQty.toString()}`);
 
     const stats = this.router.getStats();
     console.log(
@@ -276,8 +288,12 @@ export class DarkPoolSolver {
       );
 
       console.log(`[solver] On-chain settlement complete`);
+      this.store.recordOrderEvent(match.bidOrder.commitmentId, 'settled');
+      this.store.recordOrderEvent(match.askOrder.commitmentId, 'settled');
     } catch (err: any) {
       console.error(`[solver] On-chain settlement failed after ${this.config.maxRetryAttempts} attempts: ${err.message}`);
+      this.store.recordOrderEvent(match.bidOrder.commitmentId, 'failed', err.message);
+      this.store.recordOrderEvent(match.askOrder.commitmentId, 'failed', err.message);
     }
   }
 
