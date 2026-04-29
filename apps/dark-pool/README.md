@@ -38,6 +38,12 @@ Trader encrypts perp order (NaCl box)
 
 **Trust assumption (v0):** Solver won't front-run or leak orders. Mitigated by: commitment hash prevents modification, on-chain audit trail, solver has no capital at risk. Future: TEE (v1), ZK proofs (v2).
 
+### Program Immutability
+
+**Zero admin-gated instructions.** Once `initialize` runs, no instruction allows anyone — including the admin, solver, or deployer — to modify pool config. The fields in `DarkPoolConfig` (admin, solver, fee_recipient, fee_bps, min/max order size, is_active) are set once and frozen. There is no `update_admin`, `set_fees`, `set_solver`, `pause`, or `unpause` instruction. The `admin` pubkey is vestigial — no code path reads it. [Verifiable on devnet](https://explorer.solana.com/address/FPAF4iwMtb2CWDcqpWf6NJzJCYrBhQNH8PkWY8ZCGMUA?cluster=devnet).
+
+**Program upgrade authority** is held by the deployer wallet during the hackathon. It will be transferred to a burn address before final submission, making the program bytecode immutable as well.
+
 ## Architecture
 
 ```
