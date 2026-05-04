@@ -36,6 +36,46 @@ Built for the Solana Frontier Hackathon (Colosseum, Apr 6 – May 11, 2026)
 
 ---
 
+## Week 4 Update — YouTube Title
+
+```
+Veil Dark Pool W4 — Hackathon Code → Production Solver | Solana
+```
+
+Title alternatives:
+- `Veil Dark Pool W4 — Always-On Solver, 50× Less RPC | Solana Perps`
+- `Veil Dark Pool W4 — From Demo to 24/7 Production on Solana`
+
+## Week 4 Update — YouTube Description
+
+```
+Veil Dark Pool — Week 4 update.
+
+This week we took the Week 3 matching engine and made it production-ready.
+
+What shipped:
+• Solver now runs 24/7 on EC2 (Docker + systemd, persistent volumes)
+• Replaced 2-second polling with WebSocket programSubscribe → ~50× less RPC cost
+• Order detection latency dropped from ~2s to under 200ms
+• Encryption keypair is now persistent — in-flight orders survive deploys
+• Program locked down: zero admin-gated instructions (no upgrade authority, no pause, no kill switch)
+
+The dark pool is now trustless at the protocol layer and always-on at the operational layer.
+
+Path to mainnet (TEE → audit → deployment) is documented in the published roadmap.
+
+Program ID: FPAF4iwMtb2CWDcqpWf6NJzJCYrBhQNH8PkWY8ZCGMUA
+GitHub: https://github.com/fabrknt/veil/tree/main/apps/dark-pool
+Web: https://fabrknt.github.io/veil
+
+Built for the Solana Frontier Hackathon (Colosseum, Apr 6 – May 11, 2026)
+By @psyto · Fabrknt · Tokyo, Japan
+
+#Solana #DeFi #DarkPool #Hackathon #SolanaFrontier #Colosseum #Perps #Privacy #Veil #QuickNode
+```
+
+---
+
 ## X Post (Thread)
 
 ### Post 1 (main post — attach the video)
