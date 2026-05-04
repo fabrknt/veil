@@ -74,6 +74,21 @@ By @psyto · Fabrknt · Tokyo, Japan
 #Solana #DeFi #DarkPool #Hackathon #SolanaFrontier #Colosseum #Perps #Privacy #Veil #QuickNode
 ```
 
+## Week 4 Update — X Post (single, attach video)
+
+```
+Veil Dark Pool — Week 4. Hackathon prototype → 24/7 production solver.
+
+→ Always-on EC2 (Docker + systemd)
+→ WebSocket subscribe: 50× less RPC, <200ms detection
+→ Persistent encryption (orders survive deploys)
+→ Zero admin-gated instructions
+
+[video]
+```
+
+242 characters. Attach `week4-update.mp4` natively. Reply to your own post with the YouTube link once published.
+
 ---
 
 ## X Post (Thread)
