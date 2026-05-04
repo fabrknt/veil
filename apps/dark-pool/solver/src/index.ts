@@ -1,6 +1,6 @@
 import {
   Connection, PublicKey, Transaction, SystemProgram,
-  sendAndConfirmTransaction,
+  sendAndConfirmTransaction, AccountInfo,
 } from '@solana/web3.js';
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import { AnchorProvider, Program, Wallet, BN } from '@coral-xyz/anchor';
@@ -19,6 +19,8 @@ import { SolverStore } from './store';
 const CONFIG_SEED = Buffer.from('dark_pool_config');
 const COMMITMENT_SEED = Buffer.from('commitment');
 
+const COMMITMENT_ACCOUNT_SIZE = 8 + 32 + 8 + 32 + 8 + 1 + 1 + 8 + 8 + 32 + 4 + 128 + 1;
+
 /**
  * Veil Dark Pool Solver
  *
@@ -34,6 +36,8 @@ export class DarkPoolSolver {
   private processedCommitments: Set<string> = new Set();
   private store: SolverStore;
   private program: Program;
+  private commitmentSubId: number | null = null;
+  private lastSafetySweepAt = 0;
 
   constructor(config: DarkPoolSolverConfig) {
     this.config = config;
@@ -62,11 +66,21 @@ export class DarkPoolSolver {
     this.restoreState();
 
     this.isRunning = true;
+
+    await this.primeFromExisting();
+    this.subscribeToCommitments();
+
     this.runLoop();
   }
 
   stop(): void {
     this.isRunning = false;
+    if (this.commitmentSubId !== null) {
+      this.connection
+        .removeProgramAccountChangeListener(this.commitmentSubId)
+        .catch(err => console.warn('[solver] Failed to remove subscription:', err.message));
+      this.commitmentSubId = null;
+    }
     this.persistState();
     this.store.close();
     console.log('[solver] Stopped, state persisted');
@@ -116,16 +130,17 @@ export class DarkPoolSolver {
   private async runLoop(): Promise<void> {
     while (this.isRunning) {
       try {
-        // 1. Poll for new pending commitments
-        await this.pollCommitments();
+        // Backup safety sweep — covers any commitments missed during WS reconnects
+        if (Date.now() - this.lastSafetySweepAt >= this.config.safetySweepIntervalMs) {
+          await this.scanCommitments('safety-sweep');
+          this.lastSafetySweepAt = Date.now();
+        }
 
-        // 2. Sweep matching engine for crosses
         const matches = this.matcher.sweep();
         for (const match of matches) {
           await this.processMatch(match);
         }
 
-        // 3. Route stale orders to venue fallback
         const stale = this.matcher.removeStale(this.config.fallbackTtlMs, Date.now());
         for (const order of stale) {
           console.log(`[solver] Order ${order.commitmentId} stale (${Date.now() - order.receivedAt}ms), routing to venue fallback`);
@@ -143,16 +158,13 @@ export class DarkPoolSolver {
           }
         }
 
-        // 4. Handle expired orders
         const now = Math.floor(Date.now() / 1000);
         const expired = this.matcher.removeExpired(now);
         for (const order of expired) {
           console.log(`[solver] Order ${order.commitmentId} expired, marking on-chain`);
           this.store.recordOrderEvent(order.commitmentId, 'expired');
-          // In production: call expire_order instruction
         }
 
-        // 5. Persist state to disk
         this.persistState();
       } catch (err) {
         console.error('[solver] Loop error:', err);
@@ -163,73 +175,102 @@ export class DarkPoolSolver {
   }
 
   /**
-   * Poll on-chain for pending PerpOrderCommitment accounts.
-   * Decrypt new ones and feed into the matching engine.
+   * One-shot scan of existing pending commitments at startup. The WS
+   * subscription only fires on *changes*, so without this, any orders that
+   * landed before the solver started would be invisible until the next
+   * safety sweep.
    */
-  private async pollCommitments(): Promise<void> {
-    // Fetch all PerpOrderCommitment accounts with status=Pending
-    // Using getProgramAccounts with memcmp filter on status field
-    const programId = new PublicKey(this.config.programId);
+  private async primeFromExisting(): Promise<void> {
+    console.log('[solver] Priming from existing pending commitments...');
+    await this.scanCommitments('prime');
+    this.lastSafetySweepAt = Date.now();
+  }
 
+  /**
+   * Subscribe to PerpOrderCommitment account changes via WebSocket.
+   * web3.js Connection auto-derives the wss:// endpoint from the https:// URL
+   * and re-registers subscriptions across reconnects.
+   */
+  private subscribeToCommitments(): void {
+    const programId = new PublicKey(this.config.programId);
+    this.commitmentSubId = this.connection.onProgramAccountChange(
+      programId,
+      ({ accountId, accountInfo }) => {
+        this.processCommitmentAccount(accountId, accountInfo.data).catch(err => {
+          console.error('[solver] subscription handler error:', err.message);
+        });
+      },
+      'confirmed',
+      [{ dataSize: COMMITMENT_ACCOUNT_SIZE }],
+    );
+    console.log(`[solver] Subscribed to commitment changes (subId=${this.commitmentSubId})`);
+  }
+
+  private async scanCommitments(label: string): Promise<void> {
+    const programId = new PublicKey(this.config.programId);
     try {
       const accounts = await this.connection.getProgramAccounts(programId, {
-        filters: [
-          { dataSize: 8 + 32 + 8 + 32 + 8 + 1 + 1 + 8 + 8 + 32 + 4 + 128 + 1 }, // Approximate PerpOrderCommitment size
-        ],
+        filters: [{ dataSize: COMMITMENT_ACCOUNT_SIZE }],
       });
-
+      const before = this.processedCommitments.size;
       for (const { pubkey, account } of accounts) {
-        const key = pubkey.toBase58();
-        if (this.processedCommitments.has(key)) continue;
-
-        try {
-          const commitment = this.decodeCommitment(account.data);
-          if (!commitment || commitment.status !== 0) continue; // 0 = Pending
-
-          // Decrypt the order payload
-          const payload = decryptPerpOrderPayload(
-            new Uint8Array(commitment.encryptedPayload),
-            new Uint8Array(commitment.userEncryptionPubkey),
-            this.config.encryptionKeypair,
-          );
-
-          const order: DecryptedPerpOrder = {
-            commitmentId: commitment.commitmentId,
-            commitmentPda: pubkey,
-            trader: new PublicKey(commitment.trader),
-            marketId: commitment.marketId,
-            side: payload.side,
-            orderType: payload.orderType,
-            price: payload.price,
-            quantity: payload.quantity,
-            remainingQty: new BN(payload.quantity.toString()),
-            maxSlippageBps: payload.maxSlippageBps,
-            expiresAt: commitment.expiresAt,
-            collateral: new BN(commitment.collateralAmount.toString()),
-            receivedAt: Date.now(),
-          };
-
-          console.log(`[solver] New order: id=${order.commitmentId} ${order.side} ${order.orderType} market=${order.marketId} qty=${order.quantity.toString()}`);
-          this.store.recordOrderEvent(order.commitmentId, 'received', `${order.side} ${order.orderType} market=${order.marketId}`);
-
-          // Try to match immediately
-          const match = this.matcher.addOrder(order);
-          if (match) {
-            await this.processMatch(match);
-          } else {
-            this.store.recordOrderEvent(order.commitmentId, 'in_book');
-          }
-
-          this.processedCommitments.add(key);
-          this.store.markProcessed(key);
-        } catch (err) {
-          console.error(`[solver] Failed to process commitment ${key}:`, err);
-          this.processedCommitments.add(key); // Don't retry failed decryptions
-          this.store.markProcessed(key);
-        }
+        await this.processCommitmentAccount(pubkey, account.data);
       }
-    } catch (err) {
-      console.error('[solver] Failed to poll commitments:', err);
+      const newCount = this.processedCommitments.size - before;
+      if (newCount > 0 || label === 'prime') {
+        console.log(`[solver] ${label}: scanned ${accounts.length} accounts, ${newCount} new`);
+      }
+    } catch (err: any) {
+      console.error(`[solver] ${label} failed:`, err.message);
+    }
+  }
+
+  private async processCommitmentAccount(pubkey: PublicKey, data: Buffer): Promise<void> {
+    const key = pubkey.toBase58();
+    if (this.processedCommitments.has(key)) return;
+
+    try {
+      const commitment = this.decodeCommitment(data);
+      if (!commitment || commitment.status !== 0) return;
+
+      const payload = decryptPerpOrderPayload(
+        new Uint8Array(commitment.encryptedPayload),
+        new Uint8Array(commitment.userEncryptionPubkey),
+        this.config.encryptionKeypair,
+      );
+
+      const order: DecryptedPerpOrder = {
+        commitmentId: commitment.commitmentId,
+        commitmentPda: pubkey,
+        trader: new PublicKey(commitment.trader),
+        marketId: commitment.marketId,
+        side: payload.side,
+        orderType: payload.orderType,
+        price: payload.price,
+        quantity: payload.quantity,
+        remainingQty: new BN(payload.quantity.toString()),
+        maxSlippageBps: payload.maxSlippageBps,
+        expiresAt: commitment.expiresAt,
+        collateral: new BN(commitment.collateralAmount.toString()),
+        receivedAt: Date.now(),
+      };
+
+      console.log(`[solver] New order: id=${order.commitmentId} ${order.side} ${order.orderType} market=${order.marketId} qty=${order.quantity.toString()}`);
+      this.store.recordOrderEvent(order.commitmentId, 'received', `${order.side} ${order.orderType} market=${order.marketId}`);
+
+      const match = this.matcher.addOrder(order);
+      if (match) {
+        await this.processMatch(match);
+      } else {
+        this.store.recordOrderEvent(order.commitmentId, 'in_book');
+      }
+
+      this.processedCommitments.add(key);
+      this.store.markProcessed(key);
+    } catch (err: any) {
+      console.error(`[solver] Failed to process commitment ${key}:`, err.message);
+      this.processedCommitments.add(key);
+      this.store.markProcessed(key);
     }
   }
 

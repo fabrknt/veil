@@ -10,8 +10,10 @@ export interface DarkPoolSolverConfig {
   encryptionKeypair: EncryptionKeypair;
   /** Dark pool program ID */
   programId: string;
-  /** Polling interval in ms */
+  /** In-memory loop interval in ms (matcher sweep, stale orders, persist) */
   pollIntervalMs: number;
+  /** How often (ms) to run a backup getProgramAccounts sweep as a safety net for the WS subscription */
+  safetySweepIntervalMs: number;
   /** API server port */
   apiPort: number;
   /** Settlement venue: 'drift' | 'jupiter' | 'phoenix' */
@@ -50,7 +52,8 @@ export function loadConfig(): DarkPoolSolverConfig {
     keypair: loadKeypair(process.env.SOLVER_KEYPAIR_PATH || '~/.config/solana/id.json'),
     encryptionKeypair: loadOrGenerateEncryptionKeypair(),
     programId: process.env.PROGRAM_ID || 'FPAF4iwMtb2CWDcqpWf6NJzJCYrBhQNH8PkWY8ZCGMUA',
-    pollIntervalMs: Number(process.env.POLL_INTERVAL_MS) || 2000,
+    pollIntervalMs: Number(process.env.POLL_INTERVAL_MS) || 5000,
+    safetySweepIntervalMs: Number(process.env.SAFETY_SWEEP_INTERVAL_MS) || 60_000,
     apiPort: Number(process.env.API_PORT) || 3040,
     defaultVenue: (process.env.DEFAULT_VENUE as 'drift' | 'jupiter' | 'phoenix') || 'drift',
     fallbackTtlMs: Number(process.env.FALLBACK_TTL_MS) || 120_000,
