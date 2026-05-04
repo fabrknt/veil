@@ -84,10 +84,12 @@ Veil Dark Pool — Week 4. Hackathon prototype → 24/7 production solver.
 → Persistent encryption (orders survive deploys)
 → Zero admin-gated instructions
 
+@solana @QuickNode #SolanaFrontier
+
 [video]
 ```
 
-242 characters. Attach `week4-update.mp4` natively. Reply to your own post with the YouTube link once published.
+276 characters. Attach `week4-update.mp4` natively. Reply to your own post with the YouTube link once published.
 
 ---
 
