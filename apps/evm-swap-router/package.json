@@ -2,7 +2,7 @@
   "name": "@fabrknt/veil-evm-swap-router",
   "version": "1.0.0",
   "description": "EVM proof-of-concept for Veil's chain-agnostic encrypted order flow — MEV protection on Ethereum using the same @fabrknt/veil-orders encryption as Solana",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "main": "sdk/src/index.ts",
   "scripts": {
     "build": "hardhat compile",

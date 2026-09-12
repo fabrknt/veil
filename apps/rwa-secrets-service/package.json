@@ -2,7 +2,7 @@
   "name": "@fabrknt/veil-rwa-secrets-service",
   "version": "0.1.0",
   "private": true,
-  "license": "ISC",
+  "license": "Apache-2.0",
   "scripts": {
     "build": "echo 'Anchor program build via anchor build'",
     "test": "echo 'anchor test requires local validator — run manually'"

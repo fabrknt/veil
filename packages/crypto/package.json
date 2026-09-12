@@ -26,5 +26,6 @@
   "publishConfig": {
     "registry": "https://npm.pkg.github.com",
     "access": "restricted"
-  }
+  },
+  "license": "Apache-2.0"
 }

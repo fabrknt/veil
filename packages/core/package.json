@@ -13,7 +13,7 @@
     "directory": "packages/core"
   },
   "author": "Privacy Suite Contributors",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "scripts": {
     "build": "tsc",
     "prepare": "npm run build",

@@ -17,7 +17,7 @@
     "directory": "packages/mcp-server"
   },
   "author": "Privacy Suite Contributors",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",

@@ -15,7 +15,7 @@
     "directory": "packages/browser"
   },
   "author": "Privacy Suite Contributors",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "scripts": {
     "build": "tsc",
     "test": "jest --passWithNoTests",
