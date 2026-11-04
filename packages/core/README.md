@@ -28,7 +28,7 @@ Without them, importing a Solana path fails with Node's `Cannot find module '@so
 
 | I want to… | Import from | Loads | Status |
 |---|---|---|---|
-| compress accounts and tokens with Light Protocol | `@fabrknt/veil-core/solana/zk-compression` | `@solana/web3.js`, `@lightprotocol/*` | token calls go through `@lightprotocol/*`; `compressData` / `decompressData` are **placeholders** — the data is not compressed and the proof and root are zero-filled |
+| compress accounts and tokens with Light Protocol | `@fabrknt/veil-core/solana/zk-compression` | `@solana/web3.js`, `@lightprotocol/*` | token calls go through `@lightprotocol/*`; `compressData` / `decompressData` are **placeholders** — the data is not compressed and the proof and root are zero-filled; `compressData` still sends a signed Light transaction from `payer` (pays a fee) |
 | connect to Helius (with ZK compression) or QuickNode (plain RPC) | `@fabrknt/veil-core/solana/rpc-providers` | `@solana/web3.js`, `@lightprotocol/*` | works |
 | shielded transfers (Privacy Cash) | `@fabrknt/veil-core/solana/shielded` | `@solana/web3.js` | **stub** — returns placeholder signatures, not wired to the Privacy Cash SDK |
 | encrypted shared state for a dark pool (Arcium MPC) | `@fabrknt/veil-core/solana/arcium` | `@solana/web3.js` | **partial** — `ArciumClient` POSTs to the Arcium endpoint you configure; the dark-pool deposit and swap steps return placeholder values |

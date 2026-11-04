@@ -1,5 +1,7 @@
 # Multi-Hackathon Submission Plan
 
+> **Historical plan (pre-2.0).** The code sketches below predate veil-core 2.0: Solana parts are no longer on the root entry (use `@fabrknt/veil-core/solana/<part>`), and names such as `compressPayload` and `settleShielded` were never shipped. See the root README for the current API.
+
 ## Overview
 
 This document outlines the strategy for submitting **five privacy-focused applications** across multiple hackathons. By leveraging shared infrastructure (`@fabrknt/veil-core`), we maximize impact while minimizing redundant development.

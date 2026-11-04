@@ -12,12 +12,12 @@ router.post('/v1/threshold/split', (req: Request, res: Response) => {
       res.status(400).json({ success: false, error: 'secret is required (base64 string, 32 bytes)' });
       return;
     }
-    if (typeof threshold !== 'number' || threshold < 2) {
-      res.status(400).json({ success: false, error: 'threshold must be a number >= 2' });
+    if (!Number.isSafeInteger(threshold) || threshold < 2) {
+      res.status(400).json({ success: false, error: 'threshold must be an integer >= 2' });
       return;
     }
-    if (typeof totalShares !== 'number' || totalShares < threshold || totalShares > 255) {
-      res.status(400).json({ success: false, error: 'totalShares must be a number >= threshold and <= 255' });
+    if (!Number.isSafeInteger(totalShares) || totalShares < threshold || totalShares > 255) {
+      res.status(400).json({ success: false, error: 'totalShares must be an integer >= threshold and <= 255' });
       return;
     }
 
@@ -88,8 +88,8 @@ router.post('/v1/threshold/verify', (req: Request, res: Response) => {
       res.status(400).json({ success: false, error: 'shares must be an array with at least 2 elements' });
       return;
     }
-    if (typeof threshold !== 'number' || threshold < 2) {
-      res.status(400).json({ success: false, error: 'threshold must be a number >= 2' });
+    if (!Number.isSafeInteger(threshold) || threshold < 2) {
+      res.status(400).json({ success: false, error: 'threshold must be an integer >= 2' });
       return;
     }
 

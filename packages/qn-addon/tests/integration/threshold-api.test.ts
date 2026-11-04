@@ -24,6 +24,17 @@ describe('Threshold API', () => {
     expect(combineRes.body.secret.base64).toBe(secret);
   });
 
+  it('rejects a non-integer threshold or share count', async () => {
+    const secret = crypto.randomBytes(32).toString('base64');
+    for (const body of [
+      { secret, threshold: 2.1, totalShares: 3 },
+      { secret, threshold: 2, totalShares: 3.5 },
+    ]) {
+      const res = await request(app).post('/v1/threshold/split').send(body);
+      expect(res.status).toBe(400);
+    }
+  });
+
   it('validates secret must be 32 bytes', async () => {
     const res = await request(app)
       .post('/v1/threshold/split')

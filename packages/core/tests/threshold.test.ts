@@ -38,6 +38,14 @@ describe('threshold (Shamir Secret Sharing)', () => {
       );
     });
 
+    it('throws for a non-integer threshold or share count', () => {
+      // 2.1 used to build a degree-1 polynomial: two shares reconstructed it.
+      expect(() => splitSecret(secret32, 2.1, 3)).toThrow('must be integers');
+      expect(() => splitSecret(secret32, 2, 3.5)).toThrow('must be integers');
+      expect(() => splitSecret(secret32, NaN, 3)).toThrow('must be integers');
+      expect(() => splitSecret(secret32, 2, Infinity)).toThrow('must be integers');
+    });
+
     it('throws for threshold < 2', () => {
       expect(() => splitSecret(secret32, 1, 3)).toThrow('Threshold must be at least 2');
     });

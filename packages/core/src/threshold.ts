@@ -139,6 +139,10 @@ export function splitSecret(
   if (secret.length !== 32) {
     throw new Error('Secret must be 32 bytes');
   }
+  if (!Number.isSafeInteger(threshold) || !Number.isSafeInteger(totalShares)) {
+    // A fractional threshold would silently build a lower-degree polynomial.
+    throw new Error('Threshold and total shares must be integers');
+  }
   if (threshold < 2) {
     throw new Error('Threshold must be at least 2');
   }
