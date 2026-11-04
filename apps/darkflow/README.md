@@ -2,7 +2,9 @@
 
 > "Trade without a trace. Lend without a ledger."
 
-Confidential AMM with Dark Liquidity for Solana, featuring encrypted LP positions, ZK-verified swaps, and private token launches.
+Confidential AMM with Dark Liquidity for Solana: encrypted LP positions, with ZK-verified swaps and private token launches planned.
+
+> **Status:** the Noir prover in veil-core (`@fabrknt/veil-core/solana/noir`) generates **mock proofs**, and the Light compression and Privacy Cash calls are placeholders. DarkFlow today encrypts LP and swap data with NaCl box; it does **not** yet prove balances, swap validity or slippage, and nothing is ZK-verified on-chain. Treat the ZK sections below as the design.
 
 ## Overview
 
@@ -79,7 +81,7 @@ const result = await darkflow.addLiquidityEncrypted({
 
 ### 2. Dark Swaps with ZK Proofs
 
-Swaps are verified using Noir ZK proofs. The proof confirms:
+Planned: swaps verified with Noir ZK proofs (the current prover returns mock proofs). The proof would confirm:
 - You have sufficient balance
 - The swap parameters are valid
 - Slippage constraints are met
@@ -258,7 +260,7 @@ DarkFlow targets these Solana PrivacyHack 2026 bounties:
 
 - **Encryption Keys**: Never share your encryption keypair
 - **Commitments**: Always verify commitments before transactions
-- **Proofs**: ZK proofs are verified on-chain
+- **Proofs**: not yet — proofs are mocked and not verified on-chain (see Status at the top)
 - **Nullifiers**: Prevent replay attacks and double-spending
 
 ## Roadmap

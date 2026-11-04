@@ -219,7 +219,12 @@ export function combineShares(shares: SecretShare[]): Uint8Array {
 }
 
 /**
- * Verify that shares are valid by attempting partial reconstruction
+ * Verify that shares are consistent with one another.
+ *
+ * Every supplied share is checked: the secret rebuilt from the first threshold shares must
+ * match the one rebuilt with each other share swapped in. With exactly threshold shares there
+ * is nothing to compare against, so this only checks their format; authenticating such a set
+ * needs a commitment from the dealer, which plain Shamir does not provide.
  */
 export function verifyShares(
   shares: SecretShare[],
@@ -231,17 +236,18 @@ export function verifyShares(
 
   try {
     validateShares(shares);
-    // Take threshold number of shares and verify they produce consistent result
-    const subset1 = shares.slice(0, expectedThreshold);
-    const result1 = combineShares(subset1);
+    const base = shares.slice(0, expectedThreshold);
+    const reference = combineShares(base);
+    const same = (a: Uint8Array) => a.every((byte, i) => byte === reference[i]);
 
     if (shares.length > expectedThreshold) {
-      // Try different subset
-      const subset2 = shares.slice(1, expectedThreshold + 1);
-      const result2 = combineShares(subset2);
-
-      // Results should match
-      return result1.every((byte, i) => byte === result2[i]);
+      // Swap each extra share in for the last base share, then rebuild without the first one,
+      // so a bad share anywhere in the set changes some result.
+      const keep = base.slice(0, expectedThreshold - 1);
+      for (const extra of shares.slice(expectedThreshold)) {
+        if (!same(combineShares([...keep, extra]))) return false;
+      }
+      if (!same(combineShares(shares.slice(1, expectedThreshold + 1)))) return false;
     }
 
     return true;

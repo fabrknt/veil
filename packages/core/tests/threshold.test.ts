@@ -124,6 +124,14 @@ describe('threshold (Shamir Secret Sharing)', () => {
       expect(verifyShares(shares.slice(0, 2), 3)).toBe(false);
     });
 
+    it('returns false when any share in a larger set is forged, including the last one', () => {
+      for (let bad = 0; bad < 5; bad++) {
+        const shares = splitSecret(secret32, 3, 5).map((s) => ({ ...s, value: new Uint8Array(s.value) }));
+        shares[bad].value[31] ^= 0x01;
+        expect(verifyShares(shares, 3)).toBe(false);
+      }
+    });
+
     it('returns false for tampered shares', () => {
       const shares = splitSecret(secret32, 3, 5);
       const tampered: SecretShare[] = shares.map((s) => ({ ...s, value: new Uint8Array(s.value) }));

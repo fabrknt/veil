@@ -69,7 +69,7 @@ router.post('/v1/threshold/combine', (req: Request, res: Response) => {
 
     const parsedShares = [];
     for (const s of shares) {
-      if (typeof s.index !== 'number' || !s.value || typeof s.value !== 'string') {
+      if (!s || typeof s !== 'object' || typeof s.index !== 'number' || !s.value || typeof s.value !== 'string') {
         res.status(400).json({ success: false, error: 'Each share must have numeric index and base64 value' });
         return;
       }
@@ -109,7 +109,7 @@ router.post('/v1/threshold/verify', (req: Request, res: Response) => {
 
     const parsedShares = [];
     for (const s of shares) {
-      if (typeof s.index !== 'number' || !s.value || typeof s.value !== 'string') {
+      if (!s || typeof s !== 'object' || typeof s.index !== 'number' || !s.value || typeof s.value !== 'string') {
         res.status(400).json({ success: false, error: 'Each share must have numeric index and base64 value' });
         return;
       }

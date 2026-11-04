@@ -55,6 +55,13 @@ describe('Threshold API', () => {
     expect(verifyRes.body.valid).toBe(false);
   });
 
+  it('returns 400 for null share entries', async () => {
+    for (const path of ['/v1/threshold/combine', '/v1/threshold/verify']) {
+      const res = await request(app).post(path).send({ shares: [null, null], threshold: 2 });
+      expect(res.status).toBe(400);
+    }
+  });
+
   it('validates secret must be 32 bytes', async () => {
     const res = await request(app)
       .post('/v1/threshold/split')

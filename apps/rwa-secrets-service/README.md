@@ -198,14 +198,10 @@ await client.grantAccessOnChain(
 
 ### ZK-Enhanced Operations (Optional)
 
-For enhanced privacy with ZK proofs and compressed storage:
+Compressed storage (planned; `compressData` underneath is a placeholder today):
 
 ```typescript
-import {
-  createZkEncryptedAsset,
-  createZkAccessProof,
-  verifyZkAccessProof
-} from '@fabrknt/veil-rwa-secrets-sdk';
+import { createZkEncryptedAsset } from '@fabrknt/veil-rwa-secrets-sdk';
 import { createHeliusRpc } from '@fabrknt/veil-core/solana/rpc-providers';
 
 // Create ZK-compressed encrypted asset
@@ -217,16 +213,11 @@ const zkAsset = await createZkEncryptedAsset(
   { rpc: zkRpc, enableCompression: true }
 );
 
-// Create ZK access proof (privacy-preserving)
-const accessProof = await createZkAccessProof(
-  assetId,
-  AccessLevel.ViewFull,
-  granteeKeypair
-);
-
-// Verify access without revealing details
-const isValid = await verifyZkAccessProof(accessProof, zkRpc);
 ```
+
+`createZkAccessProof` / `verifyZkAccessProof` are left out of this example on purpose: they are
+placeholders and a passing result can be forged (see Status at the top). Gate access with the
+on-chain `grant_access` records instead.
 
 ## Program Instructions
 
