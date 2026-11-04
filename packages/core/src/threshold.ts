@@ -293,11 +293,26 @@ export function createThresholdEncryption(
  * Decrypt using threshold shares
  * Throws if the shares do not rebuild the key (e.g. fewer than the threshold) or the
  * ciphertext was modified.
+ *
+ * Pass `threshold` (the M used at encryption) to refuse fewer than M shares up front. What
+ * this does not do: authenticate who produced the bundle. Any two parties can build their own
+ * key, shares and ciphertext that decrypt here; secretbox only proves the ciphertext matches
+ * the key the shares rebuild. If someone could substitute the whole bundle, have the dealer
+ * sign it (or check a commitment such as the orders payloadHash) before decrypting.
  */
 export function decryptWithThreshold(
   encryptedSecret: Uint8Array,
-  keyShares: SecretShare[]
+  keyShares: SecretShare[],
+  threshold?: number
 ): Uint8Array {
+  if (threshold !== undefined) {
+    if (!Number.isSafeInteger(threshold) || threshold < 2) {
+      throw new Error('Threshold must be an integer >= 2');
+    }
+    if (keyShares.length < threshold) {
+      throw new Error(`Need at least ${threshold} shares, got ${keyShares.length}`);
+    }
+  }
   const nonceLength = nacl.secretbox.nonceLength;
   if (encryptedSecret.length < nonceLength + nacl.secretbox.overheadLength) {
     throw new Error('Encrypted data too short');

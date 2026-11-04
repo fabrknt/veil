@@ -25,7 +25,16 @@ let shieldTokensFn: typeof import("@fabrknt/veil-core/solana/shielded").shieldTo
 let unshieldTokensFn: typeof import("@fabrknt/veil-core/solana/shielded").unshieldTokens | null = null;
 
 // Dynamic import to handle cases where the package might not be fully set up
+// veil-core's shielded module is still a placeholder: it returns a fake signature and moves
+// no funds. Leave this false until it is real, so shadow mode does not wait on a transfer that
+// never happens.
+const SHIELDED_TRANSFERS_IMPLEMENTED = false;
+
 async function loadPrivacyFunctions() {
+  if (!SHIELDED_TRANSFERS_IMPLEMENTED) {
+    console.warn("[Shadow] Shielded transfers are not implemented yet; using a direct (linkable) transfer");
+    return false;
+  }
   try {
     const crypto = await import("@fabrknt/veil-core/solana/shielded");
     shieldTokensFn = crypto.shieldTokens;

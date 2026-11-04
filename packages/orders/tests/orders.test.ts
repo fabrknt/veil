@@ -252,6 +252,25 @@ describe('orders', () => {
       expect(reconstructed.minOutputAmount.toString()).toBe('5000000');
       expect(reconstructed.slippageBps).toBe(100);
       expect(reconstructed.deadline).toBe(1700000000);
+
+      // With the order's threshold and commitment, the matching bundle still decrypts...
+      expect(
+        reconstructThresholdOrder(
+          thresholdOrder.encryptedPayload,
+          [share1, share2],
+          thresholdOrder.threshold,
+          thresholdOrder.payloadHash,
+        ).slippageBps,
+      ).toBe(100);
+      // ...a substituted commitment is caught, and too few shares are refused.
+      const wrongHash = new Uint8Array(thresholdOrder.payloadHash);
+      wrongHash[0] ^= 0xff;
+      expect(() =>
+        reconstructThresholdOrder(thresholdOrder.encryptedPayload, [share1, share2], 2, wrongHash),
+      ).toThrow('payloadHash');
+      expect(() =>
+        reconstructThresholdOrder(thresholdOrder.encryptedPayload, [share1, share2], 3),
+      ).toThrow('Need at least 3 shares');
     });
 
     it('threshold must be at least 2', () => {

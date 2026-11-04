@@ -216,10 +216,12 @@ const { encryptedSecret, keyShares } = createThresholdEncryption(
   5         // total shares
 );
 
-// Decrypt with enough shares (throws if the data was modified or the shares are too few)
+// Decrypt with enough shares (throws if the data was modified or the shares are too few).
+// Pass the threshold so fewer than 3 shares are refused up front. This does not prove who made
+// the bundle: sign it if someone could swap in their own key, shares and ciphertext.
 const original = decryptWithThreshold(encryptedSecret, [
   keyShares[0], keyShares[1], keyShares[3],
-]);
+], 3);
 ```
 
 #### Types

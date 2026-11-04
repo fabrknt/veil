@@ -2,7 +2,9 @@
 
 **Privacy-first token purchases on Pump.fun**
 
-ShadowLaunch breaks the on-chain link between your wallet and your Pump.fun purchases. Accumulate without being tracked. Trade without being front-run.
+ShadowLaunch is meant to break the on-chain link between your wallet and your Pump.fun purchases.
+
+> **Status:** not private yet. The shielded-transfer step (veil-core `solana/shielded`) is a placeholder, so Shadow Mode currently funds the ephemeral wallet with a **direct transfer from your main wallet**. Anyone can link the purchase to you on-chain. The diagram and steps below describe the design.
 
 ## Powered By
 
@@ -33,7 +35,7 @@ ShadowLaunch breaks the on-chain link between your wallet and your Pump.fun purc
 
 - **Shadow Mode**: Toggle between standard and private purchases
 - **Ephemeral Wallets**: Each purchase uses a fresh wallet with no history
-- **Shielded Transfers**: Funds route through privacy pool, breaking the link
+- **Shielded Transfers** (planned; today funds go directly to the ephemeral wallet and are linkable)
 - **Same Speed**: Privacy doesn't mean slow - transactions confirm in seconds
 - **Token Browser**: Browse trending and new tokens on Pump.fun
 - **Real-time Data**: Live bonding curve calculations and graduation progress
@@ -55,14 +57,14 @@ ShadowLaunch breaks the on-chain link between your wallet and your Pump.fun purc
                                                            ▼
                                                   ┌─────────────────┐
                                                   │  Tokens arrive  │
-                                                  │  NO LINK to you │
+                                                  │ design: no link │
                                                   └─────────────────┘
 ```
 
 1. **Connect Wallet** - Connect your main Phantom or Solflare wallet
-2. **Shield Funds** - SOL moves to privacy pool, breaking the on-chain link
+2. **Shield Funds** (planned) - SOL would move through a privacy pool; today it is a direct transfer
 3. **Ephemeral Purchase** - Fresh wallet buys tokens from Pump.fun
-4. **Unlinked Tokens** - Tokens arrive in ephemeral wallet with no trace to you
+4. **Tokens** - Tokens arrive in the ephemeral wallet (linkable to you until shielding is real)
 
 ## Quick Start
 

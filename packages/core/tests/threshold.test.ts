@@ -165,6 +165,17 @@ describe('threshold (Shamir Secret Sharing)', () => {
       expect(Buffer.from(decrypted)).toEqual(Buffer.from(secret));
     });
 
+    it('refuses fewer shares than the threshold when it is passed', () => {
+      const secret = new Uint8Array(32).fill(0xab);
+      const { encryptedSecret, keyShares } = createThresholdEncryption(secret, 3, 5);
+      expect(() => decryptWithThreshold(encryptedSecret, keyShares.slice(0, 2), 3)).toThrow(
+        'Need at least 3 shares',
+      );
+      expect(Buffer.from(decryptWithThreshold(encryptedSecret, keyShares.slice(0, 3), 3))).toEqual(
+        Buffer.from(secret),
+      );
+    });
+
     it('does not repeat the key stream (equal plaintext blocks give different ciphertext)', () => {
       // With a repeating 32-byte XOR key, two equal 32-byte plaintext blocks encrypt to
       // two equal ciphertext blocks, so an observer learns the plaintext's structure.

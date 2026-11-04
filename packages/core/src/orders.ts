@@ -19,6 +19,7 @@ import {
   decryptWithThreshold,
 } from './threshold';
 import { createHash } from 'crypto';
+import nacl from 'tweetnacl';
 import BN from 'bn.js';
 
 /**
@@ -375,7 +376,7 @@ export interface ThresholdSolverShare {
  * Flow:
  * 1. Serialize and hash the order payload (commitment)
  * 2. Generate a random temp encryption key
- * 3. Encrypt the order with the temp key (XOR-based from @fabrknt/veil-core)
+ * 3. Encrypt the order with the temp key (NaCl secretbox, nonce-prefixed, via createThresholdEncryption)
  * 4. Split the temp key into N shares with threshold M
  * 5. Encrypt each share for its corresponding solver using NaCl box
  *
@@ -450,13 +451,24 @@ export function decryptSolverShare(
 
 /**
  * Reconstruct and decrypt a threshold-encrypted order once enough shares are collected.
+ * Pass the order's `threshold` to refuse fewer shares, and its `payloadHash` to check the
+ * decrypted order against the user's commitment (this catches a substituted bundle).
  */
 export function reconstructThresholdOrder(
   encryptedPayload: Uint8Array,
   shares: SecretShare[],
+  threshold?: number,
+  payloadHash?: Uint8Array,
 ): OrderPayload {
-  const plaintext = decryptWithThreshold(encryptedPayload, shares);
-  return deserializeOrderPayload(plaintext);
+  const plaintext = decryptWithThreshold(encryptedPayload, shares, threshold);
+  const payload = deserializeOrderPayload(plaintext);
+  if (payloadHash) {
+    const actual = computePayloadHash(payload);
+    if (actual.length !== payloadHash.length || !nacl.verify(actual, payloadHash)) {
+      throw new Error('Order does not match its payloadHash commitment');
+    }
+  }
+  return payload;
 }
 
 // Re-export commonly needed crypto types and address conversion utilities
