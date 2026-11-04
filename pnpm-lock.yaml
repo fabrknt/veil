@@ -447,8 +447,8 @@ importers:
         specifier: workspace:*
         version: link:../core
       '@fabrknt/veil-orders':
-        specifier: file:../orders
-        version: file:packages/orders(@fabrknt/veil-core@packages+core)
+        specifier: workspace:*
+        version: link:../orders
       '@modelcontextprotocol/sdk':
         specifier: ^1.26.0
         version: 1.27.1(zod@3.25.76)
@@ -512,8 +512,8 @@ importers:
         specifier: workspace:*
         version: link:../core
       '@fabrknt/veil-orders':
-        specifier: file:../orders
-        version: file:packages/orders(@fabrknt/veil-core@packages+core)
+        specifier: workspace:*
+        version: link:../orders
       better-sqlite3:
         specifier: ^11.0.0
         version: 11.10.0
@@ -1172,11 +1172,6 @@ packages:
 
   '@ethersproject/wordlists@5.8.0':
     resolution: {integrity: sha512-2df9bbXicZws2Sb5S6ET493uJ0Z84Fjr3pC4tu/qlnZERibZCeUVuqdtt+7Tv9xxhUxHoIekIA7avrKUWHrezg==}
-
-  '@fabrknt/veil-orders@file:packages/orders':
-    resolution: {directory: packages/orders, type: directory}
-    peerDependencies:
-      '@fabrknt/veil-core': ^0.2.0
 
   '@fastify/busboy@2.1.1':
     resolution: {integrity: sha512-vBZP4NlzfOlerQTnba4aqZoMhE/a9HY7HRqoOPaETQcSQuWEIyZMHGfVu6w9wGtGK5fED5qRs2DteVCjOH60sA==}
@@ -10200,11 +10195,6 @@ snapshots:
       '@ethersproject/logger': 5.8.0
       '@ethersproject/properties': 5.8.0
       '@ethersproject/strings': 5.8.0
-
-  '@fabrknt/veil-orders@file:packages/orders(@fabrknt/veil-core@packages+core)':
-    dependencies:
-      '@fabrknt/veil-core': link:packages/core
-      bn.js: 5.2.3
 
   '@fastify/busboy@2.1.1': {}
 

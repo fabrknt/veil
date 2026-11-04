@@ -1,5 +1,5 @@
 /**
- * @fabrknt/veil-crypto — Multi-recipient Encryption Example
+ * @fabrknt/veil-core/box — Multi-recipient Encryption Example
  *
  * Demonstrates encrypting a single payload for multiple recipients
  * (e.g. a compliance officer and a counterparty both need to read
@@ -9,7 +9,7 @@ import {
   generateEncryptionKeypair,
   encryptForMultiple,
   decrypt,
-} from '@fabrknt/veil-crypto';
+} from '@fabrknt/veil-core/box';
 
 // Three parties
 const issuer = generateEncryptionKeypair();
@@ -28,17 +28,14 @@ const terms = new TextEncoder().encode(
 const recipients = [investor.publicKey, complianceOfficer.publicKey];
 const results = encryptForMultiple(terms, recipients, issuer);
 
-console.log(`Encrypted for ${results.length} recipients\n`);
+console.log(`Encrypted for ${results.size} recipients\n`);
 
-// Each recipient decrypts independently with their own keypair
-for (const [i, result] of results.entries()) {
-  const combined = new Uint8Array(result.nonce.length + result.ciphertext.length);
-  combined.set(result.nonce, 0);
-  combined.set(result.ciphertext, result.nonce.length);
-
-  const recipientKeypair = i === 0 ? investor : complianceOfficer;
-  const plaintext = decrypt(combined, issuer.publicKey, recipientKeypair);
-  const label = i === 0 ? 'Investor' : 'Compliance Officer';
-
+// Each recipient finds their copy by their own public key (hex) and decrypts it
+for (const [label, keypair] of [
+  ['Investor', investor],
+  ['Compliance Officer', complianceOfficer],
+] as const) {
+  const copy = results.get(Buffer.from(keypair.publicKey).toString('hex'))!;
+  const plaintext = decrypt(copy.bytes, issuer.publicKey, keypair);
   console.log(`${label} decrypted:`, JSON.parse(new TextDecoder().decode(plaintext)));
 }

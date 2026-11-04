@@ -28,7 +28,7 @@
     "@modelcontextprotocol/sdk": "^1.26.0",
     "@solana/web3.js": "^1.95.0",
     "@fabrknt/veil-core": "workspace:*",
-    "@fabrknt/veil-orders": "file:../orders",
+    "@fabrknt/veil-orders": "workspace:*",
     "tweetnacl": "^1.0.3",
     "zod": "^3.24.0"
   },

@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@fabrknt/veil-core": "workspace:*",
-    "@fabrknt/veil-orders": "file:../orders",
+    "@fabrknt/veil-orders": "workspace:*",
     "better-sqlite3": "^11.0.0",
     "bn.js": "^5.2.1",
     "cors": "^2.8.5",

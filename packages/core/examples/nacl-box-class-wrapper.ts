@@ -1,7 +1,7 @@
 /**
- * @fabrknt/veil-crypto — Class-based NaCl Box Wrapper Example
+ * @fabrknt/veil-core/box — Class-based NaCl Box Wrapper Example
  *
- * Shows how to build a convenience class around @fabrknt/veil-crypto primitives,
+ * Shows how to build a convenience class around @fabrknt/veil-core/box primitives,
  * with string encrypt/decrypt helpers and base64 serialization.
  *
  * Extracted from real-world usage in RWA tokenization platforms.
@@ -12,7 +12,7 @@ import {
   deriveEncryptionKeypair,
   encrypt as veilEncrypt,
   decrypt as veilDecrypt,
-} from '@fabrknt/veil-crypto';
+} from '@fabrknt/veil-core/box';
 
 // ---------------------------------------------------------------------------
 // Wrapper class

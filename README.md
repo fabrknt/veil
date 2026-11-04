@@ -1,67 +1,92 @@
 # veil
 
 [![npm version](https://img.shields.io/npm/v/@fabrknt/veil-core.svg)](https://www.npmjs.com/package/@fabrknt/veil-core)
-[![npm downloads](https://img.shields.io/npm/dm/@fabrknt/veil-core.svg)](https://www.npmjs.com/package/@fabrknt/veil-core)
 
-Privacy primitives for any blockchain, with optional Solana-specific extensions.
+**Pick the privacy piece you need:** encrypt a message for one recipient, split a key so M of N
+parties must cooperate, or seal a swap order so only the solver can read it — each importable on
+its own from `@fabrknt/veil-core`, with no Solana and no network. Solana extensions sit behind
+their own import paths, and the apps, QuickNode add-on and MCP server further down show how the
+pieces combine.
 
-Part of [Fabrknt](https://fabrknt.com) — plug-in compliance for existing DeFi protocols. `npm install @fabrknt/veil-core`
+## Pick a part
 
-The core modules (NaCl box encryption, Shamir secret sharing, payload serialization, order encryption) are **chain-agnostic** -- pure cryptographic primitives that work with Solana, Ethereum, Polygon, Arbitrum, or any other chain. Solana-specific features (ZK compression, shielded transfers, Arcium MPC, SOVEREIGN identity) are clearly separated and labeled.
+| I want to… | Import from | Pulls in at runtime |
+|---|---|---|
+| encrypt data for one or several recipients (NaCl box: X25519 + XSalsa20-Poly1305) | `@fabrknt/veil-core/box` | `tweetnacl`, `bs58` |
+| split a 32-byte secret so any M of N shares rebuild it (Shamir) | `@fabrknt/veil-core/shamir` | — |
+| pack structured fields into fixed-size bytes and back | `@fabrknt/veil-core/payload` | `bn.js` |
+| seal a swap or perp order's limits so only the solver can read them (MEV protection) | `@fabrknt/veil-core/orders` | box, shamir, payload, `bn.js`, Node `crypto` |
 
-## Packages
+**Solana extensions** — built on Solana types; most need an RPC or a service endpoint to do anything:
 
-| Package | Description |
-|---------|-------------|
-| [`@fabrknt/veil-core`](#veilcore) | Chain-agnostic encryption and privacy primitives, plus optional Solana-specific extensions |
-| [`@fabrknt/veil-orders`](#veilorders) | Chain-agnostic encrypted swap order payloads for MEV protection on any DEX |
-| [`@fabrknt/veil-qn-addon`](#veilqn-addon) | Fabrknt Privacy — QuickNode Marketplace REST Add-On serving chain-agnostic privacy primitives |
-| [`@fabrknt/veil-mcp-server`](#veilmcp-server) | MCP server exposing privacy tools for AI agents (chain-agnostic + Solana-specific) |
-| [`apps/dark-pool`](apps/dark-pool/) | **Veil Dark Pool** — first shielded perp execution on Solana ([devnet](https://explorer.solana.com/address/FPAF4iwMtb2CWDcqpWf6NJzJCYrBhQNH8PkWY8ZCGMUA?cluster=devnet)) |
-| [`apps/*`](#solana-apps) | 5 more Solana privacy DeFi apps (confidential swaps, RWA secrets, umbra, darkflow, shadowlaunch) |
+| I want to… | Import from | Loads | Status |
+|---|---|---|---|
+| compress accounts and tokens with Light Protocol | `@fabrknt/veil-core/solana/zk-compression` | `@solana/web3.js`, `@lightprotocol/*` | token calls go through `@lightprotocol/*`; `compressData` / `decompressData` are **placeholders** — the data is not compressed and the proof and root are zero-filled |
+| connect to Helius (with ZK compression) or QuickNode (plain RPC) | `@fabrknt/veil-core/solana/rpc-providers` | `@solana/web3.js`, `@lightprotocol/*` | works |
+| shielded transfers (Privacy Cash) | `@fabrknt/veil-core/solana/shielded` | `@solana/web3.js` | **stub** — returns placeholder signatures, not wired to the Privacy Cash SDK |
+| encrypted shared state for a dark pool (Arcium MPC) | `@fabrknt/veil-core/solana/arcium` | `@solana/web3.js` | **partial** — `ArciumClient` POSTs to the Arcium endpoint you configure; the dark-pool deposit and swap steps return placeholder values |
+| swap / range proofs (Noir) | `@fabrknt/veil-core/solana/noir` | — (Solana types only) | **stub** — simulated prover and verifier, runs locally, no Noir circuit |
 
-## Getting Started
+`import … from '@fabrknt/veil-core'` still works and exports everything except `orders`, but it
+loads the Solana modules too. Use the paths above to keep them out.
+
+## Quickstart
+
+Each needs no keys, makes no network calls, and uses only the part it names (`npx` downloads `tsx` on first run):
 
 ```bash
-# Install dependencies
-pnpm install
+git clone https://github.com/fabrknt/veil && cd veil
+pnpm install --filter ./packages/core && cd packages/core
+npx tsx examples/box-quickstart.ts      # alice seals a message, bob opens it, eve can't
+npx tsx examples/shamir-quickstart.ts   # 5 shares, any 3 rebuild the secret, 2 don't
+npx tsx examples/orders-quickstart.ts   # a swap order only the solver can read
+```
+```
+sealed 26 bytes into 66 (24 nonce + 42 ciphertext)
+bob opens it: "KYC record #4821: verified"
+eve opens it: rejected
 
-# Build all packages (uses turbo)
-pnpm build
+split into 5 shares, any 3 rebuild it
+shares 1,3,5 rebuild it: true
+shares 2,3,4 rebuild it: true
+shares 1,2 only:          false
 
-# Run tests
-pnpm test
+order sealed: 64 bytes, min output not visible on the wire
+solver reads: min output 995000000, slippage 50 bp, deadline 1767225600
 ```
 
-### Environment Variables
+## Use it in your project
 
 ```bash
-# Solana-specific RPC provider (only needed for Solana features: ZK compression, shielded transfers)
-HELIUS_API_KEY=your-helius-key          # Recommended — supports ZK compression
-QUICKNODE_ENDPOINT=https://your-qn.url  # Alternative
-RPC_URL=https://custom-rpc.url          # Fallback
-
-# Network (Solana-specific)
-SOLANA_NETWORK=devnet                   # mainnet-beta | devnet | testnet
+npm install @fabrknt/veil-core
 ```
+```typescript
+import { generateEncryptionKeypair, encrypt, decrypt } from '@fabrknt/veil-core/box';
+
+const sender = generateEncryptionKeypair();
+const recipient = generateEncryptionKeypair();
+
+const sealed = encrypt(new TextEncoder().encode('secret'), recipient.publicKey, sender);
+// send sealed.bytes (24-byte nonce + ciphertext) any way you like
+
+const opened = decrypt(sealed.bytes, sender.publicKey, recipient);
+console.log(new TextDecoder().decode(opened)); // "secret"
+```
+
+Installing the package still downloads the Solana dependencies (they are regular
+`dependencies` today); importing a chain-agnostic path does not load them.
 
 ---
+
+# Reference
 
 ## `@fabrknt/veil-core`
 
 Chain-agnostic encryption and privacy primitives for any blockchain, plus optional Solana-specific extensions.
 
-**Chain-agnostic modules** (no blockchain dependency):
-- NaCl Box encryption (Curve25519-XSalsa20-Poly1305)
-- Shamir's Secret Sharing (M-of-N threshold)
-- Payload serialization
-- Noir ZK proofs
-
-**Solana-specific modules** (require `@solana/web3.js`):
-- ZK Compression (Light Protocol)
-- Shielded Transfers (Privacy Cash)
-- Arcium MPC Integration
-- RPC Provider Configuration
+Each module below has its own import path (see [Pick a part](#pick-a-part)). The
+chain-agnostic ones (`box`, `shamir`, `payload`, `orders`) load no Solana code; the
+`solana/*` ones need `@solana/web3.js`.
 
 ### NaCl Box Encryption (chain-agnostic)
 
@@ -79,7 +104,7 @@ import {
   encryptionKeyToHex,
   hexToEncryptionKey,
   validateEncryptedData,
-} from '@fabrknt/veil-core';
+} from '@fabrknt/veil-core/box';
 
 // Generate a random keypair
 const alice = generateEncryptionKeypair();
@@ -139,7 +164,7 @@ import {
   verifyShares,
   createThresholdEncryption,
   decryptWithThreshold,
-} from '@fabrknt/veil-core';
+} from '@fabrknt/veil-core/shamir';
 
 // Split a 32-byte secret into 5 shares, requiring 3 to reconstruct
 const secret = new Uint8Array(32); // your secret key
@@ -200,7 +225,7 @@ import {
   SWAP_ORDER_SCHEMA,
   RWA_ASSET_SCHEMA,
   RWA_ACCESS_GRANT_SCHEMA,
-} from '@fabrknt/veil-core';
+} from '@fabrknt/veil-core/payload';
 
 // Use a built-in schema
 const size = calculateSchemaSize(SWAP_ORDER_SCHEMA);
@@ -237,7 +262,7 @@ const MY_SCHEMA = {
 
 ### ZK Compression (Light Protocol) -- Solana-specific
 
-Compress on-chain data using Light Protocol for ~99% cost savings. Includes compressed token operations. Requires `@solana/web3.js`.
+Compressed token operations through Light Protocol. Requires `@solana/web3.js`. `compressData` and `decompressData` are placeholders for now: they return the input unchanged with a zero-filled proof and root, and `decompressData` only checks the hash.
 
 ```typescript
 import {
@@ -251,13 +276,13 @@ import {
   compressTokenAccount,
   decompressTokenAccount,
   estimateCompressionSavings,
-} from '@fabrknt/veil-core';
+} from '@fabrknt/veil-core/solana/zk-compression';
 
 // Set up the ZK-enabled RPC
 const rpc = createZkRpc({
-  endpoint: 'https://devnet.helius-rpc.com/?api-key=YOUR_KEY',
-  compressionEndpoint: 'https://devnet.helius-rpc.com/?api-key=YOUR_KEY',
-  proverEndpoint: 'https://devnet.helius-rpc.com/?api-key=YOUR_KEY',
+  rpcUrl: 'https://devnet.helius-rpc.com/?api-key=YOUR_KEY',
+  compressionRpcUrl: 'https://devnet.helius-rpc.com/?api-key=YOUR_KEY', // optional, defaults to rpcUrl
+  proverRpcUrl: 'https://devnet.helius-rpc.com/?api-key=YOUR_KEY',      // optional, defaults to rpcUrl
 });
 
 // Compress arbitrary data
@@ -280,7 +305,7 @@ const savings = estimateCompressionSavings(1024, 6960);
 // { uncompressedCost, compressedCost, savings, savingsPercent }
 ```
 
-### Shielded Transfers (Privacy Cash) -- Solana-specific
+### Shielded Transfers (Privacy Cash) -- Solana-specific, stub
 
 Private token transfers where amounts and participants are hidden on-chain. Requires `@solana/web3.js`.
 
@@ -293,13 +318,13 @@ import {
   isPrivacyCashAvailable,
   shieldTokens,
   unshieldTokens,
-} from '@fabrknt/veil-core';
+} from '@fabrknt/veil-core/solana/shielded';
 
 // Check if Privacy Cash is available on the network
 const available = await isPrivacyCashAvailable(connection);
 
 // High-level client
-const client = new PrivacyCashClient({ connection, network: 'devnet' });
+const client = new PrivacyCashClient({ rpcUrl: 'https://api.devnet.solana.com', network: 'devnet' });
 await client.initialize(walletKeypair);
 
 // Check private balance
@@ -327,7 +352,7 @@ await shieldTokens(connection, wallet, 1_000_000n, 'USDC');
 await unshieldTokens(connection, wallet, 500_000n, recipient, 'USDC');
 ```
 
-### Arcium Integration -- Solana-specific
+### Arcium Integration -- Solana-specific, partial
 
 Encrypted shared state and multi-party computation for dark pools and confidential DeFi. Requires `@solana/web3.js`.
 
@@ -337,7 +362,7 @@ import {
   DarkPoolStateManager,
   createArciumClient,
   createDarkPoolManager,
-} from '@fabrknt/veil-core';
+} from '@fabrknt/veil-core/solana/arcium';
 
 // Create an Arcium client
 const arcium = createArciumClient(connection, 'devnet', 'YOUR_API_KEY');
@@ -367,7 +392,7 @@ const order = await arcium.submitDarkOrder(
 const aggregates = await arcium.queryPoolAggregates(poolAddress);
 
 // Run an MPC computation
-const result = await arcium.mpcCompute('sum', [input1, input2]);
+const result = await arcium.mpcCompute('sum', new Map([['input1', input1], ['input2', input2]]));
 
 // Dark pool management
 const pool = createDarkPoolManager(connection, poolAddress, 'devnet');
@@ -376,9 +401,9 @@ await pool.processDarkSwap(order, proof);
 const poolAggregates = await pool.getAggregates();
 ```
 
-### Noir ZK Proofs (chain-agnostic)
+### Noir ZK Proofs -- Solana-specific, simulated prover
 
-Generate and verify zero-knowledge proofs for swap validity, range checks, and more. The proof system is chain-agnostic -- proofs can be verified on any chain.
+Simulated: the prover and verifier run locally and do not execute a Noir circuit yet, so these proofs carry no cryptographic guarantee. The API shape is what a real Noir backend would plug into.
 
 ```typescript
 import {
@@ -387,30 +412,25 @@ import {
   generateSwapProof,
   verifySwapProof,
   generateRangeProof,
-} from '@fabrknt/veil-core';
+} from '@fabrknt/veil-core/solana/noir';
 
 // Generate a swap validity proof
-const swapProof = await generateSwapProof({
-  inputAmount: 1_000_000n,
-  minOutputAmount: 990_000n,
-  balanceCommitment: commitment,
-  poolStateRoot: root,
-  balanceMerkleProof: proof,
-});
+const swapProof = await generateSwapProof(
+  1_000_000n,   // inputAmount
+  990_000n,     // minOutputAmount
+  commitment,   // balanceCommitment (Uint8Array)
+  root,         // poolStateRoot (Uint8Array)
+  proof,        // balanceMerkleProof (Uint8Array[], optional)
+);
 
 // Verify the proof
-const result = await verifySwapProof(swapProof);
-// { valid: true, estimatedGas?: number }
+const valid = await verifySwapProof(swapProof); // boolean
 
 // Generate a range proof (prove value is within bounds without revealing it)
-const rangeProof = await generateRangeProof({
-  value: 500_000n,
-  min: 0n,
-  max: 1_000_000n,
-});
+const rangeProof = await generateRangeProof(500_000n, 0n, 1_000_000n, commitment);
 
-// For custom circuits, use the prover/verifier directly
-const prover = createNoirProver('./circuits/my_circuit');
+// Or use the prover/verifier instances directly
+const prover = createNoirProver();
 const verifier = createNoirVerifier();
 ```
 
@@ -426,7 +446,7 @@ import {
   createRpcFromEnv,
   createPublicRpc,
   getRpcAttribution,
-} from '@fabrknt/veil-core';
+} from '@fabrknt/veil-core/solana/rpc-providers';
 
 // From explicit config
 const { connection, zkRpc } = createRpcConnections({
@@ -453,9 +473,10 @@ const attribution = getRpcAttribution(helius); // "Powered by Helius"
 
 ---
 
-## `@fabrknt/veil-orders`
+## Orders (`@fabrknt/veil-core/orders`)
 
-Chain-agnostic order encryption utilities for any DEX. Wraps `@fabrknt/veil-core` to provide a high-level API for encrypting swap orders that solvers can decrypt but MEV searchers cannot. Works with Solana, Ethereum, and any other blockchain.
+Chain-agnostic order encryption utilities for any DEX. Ships in `@fabrknt/veil-core` as the
+`/orders` path (the workspace package `@fabrknt/veil-orders` re-exports the same code). Builds on box, shamir and payload to provide a high-level API for encrypting swap orders that solvers can decrypt but MEV searchers cannot. Works with Solana, Ethereum, and any other blockchain.
 
 ### Quick Start
 
@@ -464,7 +485,7 @@ import {
   createEncryptedOrder,
   decryptOrderPayload,
   generateEncryptionKeypair,
-} from '@fabrknt/veil-orders';
+} from '@fabrknt/veil-core/orders';
 import BN from 'bn.js';
 
 // User side: encrypt an order
@@ -502,7 +523,7 @@ import {
   createEncryptedOrder,
   validateEncryptedPayload,
   getEncryptionPublicKey,
-} from '@fabrknt/veil-orders';
+} from '@fabrknt/veil-core/orders';
 
 // Serialize/deserialize without encryption (useful for testing)
 const payload = {
@@ -544,6 +565,21 @@ interface EncryptedPayload {
 ```
 
 ---
+
+## Combining them: add-on, MCP server and apps
+
+These use the parts above together. They are examples of combining them, not something you need
+to install to use a part.
+
+| Where | What it combines |
+|---|---|
+| [`packages/qn-addon`](packages/qn-addon/) | QuickNode Marketplace REST add-on serving box, shamir, payload, orders and compression over HTTP |
+| [`packages/mcp-server`](packages/mcp-server/) | MCP server exposing the same tools to AI agents (chain-agnostic + Solana identity tools) |
+| [`packages/browser`](packages/browser/) | Browser client that keeps encryption on the user's device |
+| [`apps/dark-pool`](apps/dark-pool/) | Veil Dark Pool — shielded perp execution on Solana ([devnet](https://explorer.solana.com/address/FPAF4iwMtb2CWDcqpWf6NJzJCYrBhQNH8PkWY8ZCGMUA?cluster=devnet)) |
+| [`apps/*`](#solana-apps) | 5 more Solana apps (confidential swaps, RWA secrets, umbra, darkflow, shadowlaunch) |
+
+`qn-addon`, `mcp-server` and `browser` are not on npm; run them from this repo.
 
 ## `@fabrknt/veil-qn-addon`
 
@@ -910,15 +946,40 @@ Hackathon documentation is in [`docs/solana/`](docs/solana/).
 
 ---
 
+## Developing veil
+
+```bash
+# Install dependencies
+pnpm install
+
+# Build all packages (uses turbo)
+pnpm build
+
+# Run tests
+pnpm test
+```
+
+### Environment Variables
+
+```bash
+# Solana-specific RPC provider (only needed for Solana features: ZK compression, shielded transfers)
+HELIUS_API_KEY=your-helius-key          # Recommended — supports ZK compression
+QUICKNODE_ENDPOINT=https://your-qn.url  # Alternative
+RPC_URL=https://custom-rpc.url          # Fallback
+
+# Network (Solana-specific)
+SOLANA_NETWORK=devnet                   # mainnet-beta | devnet | testnet
+```
+
 ## Dependencies
 
 | Package | Chain-agnostic deps | Solana-specific deps (optional) |
 |---------|--------------------|---------------------------------|
 | `@fabrknt/veil-core` | `tweetnacl`, `bs58`, `bn.js` | `@solana/web3.js`, `@lightprotocol/stateless.js`, `@lightprotocol/compressed-token`, `privacycash` |
-| `@fabrknt/veil-orders` | `@fabrknt/veil-core`, `bn.js` | -- |
+| `@fabrknt/veil-orders` (workspace only) | re-exports `@fabrknt/veil-core/orders` | -- |
 | `@fabrknt/veil-qn-addon` | `@fabrknt/veil-core`, `@fabrknt/veil-orders`, `express`, `better-sqlite3`, `morgan`, `express-rate-limit`, `bn.js` | -- |
 | `@fabrknt/veil-mcp-server` | `@modelcontextprotocol/sdk`, `@fabrknt/veil-core`, `@fabrknt/veil-orders`, `zod` | `@solana/web3.js` (for SOVEREIGN/trust tools) |
 
 ## License
 
-MIT
+Apache-2.0
