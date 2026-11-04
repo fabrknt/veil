@@ -20,7 +20,7 @@ info:
     name: Veil Privacy Suite Support
     email: support@veil-privacy.dev
   license:
-    name: MIT
+    name: Apache-2.0
 
 servers:
   - url: http://localhost:3030

@@ -24,7 +24,7 @@ info:
     name: Veil Privacy Suite
     email: support@veil-privacy.dev
   license:
-    name: MIT
+    name: Apache-2.0
 
 servers:
   - url: https://veil-privacy-suite.p.rapidapi.com

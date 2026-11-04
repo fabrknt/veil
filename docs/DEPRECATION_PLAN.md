@@ -8,11 +8,11 @@
 
 | Endpoint | Replacement | Status |
 |----------|-------------|--------|
-| `POST /v1/encrypt` | Client-side via `@fabrknt/veil-core` or `@fabrknt/veil-browser` | Deprecated, rate-limited (10 req/min) |
-| `POST /v1/decrypt` | Client-side via `@fabrknt/veil-core` or `@fabrknt/veil-browser` | Deprecated, rate-limited (10 req/min) |
-| `POST /v1/crypto/encrypt-multiple` | Client-side via `@fabrknt/veil-core` | Deprecated, rate-limited (10 req/min) |
-| `POST /v1/orders/encrypt` | Client-side via `@fabrknt/veil-orders` | Deprecated, rate-limited (10 req/min) |
-| `POST /v1/orders/decrypt` | Client-side via `@fabrknt/veil-orders` | Deprecated, rate-limited (10 req/min) |
+| `POST /v1/encrypt` | Client-side via `@fabrknt/veil-core/box` or `@fabrknt/veil-browser` | Deprecated, rate-limited (10 req/min) |
+| `POST /v1/decrypt` | Client-side via `@fabrknt/veil-core/box` or `@fabrknt/veil-browser` | Deprecated, rate-limited (10 req/min) |
+| `POST /v1/crypto/encrypt-multiple` | Client-side via `@fabrknt/veil-core/box` | Deprecated, rate-limited (10 req/min) |
+| `POST /v1/orders/encrypt` | Client-side via `@fabrknt/veil-core/orders` | Deprecated, rate-limited (10 req/min) |
+| `POST /v1/orders/decrypt` | Client-side via `@fabrknt/veil-core/orders` | Deprecated, rate-limited (10 req/min) |
 
 #### Confidential Swap Router Solver
 
@@ -49,7 +49,7 @@ const encrypted = client.encrypt(message, recipientPublicKey);
 const res = await fetch('/v1/orders/encrypt', { body: JSON.stringify({ minOutputAmount, ... }) });
 
 // After (client-side)
-import { createEncryptedOrder } from '@fabrknt/veil-orders';
+import { createEncryptedOrder } from '@fabrknt/veil-core/orders';
 const order = createEncryptedOrder(minOutputAmount, slippageBps, deadline, solverPubkey, keypair);
 ```
 

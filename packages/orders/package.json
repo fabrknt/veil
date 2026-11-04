@@ -1,7 +1,7 @@
 {
   "name": "@fabrknt/veil-orders",
   "version": "1.0.0",
-  "description": "Chain-agnostic order encryption utilities — serialize, encrypt, and decrypt DEX swap order payloads for MEV protection on any blockchain",
+  "description": "Re-exports @fabrknt/veil-core/orders (workspace package; install @fabrknt/veil-core and import from /orders instead)",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
