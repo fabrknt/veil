@@ -1,6 +1,6 @@
 {
   "name": "@fabrknt/veil-orders",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Re-exports @fabrknt/veil-core/orders (workspace package; install @fabrknt/veil-core and import from /orders instead)",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -32,7 +32,7 @@
     "typescript": "^5.0.0"
   },
   "peerDependencies": {
-    "@fabrknt/veil-core": "^0.2.0"
+    "@fabrknt/veil-core": "^2.0.0"
   },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com",
