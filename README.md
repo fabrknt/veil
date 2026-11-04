@@ -804,7 +804,13 @@ export PAYER_SECRET_KEY="<base64-encoded-solana-keypair>"
 
 ### CI
 
-GitHub Actions runs `pnpm build` and `pnpm test` on every push and PR to `main`, tested against Node 18 and 20.
+GitHub Actions runs `pnpm build` and `pnpm test` on every push and PR to `main`, tested against Node 20 and 22.
+
+Pull requests that touch one of the Anchor programs under `apps/*/programs/` also run
+[solinv](https://github.com/psyto/solinv)'s `solinv diff` (`.github/workflows/solinv.yml`), one job
+per program. The job fails, with an annotation on the line, when the change removes an account check
+such as a `has_one`, seeds, a constraint or a signer. It reads the source only: no Solana toolchain,
+no build.
 
 ### RapidAPI
 
@@ -946,6 +952,11 @@ Privacy-focused DeFi applications built on Veil primitives, targeting Solana hac
 | [`shadowlaunch`](apps/shadowlaunch/) | Private pump.fun purchases via ephemeral wallets + shielded transfers | -- |
 
 Each app includes an Anchor program (`programs/`), TypeScript SDK (`sdk/`), and Next.js frontend (`app/`). Some include a solver service (`solver/`).
+
+These programs were built for hackathons and are not audited; do not deploy them with real funds.
+`solinv idl --src` lists 20 writable typed accounts in darkflow that no constraint ties to the
+instruction (for example `buy_from_launch.launch_vault` and `execute_dark_order.maker_output_token`).
+Several of them let a caller substitute their own token account.
 
 Hackathon documentation is in [`docs/solana/`](docs/solana/).
 

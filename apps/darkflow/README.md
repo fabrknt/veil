@@ -168,6 +168,10 @@ yarn install
 # Build the Anchor program
 anchor build --no-idl
 
+# Build the IDL (Anchor 0.30's anchor-syn needs Span::source_file, gone from
+# current Rust; Cargo.lock pins proc-macro2 1.0.94 and this nightly has it)
+(cd programs/darkflow && RUSTUP_TOOLCHAIN=nightly-2025-04-15 anchor idl build -o ../../target/idl/darkflow.json)
+
 # Run tests
 yarn test
 ```
