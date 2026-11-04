@@ -266,7 +266,7 @@ pub struct InitializePoolVaults<'info> {
 
 #[derive(Accounts)]
 pub struct UpdatePoolConfig<'info> {
-    #[account(mut, has_one = authority)]
+    #[account(mut)]
     pub pool: Account<'info, DarkPool>,
     pub authority: Signer<'info>,
 }
