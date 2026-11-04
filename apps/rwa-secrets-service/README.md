@@ -1,6 +1,8 @@
 # RWA Secrets Service
 
-Encrypted metadata management for tokenized Real World Assets on Solana, featuring ZK access proofs and compressed storage.
+Encrypted metadata management for tokenized Real World Assets on Solana, with access proofs and compressed storage planned.
+
+> **Status (veil-core 2.0):** NaCl box encryption is real. The ZK compression (`compressData`) and shielded-transfer (Privacy Cash) calls in veil-core are **placeholders**: `compressData` returns the input unchanged with a zero-filled proof and root (and still sends a fee-paying Light transaction), and shielded deposits/withdrawals return a placeholder signature without moving funds. The SDK's `createZkAccessProof` / `verifyZkAccessProof` are **not proofs**: verification checks only a timestamp and the public key bytes, so anyone can forge one. Do not use them for access control.
 
 ## Overview
 
@@ -9,8 +11,8 @@ RWA Secrets Service enables asset issuers to register tokenized real-world asset
 ### Privacy Features
 
 - **NaCl Box Encryption**: Metadata encrypted with Curve25519-XSalsa20-Poly1305
-- **ZK Access Proofs**: Privacy-preserving access verification via Light Protocol
-- **Compressed Storage**: ~99% on-chain storage reduction for encrypted metadata
+- **ZK Access Proofs** (planned; current SDK functions are forgeable placeholders)
+- **Compressed Storage** (planned; `compressData` is a placeholder)
 
 ### How It Works
 
@@ -41,8 +43,8 @@ RWA Secrets Service enables asset issuers to register tokenized real-world asset
 - **Expiration Support**: Time-limited access grants
 - **Audit Logging**: On-chain record of all access attempts
 - **Asset Lifecycle**: Support for active, inactive, frozen, and transferred states
-- **ZK Access Proofs**: Verify access without revealing sensitive details
-- **Compressed Metadata**: Reduce storage costs by ~99% with Light Protocol
+- **ZK Access Proofs** (planned; not implemented — see Status above)
+- **Compressed Metadata** (planned; `compressData` is a placeholder)
 
 ## Project Structure
 

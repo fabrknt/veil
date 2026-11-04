@@ -35,6 +35,26 @@ describe('Threshold API', () => {
     }
   });
 
+  it('returns 400, not 500, for a secret above the field prime and for duplicate share indices', async () => {
+    const big = Buffer.alloc(32, 0xff).toString('base64');
+    const splitRes = await request(app).post('/v1/threshold/split').send({ secret: big, threshold: 2, totalShares: 3 });
+    expect(splitRes.status).toBe(400);
+
+    const secret = crypto.randomBytes(32).toString('base64');
+    const ok = await request(app).post('/v1/threshold/split').send({ secret, threshold: 2, totalShares: 3 });
+    const [a, b] = ok.body.shares;
+    const combineRes = await request(app)
+      .post('/v1/threshold/combine')
+      .send({ shares: [a, { ...b, index: a.index }] });
+    expect(combineRes.status).toBe(400);
+
+    const verifyRes = await request(app)
+      .post('/v1/threshold/verify')
+      .send({ shares: [a, { ...b, index: a.index }], threshold: 2 });
+    expect(verifyRes.status).toBe(200);
+    expect(verifyRes.body.valid).toBe(false);
+  });
+
   it('validates secret must be 32 bytes', async () => {
     const res = await request(app)
       .post('/v1/threshold/split')

@@ -9,6 +9,8 @@
 
 **Repository:** https://github.com/fabrknt/veil
 
+> **Status (veil-core 2.0):** NaCl box encryption is real. The ZK compression (`compressData`) and shielded-transfer (Privacy Cash) calls in veil-core are **placeholders**: `compressData` returns the input unchanged with a zero-filled proof and root (and still sends a fee-paying Light transaction), and shielded deposits/withdrawals return a placeholder signature without moving funds. This document is the hackathon submission as written; where it describes compression or shielded transfers as working, read it as the plan.
+
 ---
 
 ## Philosophy
@@ -68,7 +70,7 @@ All applications share a common cryptographic library (`@fabrknt/veil-core`) tha
 - **Integration:** ZK compression for encrypted order payloads and asset metadata
 - **Files:** `packages/core/src/zk-compression.ts`
 - **Apps:** All five applications
-- **Benefits:** ~99% on-chain storage reduction
+- **Benefits (planned):** on-chain storage reduction; `compressData` is a placeholder today
 
 ### Privacy Cash SDK (Shielded Transfers) - $15,000
 - **Integration:** Shielded settlement for swap outputs
@@ -151,7 +153,7 @@ Users encrypt order parameters using the solver's public key. Only the authorize
 - **MEV Protection:** Order details encrypted until execution
 - **Jupiter Integration:** Real-time quotes and optimal routing
 - **Non-custodial:** Users retain control; can cancel pending orders
-- **ZK Compression:** ~99% on-chain storage reduction (Light Protocol)
+- **ZK Compression (planned):** Light Protocol storage reduction; placeholder today
 - **Shielded Settlement:** Private output delivery (Privacy Cash)
 
 ### Flow
@@ -179,7 +181,7 @@ Asset metadata is encrypted on-chain with selective disclosure through encrypted
 - **Access Delegation:** Optional delegation rights
 - **Expiration Support:** Time-limited access grants
 - **ZK Access Proofs:** Privacy-preserving verification
-- **Compressed Storage:** ~99% cost reduction
+- **Compressed Storage (planned):** placeholder today
 
 ### Access Levels
 | Level | Description |

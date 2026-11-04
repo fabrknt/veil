@@ -4,6 +4,20 @@ import { decodeBase64 } from '../utils/validation';
 
 const router: Router = Router();
 
+// Input errors thrown by veil-core's Shamir functions; the client sent them, so they are 400s.
+const INPUT_ERRORS = [
+  'Secret must be less than the field prime',
+  'Share index must be',
+  'Duplicate share index',
+  'Share value must be',
+];
+
+function sendError(res: Response, error: any): void {
+  const message = String(error?.message ?? error);
+  const status = INPUT_ERRORS.some((m) => message.startsWith(m)) ? 400 : 500;
+  res.status(status).json({ success: false, error: message });
+}
+
 router.post('/v1/threshold/split', (req: Request, res: Response) => {
   try {
     const { secret, threshold, totalShares } = req.body;
@@ -40,7 +54,7 @@ router.post('/v1/threshold/split', (req: Request, res: Response) => {
       })),
     });
   } catch (error: any) {
-    res.status(500).json({ success: false, error: error.message });
+    sendError(res, error);
   }
 });
 
@@ -76,7 +90,7 @@ router.post('/v1/threshold/combine', (req: Request, res: Response) => {
       },
     });
   } catch (error: any) {
-    res.status(500).json({ success: false, error: error.message });
+    sendError(res, error);
   }
 });
 
@@ -110,7 +124,7 @@ router.post('/v1/threshold/verify', (req: Request, res: Response) => {
     const valid = thresholdService.verify(parsedShares, threshold);
     res.json({ success: true, valid, sharesProvided: shares.length, threshold });
   } catch (error: any) {
-    res.status(500).json({ success: false, error: error.message });
+    sendError(res, error);
   }
 });
 

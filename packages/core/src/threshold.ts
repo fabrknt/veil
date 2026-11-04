@@ -174,6 +174,30 @@ export function splitSecret(
 }
 
 /**
+ * Reject shares that cannot come from splitSecret: indices must be unique integers in 1..255
+ * (a repeated index makes the Lagrange denominator zero) and values must be 32 bytes below the
+ * field prime.
+ */
+function validateShares(shares: SecretShare[]): void {
+  const seen = new Set<number>();
+  for (const share of shares) {
+    if (!Number.isInteger(share.index) || share.index < 1 || share.index > 255) {
+      throw new Error('Share index must be an integer from 1 to 255');
+    }
+    if (seen.has(share.index)) {
+      throw new Error('Duplicate share index');
+    }
+    seen.add(share.index);
+    if (!(share.value instanceof Uint8Array) || share.value.length !== 32) {
+      throw new Error('Share value must be 32 bytes');
+    }
+    if (bytesToBigInt(share.value) >= PRIME) {
+      throw new Error('Share value must be less than the field prime');
+    }
+  }
+}
+
+/**
  * Combine shares to reconstruct the secret
  *
  * @param shares - Array of secret shares (at least threshold shares required)
@@ -183,6 +207,7 @@ export function combineShares(shares: SecretShare[]): Uint8Array {
   if (shares.length < 2) {
     throw new Error('At least 2 shares required');
   }
+  validateShares(shares);
 
   const points = shares.map((share) => ({
     x: BigInt(share.index),
@@ -205,6 +230,7 @@ export function verifyShares(
   }
 
   try {
+    validateShares(shares);
     // Take threshold number of shares and verify they produce consistent result
     const subset1 = shares.slice(0, expectedThreshold);
     const result1 = combineShares(subset1);

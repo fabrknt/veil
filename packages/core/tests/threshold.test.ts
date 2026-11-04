@@ -87,6 +87,17 @@ describe('threshold (Shamir Secret Sharing)', () => {
       expect(() => combineShares([shares[0]])).toThrow('At least 2 shares required');
       expect(() => combineShares([])).toThrow('At least 2 shares required');
     });
+
+    it('rejects malformed shares instead of returning zero bytes', () => {
+      const [a, b] = splitSecret(secret32, 2, 3);
+      expect(() => combineShares([a, { ...b, index: a.index }])).toThrow('Duplicate share index');
+      expect(() => combineShares([a, { ...b, index: 0 }])).toThrow('Share index must be');
+      expect(() => combineShares([a, { ...b, index: 1.5 }])).toThrow('Share index must be');
+      expect(() => combineShares([a, { ...b, value: new Uint8Array(1) }])).toThrow('Share value must be 32 bytes');
+      expect(() => combineShares([a, { ...b, value: new Uint8Array(32).fill(0xff) }])).toThrow(
+        'less than the field prime',
+      );
+    });
   });
 
   // ── verifyShares ────────────────────────────────────────────────────
@@ -100,6 +111,12 @@ describe('threshold (Shamir Secret Sharing)', () => {
     it('returns true when exactly threshold shares are provided', () => {
       const shares = splitSecret(secret32, 2, 4);
       expect(verifyShares(shares.slice(0, 2), 2)).toBe(true);
+    });
+
+    it('returns false for an exact-threshold set with a duplicate index or short values', () => {
+      const [a, b] = splitSecret(secret32, 2, 3);
+      expect(verifyShares([a, { ...b, index: a.index }], 2)).toBe(false);
+      expect(verifyShares([{ index: 1, value: new Uint8Array(1) }, { index: 2, value: new Uint8Array(1) }], 2)).toBe(false);
     });
 
     it('returns false when fewer shares than threshold are provided', () => {

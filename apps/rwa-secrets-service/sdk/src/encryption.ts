@@ -415,8 +415,8 @@ export async function decryptZkAsset(
 /**
  * Create a ZK proof of access for an asset
  *
- * This creates a zero-knowledge proof that demonstrates access
- * to an asset without revealing the specific access level or details.
+ * Placeholder: intended to create a zero-knowledge access proof, but today it returns an
+ * unsigned commitment that verifyZkAccessProof cannot bind to anything (see its warning).
  *
  * @param assetId - The asset ID
  * @param accessLevel - The access level (0-3)
@@ -452,6 +452,10 @@ export async function createZkAccessProof(
 
 /**
  * Verify a ZK access proof
+ *
+ * WARNING: placeholder, not a proof. This checks only the timestamp and that bytes 32..63 equal
+ * the public key; it ignores assetId and publicInputs and verifies no signature, so anyone can
+ * forge a passing value. Do not use it for access control.
  *
  * @param proof - The ZK access proof to verify
  * @param assetId - The expected asset ID

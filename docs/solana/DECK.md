@@ -106,7 +106,7 @@ Result: Fair execution. No frontrunning.
 | NaCl Box Encryption | Order details hidden until execution |
 | Jupiter Integration | Best price routing |
 | Non-custodial | Users can cancel anytime |
-| ZK Compression | ~99% storage reduction |
+| ZK Compression | storage reduction (planned; placeholder in code) |
 | Shielded Settlement | Private output delivery |
 
 **Program ID:** `v7th9XoyXeonxKLPsKdcgaNsSMLR44HDY7hadD7CCRM`

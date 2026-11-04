@@ -1,6 +1,8 @@
 # Confidential Swap Router
 
-MEV-protected swap router with encrypted order payloads on Solana, featuring ZK compression and shielded settlements.
+MEV-protected swap router with encrypted order payloads on Solana. ZK compression and shielded settlement are planned.
+
+> **Status (veil-core 2.0):** NaCl box encryption is real. The ZK compression (`compressData`) and shielded-transfer (Privacy Cash) calls in veil-core are **placeholders**: `compressData` returns the input unchanged with a zero-filled proof and root (and still sends a fee-paying Light transaction), and shielded deposits/withdrawals return a placeholder signature without moving funds.
 
 ## Overview
 
@@ -9,7 +11,7 @@ Confidential Swap Router enables users to submit swap orders with encrypted deta
 ### Privacy Features
 
 - **NaCl Box Encryption**: Order details encrypted with Curve25519-XSalsa20-Poly1305
-- **ZK Compression**: Optional Light Protocol integration for ~99% on-chain storage reduction
+- **ZK Compression** (planned; `compressData` is a placeholder)
 - **Shielded Settlement**: Optional Privacy Cash integration for private output delivery
 
 ### How It Works
@@ -39,8 +41,8 @@ Confidential Swap Router enables users to submit swap orders with encrypted deta
 - **Non-custodial**: Users retain control; can cancel pending orders anytime
 - **Best Execution**: Solvers use Jupiter aggregator for optimal routing
 - **Transparent**: All executions verifiable on-chain
-- **ZK Compression**: Reduce on-chain storage costs by ~99% with Light Protocol
-- **Shielded Output**: Receive swap outputs privately via Privacy Cash
+- **ZK Compression** (planned; `compressData` is a placeholder)
+- **Shielded Output** (planned; the Privacy Cash client is a placeholder that moves no funds)
 
 ## Project Structure
 
@@ -235,7 +237,7 @@ const encryptedPayload = createEncryptedOrder(
 
 ### ZK-Enhanced Encryption (Optional)
 
-For enhanced privacy with ~99% on-chain storage reduction:
+Planned ZK compression (`compressData` is a placeholder today; see Status at the top):
 
 ```typescript
 import { createZkEncryptedOrder, shieldSwapOutput } from '@fabrknt/veil-confidential-swap-sdk';
