@@ -30,6 +30,11 @@ pieces combine.
 `import … from '@fabrknt/veil-core'` still works and exports everything except `orders`, but it
 loads the Solana modules too. Use the paths above to keep them out.
 
+**Upgrading from 1.x:** 2.0 adds an `exports` map. Root, `dist`, `dist/index`, `dist/*.js`,
+`dist/*` and `package.json` imports still resolve; `@fabrknt/veil-core/dist/` (with a trailing
+slash) no longer does, because Node does not allow that form in `exports`. Import
+`@fabrknt/veil-core` instead.
+
 ## Quickstart
 
 Each needs no keys, makes no network calls, and uses only the part it names (`npx` downloads `tsx` on first run):
