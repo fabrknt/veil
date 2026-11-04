@@ -20,14 +20,14 @@ import {
 import { createEphemeralWallet, EphemeralWallet } from "./ephemeral";
 import { purchaseToken, simulatePurchase } from "../pumpfun/client";
 
-// Try to import from @fabrknt/veil-core, but handle gracefully if not available
-let shieldTokensFn: typeof import("@fabrknt/veil-core").shieldTokens | null = null;
-let unshieldTokensFn: typeof import("@fabrknt/veil-core").unshieldTokens | null = null;
+// Try to import from @fabrknt/veil-core/solana/shielded, but handle gracefully if not available
+let shieldTokensFn: typeof import("@fabrknt/veil-core/solana/shielded").shieldTokens | null = null;
+let unshieldTokensFn: typeof import("@fabrknt/veil-core/solana/shielded").unshieldTokens | null = null;
 
 // Dynamic import to handle cases where the package might not be fully set up
 async function loadPrivacyFunctions() {
   try {
-    const crypto = await import("@fabrknt/veil-core");
+    const crypto = await import("@fabrknt/veil-core/solana/shielded");
     shieldTokensFn = crypto.shieldTokens;
     unshieldTokensFn = crypto.unshieldTokens;
     return true;

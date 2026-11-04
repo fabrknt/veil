@@ -7,12 +7,8 @@ import {
   generateEncryptionKeypair,
   EncryptionKeypair,
 } from '@fabrknt/veil-core';
-import {
-  createArciumClient,
-  ArciumClient,
-  createNoirProver,
-  NoirProver,
-} from '@fabrknt/veil-core/solana';
+import { createArciumClient, ArciumClient } from '@fabrknt/veil-core/solana/arcium';
+import { createNoirProver, NoirProver } from '@fabrknt/veil-core/solana/noir';
 import {
   DarkPoolConfig,
   DarkPoolState,

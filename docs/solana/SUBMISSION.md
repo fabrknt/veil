@@ -353,17 +353,19 @@ const encrypted = encryptAssetMetadata({
 ```
 
 ### ZK Compression
+> veil-core 2.0: Solana parts moved off the root entry, and `compressData` is currently a
+> placeholder that returns a stub result (no on-chain compression yet). See the root README.
 ```typescript
-import { createHeliusRpc, compressData } from '@fabrknt/veil-core';
+import { createHeliusRpc } from '@fabrknt/veil-core/solana/rpc-providers';
+import { compressData } from '@fabrknt/veil-core/solana/zk-compression';
 
 const { zkRpc } = createHeliusRpc('YOUR_HELIUS_API_KEY', 'devnet');
-const compressed = await compressData(zkRpc, data, payer);
-// ~99% storage reduction
+const compressed = await compressData(zkRpc, data, payer); // placeholder in 2.0
 ```
 
 ### Shielded Transfer
 ```typescript
-import { PrivacyCashClient } from '@fabrknt/veil-core';
+import { PrivacyCashClient } from '@fabrknt/veil-core/solana/shielded'; // 2.0 path; shielded is a stub
 
 const client = new PrivacyCashClient(connection, wallet, 'SOL');
 await client.deposit(1000000n);  // Shield tokens
