@@ -807,8 +807,8 @@ export PAYER_SECRET_KEY="<base64-encoded-solana-keypair>"
 GitHub Actions runs `pnpm build` and `pnpm test` on every push and PR to `main`, tested against Node 20 and 22.
 
 Pull requests that touch one of the Anchor programs under `apps/*/programs/` also run
-[solinv](https://github.com/psyto/solinv)'s `solinv diff` (`.github/workflows/solinv.yml`), one job
-per program. The job fails, with an annotation on the line, when the change removes an account check
+[solinv](https://github.com/psyto/solinv)'s `solinv diff` (`.github/workflows/solinv.yml`), all five
+programs in one job. The job fails, with an annotation on the line, when the change removes an account check
 such as a `has_one`, seeds, a constraint or a signer. It reads the source only: no Solana toolchain,
 no build.
 

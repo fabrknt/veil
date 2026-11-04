@@ -14,17 +14,13 @@ permissions:
 jobs:
   account-checks:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        program-src:
-          - apps/confidential-swap-router/programs/confidential-swap-router/src
-          - apps/dark-pool/programs/veil-dark-pool/src
-          - apps/darkflow/programs/darkflow/src
-          - apps/rwa-secrets-service/programs/rwa-secrets/src
-          - apps/umbra/programs/umbra-swap/src
     steps:
       - uses: actions/checkout@v4
-      - uses: psyto/solinv@f5267c8f23c3b21bc8f2b54308bcbd52824da806
+      - uses: psyto/solinv@4a800dc3fb1cb91cff8254aafb30cef7b71f732c
         with:
-          program-src: ${{ matrix.program-src }}
+          program-src: |
+            apps/confidential-swap-router/programs/confidential-swap-router/src
+            apps/dark-pool/programs/veil-dark-pool/src
+            apps/darkflow/programs/darkflow/src
+            apps/rwa-secrets-service/programs/rwa-secrets/src
+            apps/umbra/programs/umbra-swap/src
