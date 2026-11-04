@@ -3,7 +3,7 @@ import * as compressionService from '../services/compression-service';
 import { instanceLookup } from '../middleware/instance-lookup';
 import { decodeBase64 } from '../utils/validation';
 
-const router = Router();
+const router: Router = Router();
 
 router.get('/v1/compression/estimate', (req: Request, res: Response) => {
   try {

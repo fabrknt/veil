@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import * as cryptoService from '../services/crypto-service';
 import { decodeBase64 } from '../utils/validation';
 
-const router = Router();
+const router: Router = Router();
 
 const SUNSET_DATE = '2026-09-01';
 const SUNSET_MS = new Date(SUNSET_DATE).getTime();

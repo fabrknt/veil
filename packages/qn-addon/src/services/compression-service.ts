@@ -4,7 +4,7 @@ import {
   compressData,
   decompressData,
   CompressedPayload,
-} from '@fabrknt/veil-core';
+} from '@fabrknt/veil-core/solana/zk-compression';
 import { Keypair } from '@solana/web3.js';
 
 export function estimate(dataSize: number): {

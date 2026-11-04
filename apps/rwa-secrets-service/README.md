@@ -204,7 +204,7 @@ import {
   createZkAccessProof,
   verifyZkAccessProof
 } from '@fabrknt/veil-rwa-secrets-sdk';
-import { createHeliusRpc } from '@fabrknt/veil-core';
+import { createHeliusRpc } from '@fabrknt/veil-core/solana/rpc-providers';
 
 // Create ZK-compressed encrypted asset
 const { zkRpc } = createHeliusRpc('YOUR_HELIUS_API_KEY', 'devnet');

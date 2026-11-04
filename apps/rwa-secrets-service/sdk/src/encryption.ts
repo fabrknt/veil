@@ -10,14 +10,15 @@ import {
   splitSecret,
   combineShares,
   SecretShare,
-  // ZK Compression imports
+} from '@fabrknt/veil-core';
+import {
   ZkCompressionConfig,
   CompressedPayload,
   createZkRpc,
   compressData,
   decompressData,
   estimateCompressionSavings,
-} from '@fabrknt/veil-core';
+} from '@fabrknt/veil-core/solana/zk-compression';
 import { Keypair } from '@solana/web3.js';
 
 // Re-export common crypto functions

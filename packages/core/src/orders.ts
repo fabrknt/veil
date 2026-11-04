@@ -401,7 +401,7 @@ export function createThresholdEncryptedOrder(
   const payloadHash = computePayloadHash(payload);
 
   // Use threshold encryption from @fabrknt/veil-core:
-  // generates random key, XOR-encrypts the data, splits key with Shamir
+  // generates a random key, encrypts the data with NaCl secretbox, splits the key with Shamir
   const { encryptedSecret, keyShares } = createThresholdEncryption(
     serialized,
     threshold,

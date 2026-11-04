@@ -212,7 +212,7 @@ export function getBondingCurveState(token): BondingCurveState
 ShadowLaunch imports privacy primitives from the monorepo's shared package:
 
 ```typescript
-import { shieldTokens, unshieldTokens } from "@fabrknt/veil-core";
+import { shieldTokens, unshieldTokens } from "@fabrknt/veil-core/solana/shielded";
 ```
 
 This provides:

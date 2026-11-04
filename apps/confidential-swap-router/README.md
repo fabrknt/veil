@@ -239,7 +239,7 @@ For enhanced privacy with ~99% on-chain storage reduction:
 
 ```typescript
 import { createZkEncryptedOrder, shieldSwapOutput } from '@fabrknt/veil-confidential-swap-sdk';
-import { createHeliusRpc } from '@fabrknt/veil-core';
+import { createHeliusRpc } from '@fabrknt/veil-core/solana/rpc-providers';
 
 // Create ZK-compressed encrypted order
 const { connection, zkRpc } = createHeliusRpc('YOUR_HELIUS_API_KEY', 'devnet');

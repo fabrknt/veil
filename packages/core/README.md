@@ -12,11 +12,19 @@ their own import paths.
 | I want to… | Import from | Pulls in at runtime |
 |---|---|---|
 | encrypt data for one or several recipients (NaCl box: X25519 + XSalsa20-Poly1305) | `@fabrknt/veil-core/box` | `tweetnacl`, `bs58` |
-| split a 32-byte secret so any M of N shares rebuild it (Shamir) | `@fabrknt/veil-core/shamir` | — |
+| split a 32-byte secret so any M of N shares rebuild it, or encrypt data under a key only M of N can rebuild (Shamir) | `@fabrknt/veil-core/shamir` | `tweetnacl` |
 | pack structured fields into fixed-size bytes and back | `@fabrknt/veil-core/payload` | `bn.js` |
 | seal a swap or perp order's limits so only the solver can read them (MEV protection) | `@fabrknt/veil-core/orders` | box, shamir, payload, `bn.js`, Node `crypto` |
 
-**Solana extensions** — built on Solana types; most need an RPC or a service endpoint to do anything:
+**Solana extensions** — built on Solana types; most need an RPC or a service endpoint to do anything.
+They need the optional peer dependencies, which `npm install @fabrknt/veil-core` does not install:
+
+```bash
+npm install @solana/web3.js @lightprotocol/stateless.js @lightprotocol/compressed-token
+```
+
+Without them, importing a Solana path fails with Node's `Cannot find module '@solana/web3.js'`
+(or `@lightprotocol/...`). `@fabrknt/veil-core/solana` loads all of them at once.
 
 | I want to… | Import from | Loads | Status |
 |---|---|---|---|
@@ -26,13 +34,29 @@ their own import paths.
 | encrypted shared state for a dark pool (Arcium MPC) | `@fabrknt/veil-core/solana/arcium` | `@solana/web3.js` | **partial** — `ArciumClient` POSTs to the Arcium endpoint you configure; the dark-pool deposit and swap steps return placeholder values |
 | swap / range proofs (Noir) | `@fabrknt/veil-core/solana/noir` | — (Solana types only) | **stub** — simulated prover and verifier, runs locally, no Noir circuit |
 
-`import … from '@fabrknt/veil-core'` still works and exports everything except `orders`, but it
-loads the Solana modules too. Use the paths above to keep them out.
+`import … from '@fabrknt/veil-core'` exports box, shamir and payload — no Solana, so it works
+without the peers. `orders` and the Solana extensions are only on their own paths.
 
-**Upgrading from 1.x:** 2.0 adds an `exports` map. Root, `dist`, `dist/index`, `dist/*.js`,
-`dist/*` and `package.json` imports still resolve; `@fabrknt/veil-core/dist/` (with a trailing
-slash) no longer does, because Node does not allow that form in `exports`. Import
-`@fabrknt/veil-core` instead.
+**Upgrading from 1.x:**
+- **Solana parts left the root and the dependencies.** `createZkRpc`, `shieldTokens`,
+  `ArciumClient`, `NoirProver` and the other Solana exports are no longer exported from
+  `@fabrknt/veil-core`; import them from `@fabrknt/veil-core/solana` (all of them) or
+  `@fabrknt/veil-core/solana/<part>`. `@solana/web3.js` and `@lightprotocol/*` are now optional
+  peer dependencies: install them yourself if you use a Solana part. `privacycash` and
+  `tweetnacl-util` were never imported and are gone. A plain install drops from 194 packages
+  (234 MB) to 5 (under 1 MB).
+- **`createThresholdEncryption` output changed format.** 1.x XORed the data with a repeating
+  32-byte key: equal 32-byte blocks of plaintext showed up as equal ciphertext, and a modified
+  ciphertext decrypted without error. 2.0 encrypts with NaCl secretbox (XSalsa20-Poly1305), so
+  `encryptedSecret` is a 24-byte nonce + 16-byte tag + ciphertext (40 bytes longer than the
+  data), and `decryptWithThreshold` throws if the data was modified or the shares do not rebuild
+  the key (e.g. fewer than the threshold). Data sealed with 1.x cannot be opened with 2.0;
+  decrypt it with 1.x and re-encrypt.
+- **`splitSecret` rejects a secret at or above the field prime** (`0xFFFF…FFFEFFFFFC2F`) instead
+  of silently returning shares of a different value.
+- **`exports` map.** `dist`, `dist/index`, `dist/*.js`, `dist/*` and `package.json` imports
+  still resolve; `@fabrknt/veil-core/dist/` (with a trailing slash) no longer does, because Node
+  does not allow that form in `exports`. Import `@fabrknt/veil-core` instead.
 
 ## Use it in your project
 
@@ -52,8 +76,8 @@ const opened = decrypt(sealed.bytes, sender.publicKey, recipient);
 console.log(new TextDecoder().decode(opened)); // "secret"
 ```
 
-Installing the package still downloads the Solana dependencies (they are regular
-`dependencies` today); importing a chain-agnostic path does not load them.
+This installs 5 packages (`tweetnacl`, `bs58`, `base-x`, `bn.js` and veil-core itself); the
+Solana peers come only if you install them.
 
 ## Runnable examples
 

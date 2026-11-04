@@ -32,6 +32,12 @@ describe('threshold (Shamir Secret Sharing)', () => {
       expect(() => splitSecret(new Uint8Array(16), 2, 3)).toThrow('Secret must be 32 bytes');
     });
 
+    it('throws for a secret at or above the field prime', () => {
+      expect(() => splitSecret(new Uint8Array(32).fill(0xff), 2, 3)).toThrow(
+        'Secret must be less than the field prime'
+      );
+    });
+
     it('throws for threshold < 2', () => {
       expect(() => splitSecret(secret32, 1, 3)).toThrow('Threshold must be at least 2');
     });
@@ -111,7 +117,8 @@ describe('threshold (Shamir Secret Sharing)', () => {
 
       const { encryptedSecret, keyShares } = createThresholdEncryption(secret, 3, 5);
       expect(encryptedSecret).toBeInstanceOf(Uint8Array);
-      expect(encryptedSecret.length).toBe(32);
+      // 24-byte nonce + 16-byte Poly1305 tag + ciphertext
+      expect(encryptedSecret.length).toBe(24 + 16 + 32);
       expect(keyShares.length).toBe(5);
 
       const decrypted = decryptWithThreshold(encryptedSecret, keyShares.slice(0, 3));
@@ -123,6 +130,47 @@ describe('threshold (Shamir Secret Sharing)', () => {
       const { encryptedSecret, keyShares } = createThresholdEncryption(secret, 2, 4);
       const decrypted = decryptWithThreshold(encryptedSecret, keyShares.slice(0, 2));
       expect(Buffer.from(decrypted)).toEqual(Buffer.from(secret));
+    });
+
+    it('does not repeat the key stream (equal plaintext blocks give different ciphertext)', () => {
+      // With a repeating 32-byte XOR key, two equal 32-byte plaintext blocks encrypt to
+      // two equal ciphertext blocks, so an observer learns the plaintext's structure.
+      const secret = new Uint8Array(64).fill(0x42);
+      const { encryptedSecret } = createThresholdEncryption(secret, 2, 3);
+      for (let o = 0; o + 64 <= encryptedSecret.length; o++) {
+        const first = Buffer.from(encryptedSecret.slice(o, o + 32));
+        const second = Buffer.from(encryptedSecret.slice(o + 32, o + 64));
+        expect(first.equals(second)).toBe(false);
+      }
+    });
+
+    it('rejects a tampered ciphertext', () => {
+      const secret = new TextEncoder().encode('pay 100 to alice');
+      const { encryptedSecret, keyShares } = createThresholdEncryption(secret, 2, 3);
+      const tampered = new Uint8Array(encryptedSecret);
+      tampered[tampered.length - 1] ^= 0x01;
+      expect(() => decryptWithThreshold(tampered, keyShares.slice(0, 2))).toThrow();
+    });
+
+    it('fails with fewer shares than the threshold', () => {
+      const secret = new TextEncoder().encode('needs three of five');
+      const { encryptedSecret, keyShares } = createThresholdEncryption(secret, 3, 5);
+      expect(() => decryptWithThreshold(encryptedSecret, keyShares.slice(0, 2))).toThrow();
+    });
+
+    it('round-trips a large payload', () => {
+      const secret = new Uint8Array(100_000);
+      for (let i = 0; i < secret.length; i += 65536) {
+        crypto.getRandomValues(secret.subarray(i, Math.min(i + 65536, secret.length)));
+      }
+      const { encryptedSecret, keyShares } = createThresholdEncryption(secret, 3, 5);
+      const decrypted = decryptWithThreshold(encryptedSecret, keyShares.slice(2, 5));
+      expect(Buffer.from(decrypted)).toEqual(Buffer.from(secret));
+    });
+
+    it('rejects a ciphertext too short to hold a nonce and tag', () => {
+      const { keyShares } = createThresholdEncryption(new Uint8Array(8), 2, 3);
+      expect(() => decryptWithThreshold(new Uint8Array(39), keyShares.slice(0, 2))).toThrow();
     });
   });
 });

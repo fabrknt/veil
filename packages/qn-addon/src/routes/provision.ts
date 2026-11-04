@@ -9,7 +9,7 @@ import {
 } from '../db/models';
 import { ProvisionRequest, UpdateRequest, DeactivateRequest, DeprovisionRequest } from '../types/quicknode';
 
-const router = Router();
+const router: Router = Router();
 
 router.post('/provision', basicAuth, (req: Request, res: Response) => {
   try {

@@ -3,6 +3,8 @@
  * Used for M-of-N threshold decryption schemes
  */
 
+import nacl from 'tweetnacl';
+
 // Prime for finite field arithmetic (256-bit prime)
 const PRIME = BigInt(
   '0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F'
@@ -148,6 +150,10 @@ export function splitSecret(
   }
 
   const secretBigInt = bytesToBigInt(secret);
+  if (secretBigInt >= PRIME) {
+    // Shares live in the field mod PRIME; a larger value would come back reduced.
+    throw new Error('Secret must be less than the field prime');
+  }
   const coefficients = generateCoefficients(secretBigInt, threshold - 1);
 
   const shares: SecretShare[] = [];
@@ -216,7 +222,9 @@ export function verifyShares(
 
 /**
  * Create a threshold encryption scheme
- * Encrypts a secret with a random key, then splits the key using Shamir's
+ * Encrypts the data with a random key (NaCl secretbox: XSalsa20-Poly1305), then splits the
+ * key using Shamir's. encryptedSecret is a 24-byte nonce followed by the secretbox output
+ * (16-byte tag + ciphertext), so it is 40 bytes longer than the data.
  */
 export function createThresholdEncryption(
   secret: Uint8Array,
@@ -226,15 +234,18 @@ export function createThresholdEncryption(
   encryptedSecret: Uint8Array;
   keyShares: SecretShare[];
 } {
-  // Generate random encryption key
-  const encryptionKey = new Uint8Array(32);
-  crypto.getRandomValues(encryptionKey);
+  // Generate a random key below the field prime so Shamir reconstructs it exactly
+  let encryptionKey: Uint8Array;
+  do {
+    encryptionKey = nacl.randomBytes(nacl.secretbox.keyLength);
+  } while (bytesToBigInt(encryptionKey) >= PRIME);
 
-  // XOR encrypt the secret with the key
-  const encryptedSecret = new Uint8Array(secret.length);
-  for (let i = 0; i < secret.length; i++) {
-    encryptedSecret[i] = secret[i] ^ encryptionKey[i % 32];
-  }
+  const nonce = nacl.randomBytes(nacl.secretbox.nonceLength);
+  const boxed = nacl.secretbox(secret, nonce, encryptionKey);
+
+  const encryptedSecret = new Uint8Array(nonce.length + boxed.length);
+  encryptedSecret.set(nonce, 0);
+  encryptedSecret.set(boxed, nonce.length);
 
   // Split the key into shares
   const keyShares = splitSecret(encryptionKey, threshold, totalShares);
@@ -244,18 +255,26 @@ export function createThresholdEncryption(
 
 /**
  * Decrypt using threshold shares
+ * Throws if the shares do not rebuild the key (e.g. fewer than the threshold) or the
+ * ciphertext was modified.
  */
 export function decryptWithThreshold(
   encryptedSecret: Uint8Array,
   keyShares: SecretShare[]
 ): Uint8Array {
+  const nonceLength = nacl.secretbox.nonceLength;
+  if (encryptedSecret.length < nonceLength + nacl.secretbox.overheadLength) {
+    throw new Error('Encrypted data too short');
+  }
+
   // Reconstruct the key
   const encryptionKey = combineShares(keyShares);
 
-  // XOR decrypt
-  const secret = new Uint8Array(encryptedSecret.length);
-  for (let i = 0; i < encryptedSecret.length; i++) {
-    secret[i] = encryptedSecret[i] ^ encryptionKey[i % 32];
+  const nonce = encryptedSecret.slice(0, nonceLength);
+  const boxed = encryptedSecret.slice(nonceLength);
+  const secret = nacl.secretbox.open(boxed, nonce, encryptionKey);
+  if (!secret) {
+    throw new Error('Decryption failed: not enough valid shares, or the data was modified');
   }
 
   return secret;

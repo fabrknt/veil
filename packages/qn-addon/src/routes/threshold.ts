@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import * as thresholdService from '../services/threshold-service';
 import { decodeBase64 } from '../utils/validation';
 
-const router = Router();
+const router: Router = Router();
 
 router.post('/v1/threshold/split', (req: Request, res: Response) => {
   try {

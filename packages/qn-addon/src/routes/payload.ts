@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import * as payloadService from '../services/payload-service';
 import { decodeBase64 } from '../utils/validation';
 
-const router = Router();
+const router: Router = Router();
 
 router.post('/v1/payload/serialize', (req: Request, res: Response) => {
   try {

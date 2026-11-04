@@ -35,7 +35,7 @@ import {
   estimateCompressionSavings,
   shieldTokens,
   unshieldTokens,
-} from '@fabrknt/veil-core';
+} from '@fabrknt/veil-core/solana';
 import { Keypair, PublicKey, Connection } from '@solana/web3.js';
 
 // ============================================================================

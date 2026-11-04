@@ -9,11 +9,13 @@
     "test": "jest"
   },
   "dependencies": {
-    "@fabrknt/veil-orders": "file:../../../../veil/packages/orders",
-    "@fabrknt/veil-core": "workspace:*",
     "@coral-xyz/anchor": "^0.30.0",
-    "@solana/web3.js": "^1.95.0",
+    "@fabrknt/veil-core": "workspace:*",
+    "@fabrknt/veil-orders": "file:../../../../veil/packages/orders",
+    "@lightprotocol/compressed-token": "^0.17.0",
+    "@lightprotocol/stateless.js": "^0.17.0",
     "@solana/spl-token": "^0.4.0",
+    "@solana/web3.js": "^1.95.0",
     "bn.js": "^5.2.1",
     "bs58": "^5.0.0"
   },

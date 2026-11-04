@@ -6,11 +6,13 @@ import {
   decrypt,
   generateEncryptionKeypair,
   EncryptionKeypair,
+} from '@fabrknt/veil-core';
+import {
   createArciumClient,
   ArciumClient,
   createNoirProver,
   NoirProver,
-} from '@fabrknt/veil-core';
+} from '@fabrknt/veil-core/solana';
 import {
   DarkPoolConfig,
   DarkPoolState,
