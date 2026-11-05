@@ -141,13 +141,20 @@ pub mod darkflow {
     /// * `encrypted_order` - Encrypted swap parameters (amount, min_output, deadline)
     /// * `zk_proof` - Noir proof of swap validity
     /// * `nullifier` - Prevents replay attacks
+    /// * `input_amount` - Tokens moved from the user to the pool vault
+    /// * `min_output` - Minimum tokens the user accepts from the pool vault
+    ///
+    /// `input_amount` and `min_output` are plain instruction data signed by
+    /// the user: moving SPL tokens needs the amount, so they are public.
     pub fn dark_swap(
         ctx: Context<DarkSwap>,
         encrypted_order: Vec<u8>,
         zk_proof: Vec<u8>,
         nullifier: [u8; 32],
+        input_amount: u64,
+        min_output: u64,
     ) -> Result<()> {
-        instructions::dark_swap(ctx, encrypted_order, zk_proof, nullifier)
+        instructions::dark_swap(ctx, encrypted_order, zk_proof, nullifier, input_amount, min_output)
     }
 
     /// Submit a dark order for later execution by solver
@@ -400,15 +407,25 @@ pub struct DarkSwap<'info> {
     #[account(mut)]
     pub pool: Account<'info, DarkPool>,
 
-    #[account(mut)]
+    #[account(
+        mut,
+        constraint = user_input_token.owner == user.key() @ DarkFlowError::Unauthorized,
+        constraint = user_input_token.mint == vault_input.mint @ DarkFlowError::InvalidTokenMint
+    )]
     pub user_input_token: Account<'info, TokenAccount>,
 
-    #[account(mut)]
+    #[account(
+        mut,
+        constraint = user_output_token.owner == user.key() @ DarkFlowError::Unauthorized,
+        constraint = user_output_token.mint == vault_output.mint @ DarkFlowError::InvalidTokenMint
+    )]
     pub user_output_token: Account<'info, TokenAccount>,
 
+    /// Pool vault for the input mint (checked against the pool's vault PDAs in the handler)
     #[account(mut)]
     pub vault_input: Account<'info, TokenAccount>,
 
+    /// Pool vault for the other mint (checked against the pool's vault PDAs in the handler)
     #[account(mut)]
     pub vault_output: Account<'info, TokenAccount>,
 

@@ -10,8 +10,27 @@ pub fn dark_swap(
     encrypted_order: Vec<u8>,
     zk_proof: Vec<u8>,
     nullifier: [u8; 32],
+    input_amount: u64,
+    min_output: u64,
 ) -> Result<()> {
     let pool = &mut ctx.accounts.pool;
+
+    require!(input_amount > 0, DarkFlowError::InvalidAmount);
+
+    // Vaults must be this pool's vault PDAs, input side matching the user's input mint
+    let pool_key = pool.key();
+    let (vault_a, _) = Pubkey::find_program_address(&[b"pool_vault_a", pool_key.as_ref()], ctx.program_id);
+    let (vault_b, _) = Pubkey::find_program_address(&[b"pool_vault_b", pool_key.as_ref()], ctx.program_id);
+    let input_mint = ctx.accounts.user_input_token.mint;
+    let (expected_in, expected_out) = if input_mint == pool.token_a_mint {
+        (vault_a, vault_b)
+    } else if input_mint == pool.token_b_mint {
+        (vault_b, vault_a)
+    } else {
+        return err!(DarkFlowError::InvalidTokenMint);
+    };
+    require_keys_eq!(ctx.accounts.vault_input.key(), expected_in, DarkFlowError::InvalidTokenMint);
+    require_keys_eq!(ctx.accounts.vault_output.key(), expected_out, DarkFlowError::InvalidTokenMint);
 
     // Validate pool is active
     require!(pool.is_active, DarkFlowError::PoolNotActive);
@@ -35,15 +54,59 @@ pub fn dark_swap(
     nullifier_account.nullifier = nullifier;
     nullifier_account.used_at = Clock::get()?.unix_timestamp;
 
-    // Execute the swap
-    // In production, amounts would be extracted from decrypted order or computed via MPC
-    // For now, use a simplified swap model
+    // Price against the vault reserves before the input arrives
+    let output_amount = calculate_swap_output(
+        input_amount,
+        ctx.accounts.vault_input.amount,
+        ctx.accounts.vault_output.amount,
+        pool.fee_rate_bps,
+    )?;
+    require!(output_amount > 0, DarkFlowError::InvalidAmount);
+    require!(output_amount >= min_output, DarkFlowError::SlippageExceeded);
+
+    // Input: user -> pool vault (signed by the user)
+    token::transfer(
+        CpiContext::new(
+            ctx.accounts.token_program.to_account_info(),
+            Transfer {
+                from: ctx.accounts.user_input_token.to_account_info(),
+                to: ctx.accounts.vault_input.to_account_info(),
+                authority: ctx.accounts.user.to_account_info(),
+            },
+        ),
+        input_amount,
+    )?;
+
+    // Output: pool vault -> user (signed by the pool PDA)
+    let pool_seeds = &[
+        b"dark_pool",
+        pool.token_a_mint.as_ref(),
+        pool.token_b_mint.as_ref(),
+        &[pool.bump],
+    ];
+    let signer = &[&pool_seeds[..]];
+    token::transfer(
+        CpiContext::new_with_signer(
+            ctx.accounts.token_program.to_account_info(),
+            Transfer {
+                from: ctx.accounts.vault_output.to_account_info(),
+                to: ctx.accounts.user_output_token.to_account_info(),
+                authority: pool.to_account_info(),
+            },
+            signer,
+        ),
+        output_amount,
+    )?;
 
     msg!("Dark swap executed");
     msg!("Nullifier: {:?}", &nullifier[..8]);
 
-    // Update volume
-    pool.add_volume(0, 0); // Actual amounts hidden
+    // Update volume (a/b order)
+    if input_mint == pool.token_a_mint {
+        pool.add_volume(input_amount, output_amount);
+    } else {
+        pool.add_volume(output_amount, input_amount);
+    }
 
     Ok(())
 }

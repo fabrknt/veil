@@ -217,8 +217,7 @@ Pools are created by the config admin only. The program upgrade authority runs `
 | Data | Visibility |
 |------|------------|
 | Individual LP amounts | Encrypted (only owner sees) |
-| Swap amounts | Encrypted + ZK verified |
-| Order parameters | Encrypted (only solver sees) |
+| Swap order details | Encrypted (only solver sees) |
 | Launch purchases | Encrypted (only buyer sees) |
 
 ### What's Public
@@ -228,6 +227,7 @@ Pools are created by the config admin only. The program upgrade authority runs `
 | Pool existence | Public |
 | Total LP count | Public (aggregate) |
 | Total volume | Public (aggregate) |
+| Swap / order input amount and min output | Public (instruction data and order account; tokens move by SPL transfer and the slippage check runs on-chain) |
 | Your wallet address | Public (use fresh wallets) |
 
 ### ZK Proofs

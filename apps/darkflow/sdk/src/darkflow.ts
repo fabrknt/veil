@@ -262,7 +262,11 @@ export class DarkFlowClient {
    *
    * The swap amount is never revealed on-chain. MEV is impossible.
    * The on-chain dark_swap instruction also requires the pool's trusted
-   * solver (`pool.solver`) to co-sign the transaction.
+   * solver (`pool.solver`) to co-sign the transaction. It takes
+   * `input_amount` and `min_output` as plain instruction args signed by the
+   * user: it moves `input_amount` from the user's token account into the
+   * pool vault and pays the constant-product output (at least `min_output`)
+   * from the other pool vault to the user's token account.
    */
   async darkSwap(params: DarkSwapParams): Promise<TxResult> {
     try {
