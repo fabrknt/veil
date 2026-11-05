@@ -22,11 +22,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: psyto/solinv@eb75c260c1ff95ce18196ecde07a46779a142d42
-        with:
-          program-src: |
-            apps/confidential-swap-router/programs/confidential-swap-router/src
-            apps/dark-pool/programs/veil-dark-pool/src
-            apps/darkflow/programs/darkflow/src
-            apps/rwa-secrets-service/programs/rwa-secrets/src
-            apps/umbra/programs/umbra-swap/src
+      - uses: psyto/solinv@v0
