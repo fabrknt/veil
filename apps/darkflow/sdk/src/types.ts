@@ -36,6 +36,8 @@ export interface DarkPoolState {
   feeRateBps: number;
   /** Number of LP positions */
   positionCount: number;
+  /** Total liquidity units (sum of positions + locked minimum) */
+  totalLiquidity: bigint;
   /** Total orders processed */
   orderCount: number;
   /** Is pool active */
@@ -72,6 +74,8 @@ export interface EncryptedPositionState {
   encryptedData: Uint8Array;
   /** Position commitment */
   commitment: Uint8Array;
+  /** Liquidity units held (withdrawals pay vault * burned / totalLiquidity) */
+  liquidity: bigint;
   /** Is position active */
   isActive: boolean;
   /** Creation timestamp */

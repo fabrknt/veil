@@ -52,7 +52,15 @@ pub struct DarkPool {
     /// this signature is the actual gate until a real verifier is added).
     /// Set at init by the pool authority; changeable via update_pool_config.
     pub solver: Pubkey,
+
+    /// Sum of all positions' liquidity units, plus MINIMUM_LIQUIDITY locked
+    /// on the first deposit. Withdrawals pay out vault * burned / total.
+    pub total_liquidity: u64,
 }
+
+/// Liquidity units locked forever on the first deposit, so the pool's
+/// liquidity supply never returns to zero.
+pub const MINIMUM_LIQUIDITY: u64 = 1_000;
 
 /// Public pool aggregates (queryable without revealing individual positions)
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug)]

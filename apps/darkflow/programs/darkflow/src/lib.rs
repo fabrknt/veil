@@ -313,7 +313,8 @@ pub struct RemoveLiquidityPrivate<'info> {
     #[account(mut)]
     pub pool: Account<'info, DarkPool>,
 
-    #[account(mut, has_one = owner, has_one = pool, close = owner)]
+    /// Closed in the handler once its liquidity reaches zero
+    #[account(mut, has_one = owner, has_one = pool)]
     pub position: Account<'info, EncryptedPosition>,
 
     #[account(mut)]
@@ -328,6 +329,7 @@ pub struct RemoveLiquidityPrivate<'info> {
     #[account(mut, seeds = [b"pool_vault_b", pool.key().as_ref()], bump)]
     pub vault_b: Account<'info, TokenAccount>,
 
+    #[account(mut)]
     pub owner: Signer<'info>,
 
     pub token_program: Program<'info, Token>,

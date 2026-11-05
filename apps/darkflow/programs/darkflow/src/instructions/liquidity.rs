@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Transfer};
-use crate::{AddLiquidityEncrypted, RemoveLiquidityPrivate, EncryptedPosition};
+use crate::{AddLiquidityEncrypted, RemoveLiquidityPrivate, EncryptedPosition, MINIMUM_LIQUIDITY};
 use crate::errors::DarkFlowError;
 use crate::zk_verify;
 
@@ -28,6 +28,30 @@ pub fn add_liquidity_encrypted(
 
     // Validate commitment is not zero
     require!(commitment != [0u8; 32], DarkFlowError::InvalidCommitment);
+
+    // Liquidity units for this deposit, priced against the reserves before
+    // the deposit (Uniswap v2 style). The first deposit locks
+    // MINIMUM_LIQUIDITY so the supply never returns to zero.
+    let reserve_a = ctx.accounts.vault_a.amount;
+    let reserve_b = ctx.accounts.vault_b.amount;
+    let total = pool.total_liquidity;
+    let liquidity = if total == 0 {
+        require!(amount_a > 0 && amount_b > 0, DarkFlowError::InvalidAmount);
+        let root = isqrt((amount_a as u128) * (amount_b as u128));
+        require!(root > MINIMUM_LIQUIDITY as u128, DarkFlowError::InvalidAmount);
+        pool.total_liquidity = MINIMUM_LIQUIDITY;
+        (root - MINIMUM_LIQUIDITY as u128) as u64
+    } else {
+        require!(reserve_a > 0 && reserve_b > 0, DarkFlowError::InvalidAmount);
+        let by_a = (amount_a as u128) * (total as u128) / (reserve_a as u128);
+        let by_b = (amount_b as u128) * (total as u128) / (reserve_b as u128);
+        u64::try_from(by_a.min(by_b)).map_err(|_| DarkFlowError::MathOverflow)?
+    };
+    require!(liquidity > 0, DarkFlowError::InvalidAmount);
+    pool.total_liquidity = pool
+        .total_liquidity
+        .checked_add(liquidity)
+        .ok_or(DarkFlowError::MathOverflow)?;
 
     // Transfer token A to vault
     if amount_a > 0 {
@@ -69,6 +93,7 @@ pub fn add_liquidity_encrypted(
         commitment,
         nullifier,
         bump,
+        liquidity,
     )?;
 
     // Update pool state
@@ -89,7 +114,7 @@ pub fn remove_liquidity_private(
     withdraw_percentage_bps: u16,
 ) -> Result<()> {
     let pool = &mut ctx.accounts.pool;
-    let position = &ctx.accounts.position;
+    let position = &mut ctx.accounts.position;
 
     // Validate pool is active
     require!(pool.is_active, DarkFlowError::PoolNotActive);
@@ -117,16 +142,21 @@ pub fn remove_liquidity_private(
         DarkFlowError::InvalidAmount
     );
 
-    // Calculate withdrawal amounts
-    // In production, this would be computed via MPC or derived from the proof
-    let vault_a_balance = ctx.accounts.vault_a.amount;
-    let vault_b_balance = ctx.accounts.vault_b.amount;
+    // Pro-rata payout: burn part of this position's liquidity and pay out the
+    // same fraction of the pool's total liquidity from each vault.
+    let total = pool.total_liquidity as u128;
+    require!(total > 0, DarkFlowError::InvalidAmount);
+    let burn = if withdraw_percentage_bps == 10000 {
+        position.liquidity
+    } else {
+        ((position.liquidity as u128) * (withdraw_percentage_bps as u128) / 10000) as u64
+    };
+    require!(burn > 0, DarkFlowError::InvalidAmount);
+    let withdraw_a = ((ctx.accounts.vault_a.amount as u128) * (burn as u128) / total) as u64;
+    let withdraw_b = ((ctx.accounts.vault_b.amount as u128) * (burn as u128) / total) as u64;
 
-    // Simplified: withdraw proportional to position count
-    // In production, use encrypted share from position
-    let share = 10000u64 / pool.position_count.max(1);
-    let withdraw_a = (vault_a_balance * share * withdraw_percentage_bps as u64) / (10000 * 10000);
-    let withdraw_b = (vault_b_balance * share * withdraw_percentage_bps as u64) / (10000 * 10000);
+    position.liquidity = position.liquidity.checked_sub(burn).ok_or(DarkFlowError::MathOverflow)?;
+    pool.total_liquidity = pool.total_liquidity.checked_sub(burn).ok_or(DarkFlowError::MathOverflow)?;
 
     // Transfer tokens back to owner
     let _pool_key = pool.key();
@@ -164,15 +194,30 @@ pub fn remove_liquidity_private(
         token::transfer(transfer_b_ctx, withdraw_b)?;
     }
 
-    // Update pool state
-    if withdraw_percentage_bps == 10000 {
-        pool.decrement_position_count();
+    // Close the position once it holds no liquidity (rent back to the owner)
+    if ctx.accounts.position.liquidity == 0 {
+        ctx.accounts.pool.decrement_position_count();
+        ctx.accounts.position.close(ctx.accounts.owner.to_account_info())?;
     }
 
     msg!("Removed liquidity privately");
     msg!("Withdrew {}% of position", withdraw_percentage_bps / 100);
 
     Ok(())
+}
+
+/// Integer square root (floor)
+fn isqrt(n: u128) -> u128 {
+    if n < 2 {
+        return n;
+    }
+    let mut x = n;
+    let mut y = (x + 1) / 2;
+    while y < x {
+        x = y;
+        y = (x + n / x) / 2;
+    }
+    x
 }
 
 /// Create a nullifier from commitment and owner using blake3 with domain separation
@@ -184,3 +229,17 @@ fn create_nullifier(commitment: &[u8; 32], owner: &Pubkey) -> [u8; 32] {
     *blake3::hash(&input).as_bytes()
 }
 
+#[cfg(test)]
+mod tests {
+    use super::isqrt;
+
+    #[test]
+    fn isqrt_floors() {
+        for n in 0u128..10_000 {
+            let r = isqrt(n);
+            assert!(r * r <= n && (r + 1) * (r + 1) > n, "n={n} r={r}");
+        }
+        let big = (u64::MAX as u128) * (u64::MAX as u128);
+        assert_eq!(isqrt(big), u64::MAX as u128);
+    }
+}

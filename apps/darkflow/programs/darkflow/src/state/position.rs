@@ -36,6 +36,9 @@ pub struct EncryptedPosition {
 
     /// Bump seed for PDA
     pub bump: u8,
+
+    /// Liquidity units held by this position (pro-rata claim on the vaults)
+    pub liquidity: u64,
 }
 
 impl EncryptedPosition {
@@ -47,6 +50,7 @@ impl EncryptedPosition {
         commitment: [u8; 32],
         nullifier: [u8; 32],
         bump: u8,
+        liquidity: u64,
     ) -> Result<Self> {
         let now = Clock::get()?.unix_timestamp;
         Ok(Self {
@@ -59,6 +63,7 @@ impl EncryptedPosition {
             updated_at: now,
             is_active: true,
             bump,
+            liquidity,
         })
     }
 
