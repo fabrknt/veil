@@ -975,15 +975,16 @@ Privacy-focused DeFi applications built on Veil primitives, targeting Solana hac
 | [`confidential-swap-router`](apps/confidential-swap-router/) | MEV-protected swaps via encrypted order parameters | `v7th...CCRM` |
 | [`rwa-secrets-service`](apps/rwa-secrets-service/) | End-to-end encrypted RWA metadata with role-based access | `DWgi...ySam` |
 | [`umbra`](apps/umbra/) | Reputation-gated privacy via SOVEREIGN tier routing | `41Ps...QXLr` |
-| [`darkflow`](apps/darkflow/) | Encrypted LP positions, ZK-verified swaps, dark pools | `8Uvv...s38U` |
+| [`darkflow`](apps/darkflow/) | Encrypted LP positions, solver-co-signed dark swaps and orders (ZK proofs are mocks) | `8Uvv...s38U` |
 | [`shadowlaunch`](apps/shadowlaunch/) | Private pump.fun purchases via ephemeral wallets + shielded transfers | -- |
 
 Each app includes an Anchor program (`programs/`), TypeScript SDK (`sdk/`), and Next.js frontend (`app/`). Some include a solver service (`solver/`).
 
 These programs were built for hackathons and are not audited; do not deploy them with real funds.
-`solinv idl --src` lists 20 writable typed accounts in darkflow that no constraint ties to the
-instruction (for example `buy_from_launch.launch_vault` and `execute_dark_order.maker_output_token`).
-Several of them let a caller substitute their own token account.
+In darkflow, pool creation is limited to a config admin set by the upgrade authority, and order
+fills and dark swaps must be co-signed by the pool's solver; its proof checks are hash-based
+placeholders. See [`apps/darkflow`](apps/darkflow/README.md#roles-and-setup) for roles, deploy
+order and the account layout changes.
 
 Hackathon documentation is in [`docs/solana/`](docs/solana/).
 
