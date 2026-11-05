@@ -32,8 +32,20 @@ pub mod darkflow {
     // Pool Management
     // ========================================================================
 
+    /// Create the program config (upgrade authority only, once).
+    /// `admin` is the only key allowed to create pools.
+    pub fn initialize_config(ctx: Context<InitializeConfig>, admin: Pubkey) -> Result<()> {
+        instructions::initialize_config(ctx, admin)
+    }
+
+    /// Hand the config admin role to a new key (current admin only)
+    pub fn set_config_admin(ctx: Context<SetConfigAdmin>, new_admin: Pubkey) -> Result<()> {
+        instructions::set_config_admin(ctx, new_admin)
+    }
+
     /// Initialize a new dark liquidity pool (step 1: create pool account)
     ///
+    /// Config admin only (see initialize_config).
     /// The pool stores encrypted LP positions. Only aggregate statistics
     /// (total liquidity, number of LPs) are public.
     /// Call initialize_pool_vaults after this to create the token vaults.
@@ -211,7 +223,47 @@ pub mod darkflow {
 // ============================================================================
 
 #[derive(Accounts)]
+pub struct InitializeConfig<'info> {
+    #[account(
+        init,
+        payer = payer,
+        space = 8 + DarkFlowConfig::INIT_SPACE,
+        seeds = [DarkFlowConfig::SEED],
+        bump
+    )]
+    pub config: Account<'info, DarkFlowConfig>,
+
+    /// Must be the program upgrade authority
+    #[account(mut)]
+    pub payer: Signer<'info>,
+
+    #[account(constraint = program.programdata_address()? == Some(program_data.key()) @ DarkFlowError::Unauthorized)]
+    pub program: Program<'info, crate::program::Darkflow>,
+
+    #[account(constraint = program_data.upgrade_authority_address == Some(payer.key()) @ DarkFlowError::Unauthorized)]
+    pub program_data: Account<'info, ProgramData>,
+
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct SetConfigAdmin<'info> {
+    #[account(mut, seeds = [DarkFlowConfig::SEED], bump = config.bump, has_one = admin @ DarkFlowError::Unauthorized)]
+    pub config: Account<'info, DarkFlowConfig>,
+
+    pub admin: Signer<'info>,
+}
+
+#[derive(Accounts)]
 pub struct InitializePool<'info> {
+    /// Pool creation is limited to the config admin
+    #[account(
+        seeds = [DarkFlowConfig::SEED],
+        bump = config.bump,
+        constraint = config.admin == authority.key() @ DarkFlowError::Unauthorized
+    )]
+    pub config: Account<'info, DarkFlowConfig>,
+
     #[account(
         init,
         payer = authority,

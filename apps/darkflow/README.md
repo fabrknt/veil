@@ -206,6 +206,10 @@ await darkflow.darkSwap({
 });
 ```
 
+## Pool creation
+
+Pools are created by the config admin only. The program upgrade authority runs `initialize_config(admin)` once (config PDA seed `"config"`); after that `initialize_pool` must be signed by that admin, who can hand the role over with `set_config_admin`.
+
 ## Privacy Model
 
 ### What's Private

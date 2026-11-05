@@ -1,8 +1,26 @@
 use anchor_lang::prelude::*;
-use crate::{InitializePool, InitializePoolVaults, UpdatePoolConfig};
+use crate::{InitializeConfig, InitializePool, InitializePoolVaults, SetConfigAdmin, UpdatePoolConfig};
 use crate::errors::DarkFlowError;
 
-/// Initialize a new dark liquidity pool
+/// Create the program config (upgrade authority checked in the accounts)
+pub fn initialize_config(ctx: Context<InitializeConfig>, admin: Pubkey) -> Result<()> {
+    require!(admin != Pubkey::default(), DarkFlowError::Unauthorized);
+    let config = &mut ctx.accounts.config;
+    config.admin = admin;
+    config.bump = ctx.bumps.config;
+    msg!("DarkFlow config admin: {}", admin);
+    Ok(())
+}
+
+/// Hand the config admin role to a new key
+pub fn set_config_admin(ctx: Context<SetConfigAdmin>, new_admin: Pubkey) -> Result<()> {
+    require!(new_admin != Pubkey::default(), DarkFlowError::Unauthorized);
+    ctx.accounts.config.admin = new_admin;
+    msg!("DarkFlow config admin: {}", new_admin);
+    Ok(())
+}
+
+/// Initialize a new dark liquidity pool (config admin only)
 pub fn initialize_pool(
     ctx: Context<InitializePool>,
     token_a_mint: Pubkey,

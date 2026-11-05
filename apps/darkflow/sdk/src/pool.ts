@@ -45,6 +45,18 @@ export class DarkPoolOperations {
   }
 
   /**
+   * Program config address. Pool creation (initialize_pool) must be signed
+   * by the admin stored here; the config is created once by the program
+   * upgrade authority with initialize_config.
+   */
+  static findConfigAddress(
+    programId: PublicKey = new PublicKey('8UvUSCfsXUjRW6NwcLVEJ4Y5jg8nWbxsZGNrzK1xs38U')
+  ): PublicKey {
+    const [configAddress] = PublicKey.findProgramAddressSync([Buffer.from('config')], programId);
+    return configAddress;
+  }
+
+  /**
    * Calculate pool fee for an amount
    */
   static calculateFee(amount: bigint, feeRateBps: number): bigint {

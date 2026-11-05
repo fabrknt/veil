@@ -59,6 +59,9 @@ export class DarkFlowClient {
 
   /**
    * Initialize a new dark liquidity pool
+   *
+   * Must be signed by the config admin (config PDA seed "config", created by
+   * the program upgrade authority with initialize_config).
    */
   async initializePool(config: DarkPoolConfig): Promise<TxResult> {
     try {
