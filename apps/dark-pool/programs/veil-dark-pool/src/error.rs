@@ -55,4 +55,7 @@ pub enum DarkPoolError {
 
     #[msg("Commitments must be for the same market")]
     MarketMismatch,
+
+    #[msg("Commitment does not belong to this trade")]
+    TradeCommitmentMismatch,
 }

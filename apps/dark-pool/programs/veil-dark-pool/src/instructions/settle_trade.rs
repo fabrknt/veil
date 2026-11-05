@@ -163,6 +163,7 @@ pub struct SettleTrade<'info> {
         mut,
         seeds = [COMMITMENT_SEED, &bid_commitment.commitment_id.to_le_bytes()],
         bump = bid_commitment.bump,
+        constraint = bid_commitment.key() == trade_record.bid_commitment @ DarkPoolError::TradeCommitmentMismatch,
     )]
     pub bid_commitment: Account<'info, PerpOrderCommitment>,
 
@@ -170,6 +171,7 @@ pub struct SettleTrade<'info> {
         mut,
         seeds = [COMMITMENT_SEED, &ask_commitment.commitment_id.to_le_bytes()],
         bump = ask_commitment.bump,
+        constraint = ask_commitment.key() == trade_record.ask_commitment @ DarkPoolError::TradeCommitmentMismatch,
     )]
     pub ask_commitment: Account<'info, PerpOrderCommitment>,
 
@@ -187,12 +189,18 @@ pub struct SettleTrade<'info> {
     )]
     pub ask_collateral_vault: Account<'info, TokenAccount>,
 
-    /// CHECK: Bid trader's USDC account for collateral return
-    #[account(mut)]
+    /// Bid trader's USDC account for collateral return
+    #[account(
+        mut,
+        constraint = bid_trader_usdc.owner == bid_commitment.trader @ DarkPoolError::UnauthorizedOwner,
+    )]
     pub bid_trader_usdc: Account<'info, TokenAccount>,
 
-    /// CHECK: Ask trader's USDC account for collateral return
-    #[account(mut)]
+    /// Ask trader's USDC account for collateral return
+    #[account(
+        mut,
+        constraint = ask_trader_usdc.owner == ask_commitment.trader @ DarkPoolError::UnauthorizedOwner,
+    )]
     pub ask_trader_usdc: Account<'info, TokenAccount>,
 
     /// Fee recipient USDC account
