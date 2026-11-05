@@ -429,8 +429,13 @@ pub struct ExecuteDarkOrder<'info> {
     #[account(address = pool.solver @ DarkFlowError::Unauthorized)]
     pub solver: Signer<'info>,
 
+    /// Closed after the fill; rent goes to the order maker
     #[account(mut, seeds = [b"order_escrow", order.key().as_ref()], bump)]
     pub escrow_token: Account<'info, TokenAccount>,
+
+    /// CHECK: rent receiver for the closed escrow, must be the order maker
+    #[account(mut, address = order.maker @ DarkFlowError::Unauthorized)]
+    pub maker: UncheckedAccount<'info>,
 
     #[account(
         mut,
@@ -457,12 +462,14 @@ pub struct CancelDarkOrder<'info> {
     #[account(mut, has_one = maker, has_one = pool, close = maker)]
     pub order: Account<'info, DarkOrder>,
 
+    /// Emptied and closed on cancel; rent goes to the maker
     #[account(mut, seeds = [b"order_escrow", order.key().as_ref()], bump)]
     pub escrow_token: Account<'info, TokenAccount>,
 
     #[account(mut)]
     pub maker_input_token: Account<'info, TokenAccount>,
 
+    #[account(mut)]
     pub maker: Signer<'info>,
 
     pub token_program: Program<'info, Token>,

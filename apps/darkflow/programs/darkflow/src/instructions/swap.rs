@@ -1,5 +1,5 @@
 use anchor_lang::prelude::*;
-use anchor_spl::token::{self, Transfer};
+use anchor_spl::token::{self, CloseAccount, Transfer};
 use crate::{DarkSwap, SubmitDarkOrder, ExecuteDarkOrder, CancelDarkOrder, DarkOrder, OrderStatus};
 use crate::errors::DarkFlowError;
 use crate::zk_verify;
@@ -181,6 +181,9 @@ pub fn execute_dark_order(
     ];
     let signer = &[&pool_seeds[..]];
 
+    // Move the whole escrow balance (input_amount plus anything else sent to
+    // it) into the pool so the escrow can be closed below.
+    let escrow_balance = ctx.accounts.escrow_token.amount;
     let transfer_input_ctx = CpiContext::new_with_signer(
         ctx.accounts.token_program.to_account_info(),
         Transfer {
@@ -190,7 +193,7 @@ pub fn execute_dark_order(
         },
         signer,
     );
-    token::transfer(transfer_input_ctx, input_amount)?;
+    token::transfer(transfer_input_ctx, escrow_balance)?;
 
     let transfer_output_ctx = CpiContext::new_with_signer(
         ctx.accounts.token_program.to_account_info(),
@@ -202,6 +205,17 @@ pub fn execute_dark_order(
         signer,
     );
     token::transfer(transfer_output_ctx, output_amount)?;
+
+    // Close the now-empty escrow, returning its rent to the maker
+    token::close_account(CpiContext::new_with_signer(
+        ctx.accounts.token_program.to_account_info(),
+        CloseAccount {
+            account: ctx.accounts.escrow_token.to_account_info(),
+            destination: ctx.accounts.maker.to_account_info(),
+            authority: pool.to_account_info(),
+        },
+        signer,
+    ))?;
 
     // Mark order as filled with solver-provided encrypted output
     order.fill(ctx.accounts.solver.key(), encrypted_output)?;
@@ -226,8 +240,9 @@ pub fn cancel_dark_order(ctx: Context<CancelDarkOrder>) -> Result<()> {
         DarkFlowError::OrderNotPending
     );
 
-    // Return escrowed tokens to maker (escrow is owned by the pool PDA)
-    let input_amount = order.input_amount;
+    // Return the whole escrow balance to the maker (escrow is owned by the
+    // pool PDA) so the escrow can be closed below.
+    let input_amount = ctx.accounts.escrow_token.amount;
 
     let pool = &ctx.accounts.pool;
     let pool_seeds = &[
@@ -248,6 +263,17 @@ pub fn cancel_dark_order(ctx: Context<CancelDarkOrder>) -> Result<()> {
         signer,
     );
     token::transfer(transfer_ctx, input_amount)?;
+
+    // Close the now-empty escrow, returning its rent to the maker
+    token::close_account(CpiContext::new_with_signer(
+        ctx.accounts.token_program.to_account_info(),
+        CloseAccount {
+            account: ctx.accounts.escrow_token.to_account_info(),
+            destination: ctx.accounts.maker.to_account_info(),
+            authority: pool.to_account_info(),
+        },
+        signer,
+    ))?;
 
     // Mark order as cancelled
     order.cancel();
