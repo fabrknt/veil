@@ -56,6 +56,11 @@ pub struct DarkPool {
     /// Sum of all positions' liquidity units, plus MINIMUM_LIQUIDITY locked
     /// on the first deposit. Withdrawals pay out vault * burned / total.
     pub total_liquidity: u64,
+
+    /// Next position id, used in position PDA seeds. Only ever increases, so
+    /// closing a position never makes a new deposit reuse an existing address.
+    /// (position_count stays the live number of open positions.)
+    pub next_position_id: u64,
 }
 
 /// Liquidity units locked forever on the first deposit, so the pool's

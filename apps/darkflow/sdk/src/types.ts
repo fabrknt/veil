@@ -38,6 +38,8 @@ export interface DarkPoolState {
   positionCount: number;
   /** Total liquidity units (sum of positions + locked minimum) */
   totalLiquidity: bigint;
+  /** Next position id (only increases); seed for the next position PDA */
+  nextPositionId: bigint;
   /** Total orders processed */
   orderCount: number;
   /** Is pool active */

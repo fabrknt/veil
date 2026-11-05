@@ -97,11 +97,15 @@ export class LiquidityOperations {
 
   /**
    * Find position address for a user in a pool
+   *
+   * `positionId` is the pool's `nextPositionId` at the time the position was
+   * created (pass the pool's current `nextPositionId` for a new deposit). It
+   * only ever increases, unlike `positionCount`.
    */
   static findPositionAddress(
     pool: PublicKey,
     owner: PublicKey,
-    positionIndex: number,
+    positionId: number | bigint,
     programId: PublicKey = new PublicKey('8UvUSCfsXUjRW6NwcLVEJ4Y5jg8nWbxsZGNrzK1xs38U')
   ): PublicKey {
     const [positionAddress] = PublicKey.findProgramAddressSync(
@@ -109,7 +113,7 @@ export class LiquidityOperations {
         Buffer.from('position'),
         pool.toBuffer(),
         owner.toBuffer(),
-        Buffer.from(new Uint8Array(new BigUint64Array([BigInt(positionIndex)]).buffer)),
+        Buffer.from(new Uint8Array(new BigUint64Array([BigInt(positionId)]).buffer)),
       ],
       programId
     );

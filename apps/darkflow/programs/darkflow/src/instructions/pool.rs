@@ -31,6 +31,8 @@ pub fn initialize_pool(
     pool.encryption_pubkey = pool_encryption_pubkey;
     pool.fee_rate_bps = fee_rate_bps;
     pool.position_count = 0;
+    pool.next_position_id = 0;
+    pool.total_liquidity = 0;
     pool.order_count = 0;
     pool.total_volume_a = 0;
     pool.total_volume_b = 0;

@@ -284,7 +284,7 @@ pub struct AddLiquidityEncrypted<'info> {
         init,
         payer = lp,
         space = 8 + EncryptedPosition::INIT_SPACE,
-        seeds = [b"position", pool.key().as_ref(), lp.key().as_ref(), &pool.position_count.to_le_bytes()],
+        seeds = [b"position", pool.key().as_ref(), lp.key().as_ref(), &pool.next_position_id.to_le_bytes()],
         bump
     )]
     pub position: Account<'info, EncryptedPosition>,

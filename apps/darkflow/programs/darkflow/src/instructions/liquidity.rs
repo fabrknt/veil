@@ -98,6 +98,10 @@ pub fn add_liquidity_encrypted(
 
     // Update pool state
     pool.increment_position_count();
+    pool.next_position_id = pool
+        .next_position_id
+        .checked_add(1)
+        .ok_or(DarkFlowError::MathOverflow)?;
 
     msg!("Added encrypted liquidity");
     msg!("Position commitment: {:?}", &commitment[..8]);
