@@ -11,6 +11,7 @@ pub fn add_liquidity_encrypted(
     commitment: [u8; 32],
     amount_a: u64,
     amount_b: u64,
+    min_liquidity: u64,
 ) -> Result<()> {
     let pool = &mut ctx.accounts.pool;
 
@@ -35,26 +36,38 @@ pub fn add_liquidity_encrypted(
     let reserve_a = ctx.accounts.vault_a.amount;
     let reserve_b = ctx.accounts.vault_b.amount;
     let total = pool.total_liquidity;
-    let liquidity = if total == 0 {
+    // (deposit_a, deposit_b) are what is actually taken from the LP: on later
+    // deposits only the amounts matching the pool ratio (rounded up, in the
+    // pool's favour); the excess stays with the LP.
+    let (liquidity, deposit_a, deposit_b) = if total == 0 {
         require!(amount_a > 0 && amount_b > 0, DarkFlowError::InvalidAmount);
         let root = isqrt((amount_a as u128) * (amount_b as u128));
         require!(root > MINIMUM_LIQUIDITY as u128, DarkFlowError::InvalidAmount);
         pool.total_liquidity = MINIMUM_LIQUIDITY;
-        (root - MINIMUM_LIQUIDITY as u128) as u64
+        ((root - MINIMUM_LIQUIDITY as u128) as u64, amount_a, amount_b)
     } else {
         require!(reserve_a > 0 && reserve_b > 0, DarkFlowError::InvalidAmount);
         let by_a = (amount_a as u128) * (total as u128) / (reserve_a as u128);
         let by_b = (amount_b as u128) * (total as u128) / (reserve_b as u128);
-        u64::try_from(by_a.min(by_b)).map_err(|_| DarkFlowError::MathOverflow)?
+        let liq = by_a.min(by_b);
+        let need_a = (liq * (reserve_a as u128)).div_ceil(total as u128);
+        let need_b = (liq * (reserve_b as u128)).div_ceil(total as u128);
+        (
+            u64::try_from(liq).map_err(|_| DarkFlowError::MathOverflow)?,
+            (need_a as u64).min(amount_a),
+            (need_b as u64).min(amount_b),
+        )
     };
     require!(liquidity > 0, DarkFlowError::InvalidAmount);
+    // Slippage bound: reserves can move between quoting and execution
+    require!(liquidity >= min_liquidity, DarkFlowError::SlippageExceeded);
     pool.total_liquidity = pool
         .total_liquidity
         .checked_add(liquidity)
         .ok_or(DarkFlowError::MathOverflow)?;
 
     // Transfer token A to vault
-    if amount_a > 0 {
+    if deposit_a > 0 {
         let transfer_a_ctx = CpiContext::new(
             ctx.accounts.token_program.to_account_info(),
             Transfer {
@@ -63,11 +76,11 @@ pub fn add_liquidity_encrypted(
                 authority: ctx.accounts.lp.to_account_info(),
             },
         );
-        token::transfer(transfer_a_ctx, amount_a)?;
+        token::transfer(transfer_a_ctx, deposit_a)?;
     }
 
     // Transfer token B to vault
-    if amount_b > 0 {
+    if deposit_b > 0 {
         let transfer_b_ctx = CpiContext::new(
             ctx.accounts.token_program.to_account_info(),
             Transfer {
@@ -76,7 +89,7 @@ pub fn add_liquidity_encrypted(
                 authority: ctx.accounts.lp.to_account_info(),
             },
         );
-        token::transfer(transfer_b_ctx, amount_b)?;
+        token::transfer(transfer_b_ctx, deposit_b)?;
     }
 
     // Create nullifier for this position
@@ -120,8 +133,8 @@ pub fn remove_liquidity_private(
     let pool = &mut ctx.accounts.pool;
     let position = &mut ctx.accounts.position;
 
-    // Validate pool is active
-    require!(pool.is_active, DarkFlowError::PoolNotActive);
+    // No pool.is_active check here: LPs can always withdraw, even from a
+    // paused pool.
 
     // Validate position is active
     require!(position.is_active, DarkFlowError::PositionNotActive);

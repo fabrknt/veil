@@ -168,6 +168,7 @@ export class DarkFlowClient {
 
       console.log(`Adding encrypted liquidity to pool ${params.pool.toBase58()}`);
       console.log(`Commitment: ${Buffer.from(commitment).toString('hex').slice(0, 16)}...`);
+      console.log(`Min liquidity: ${params.minLiquidity}`);
 
       // In production, build and send actual transaction
       return {

@@ -160,6 +160,12 @@ export interface AddLiquidityParams {
   amountA: bigint;
   /** Token B amount */
   amountB: bigint;
+  /**
+   * Minimum liquidity units to receive; the deposit fails below this
+   * (slippage bound). amountA/amountB are maximums: on deposits after the
+   * first, only the amounts matching the pool ratio are taken.
+   */
+  minLiquidity: bigint;
 }
 
 /**

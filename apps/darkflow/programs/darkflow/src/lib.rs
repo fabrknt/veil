@@ -81,14 +81,19 @@ pub mod darkflow {
     /// * `commitment` - Pedersen commitment to the amount (for ZK verification)
     /// * `amount_a` - Actual token A amount (will be verified against commitment)
     /// * `amount_b` - Actual token B amount (will be verified against commitment)
+    /// * `min_liquidity` - Minimum liquidity units to receive (slippage bound)
+    ///
+    /// `amount_a`/`amount_b` are maximums: on deposits after the first, only
+    /// the amounts matching the pool ratio are taken.
     pub fn add_liquidity_encrypted(
         ctx: Context<AddLiquidityEncrypted>,
         encrypted_amount: Vec<u8>,
         commitment: [u8; 32],
         amount_a: u64,
         amount_b: u64,
+        min_liquidity: u64,
     ) -> Result<()> {
-        instructions::add_liquidity_encrypted(ctx, encrypted_amount, commitment, amount_a, amount_b)
+        instructions::add_liquidity_encrypted(ctx, encrypted_amount, commitment, amount_a, amount_b, min_liquidity)
     }
 
     /// Remove liquidity with ZK proof of ownership
