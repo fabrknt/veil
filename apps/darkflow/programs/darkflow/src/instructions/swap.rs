@@ -121,6 +121,20 @@ pub fn execute_dark_order(
     let pool = &mut ctx.accounts.pool;
     let order = &mut ctx.accounts.order;
 
+    // Vaults must be this pool's vault PDAs, input side matching the order's mint
+    let pool_key = pool.key();
+    let (vault_a, _) = Pubkey::find_program_address(&[b"pool_vault_a", pool_key.as_ref()], ctx.program_id);
+    let (vault_b, _) = Pubkey::find_program_address(&[b"pool_vault_b", pool_key.as_ref()], ctx.program_id);
+    let (expected_in, expected_out) = if order.input_mint == pool.token_a_mint {
+        (vault_a, vault_b)
+    } else if order.input_mint == pool.token_b_mint {
+        (vault_b, vault_a)
+    } else {
+        return err!(DarkFlowError::InvalidTokenMint);
+    };
+    require_keys_eq!(ctx.accounts.vault_input.key(), expected_in, DarkFlowError::InvalidTokenMint);
+    require_keys_eq!(ctx.accounts.vault_output.key(), expected_out, DarkFlowError::InvalidTokenMint);
+
     // Validate pool is active
     require!(pool.is_active, DarkFlowError::PoolNotActive);
 
@@ -167,6 +181,17 @@ pub fn execute_dark_order(
     ];
     let signer = &[&pool_seeds[..]];
 
+    let transfer_input_ctx = CpiContext::new_with_signer(
+        ctx.accounts.token_program.to_account_info(),
+        Transfer {
+            from: ctx.accounts.escrow_token.to_account_info(),
+            to: ctx.accounts.vault_input.to_account_info(),
+            authority: pool.to_account_info(),
+        },
+        signer,
+    );
+    token::transfer(transfer_input_ctx, input_amount)?;
+
     let transfer_output_ctx = CpiContext::new_with_signer(
         ctx.accounts.token_program.to_account_info(),
         Transfer {
@@ -201,16 +226,26 @@ pub fn cancel_dark_order(ctx: Context<CancelDarkOrder>) -> Result<()> {
         DarkFlowError::OrderNotPending
     );
 
-    // Return escrowed tokens to maker
+    // Return escrowed tokens to maker (escrow is owned by the pool PDA)
     let input_amount = order.input_amount;
 
-    let transfer_ctx = CpiContext::new(
+    let pool = &ctx.accounts.pool;
+    let pool_seeds = &[
+        b"dark_pool",
+        pool.token_a_mint.as_ref(),
+        pool.token_b_mint.as_ref(),
+        &[pool.bump],
+    ];
+    let signer = &[&pool_seeds[..]];
+
+    let transfer_ctx = CpiContext::new_with_signer(
         ctx.accounts.token_program.to_account_info(),
         Transfer {
             from: ctx.accounts.escrow_token.to_account_info(),
             to: ctx.accounts.maker_input_token.to_account_info(),
-            authority: ctx.accounts.maker.to_account_info(),
+            authority: pool.to_account_info(),
         },
+        signer,
     );
     token::transfer(transfer_ctx, input_amount)?;
 

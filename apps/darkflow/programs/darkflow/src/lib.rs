@@ -1,5 +1,5 @@
 use anchor_lang::prelude::*;
-use anchor_spl::token::{Token, TokenAccount};
+use anchor_spl::token::{Mint, Token, TokenAccount};
 
 declare_id!("8UvUSCfsXUjRW6NwcLVEJ4Y5jg8nWbxsZGNrzK1xs38U");
 
@@ -309,7 +309,7 @@ pub struct RemoveLiquidityPrivate<'info> {
     #[account(mut)]
     pub pool: Account<'info, DarkPool>,
 
-    #[account(mut, has_one = owner, close = owner)]
+    #[account(mut, has_one = owner, has_one = pool, close = owner)]
     pub position: Account<'info, EncryptedPosition>,
 
     #[account(mut)]
@@ -377,10 +377,25 @@ pub struct SubmitDarkOrder<'info> {
     )]
     pub order: Account<'info, DarkOrder>,
 
-    #[account(mut)]
+    #[account(
+        mut,
+        constraint = maker_input_token.mint == pool.token_a_mint
+            || maker_input_token.mint == pool.token_b_mint @ DarkFlowError::InvalidTokenMint
+    )]
     pub maker_input_token: Account<'info, TokenAccount>,
 
-    #[account(mut)]
+    #[account(address = maker_input_token.mint @ DarkFlowError::InvalidTokenMint)]
+    pub input_mint: Account<'info, Mint>,
+
+    /// Per-order escrow, owned by the pool PDA
+    #[account(
+        init,
+        payer = maker,
+        token::mint = input_mint,
+        token::authority = pool,
+        seeds = [b"order_escrow", order.key().as_ref()],
+        bump
+    )]
     pub escrow_token: Account<'info, TokenAccount>,
 
     #[account(mut)]
@@ -400,15 +415,21 @@ pub struct ExecuteDarkOrder<'info> {
 
     pub solver: Signer<'info>,
 
-    #[account(mut)]
+    #[account(mut, seeds = [b"order_escrow", order.key().as_ref()], bump)]
     pub escrow_token: Account<'info, TokenAccount>,
 
-    #[account(mut)]
+    #[account(
+        mut,
+        constraint = maker_output_token.owner == order.maker @ DarkFlowError::Unauthorized,
+        constraint = maker_output_token.mint == vault_output.mint @ DarkFlowError::InvalidTokenMint
+    )]
     pub maker_output_token: Account<'info, TokenAccount>,
 
-    #[account(mut)]
+    /// Pool vault for the order's input mint (checked against the pool's vault PDAs in the handler)
+    #[account(mut, constraint = vault_input.mint == order.input_mint @ DarkFlowError::InvalidTokenMint)]
     pub vault_input: Account<'info, TokenAccount>,
 
+    /// Pool vault for the other mint (checked against the pool's vault PDAs in the handler)
     #[account(mut)]
     pub vault_output: Account<'info, TokenAccount>,
 
@@ -417,10 +438,12 @@ pub struct ExecuteDarkOrder<'info> {
 
 #[derive(Accounts)]
 pub struct CancelDarkOrder<'info> {
-    #[account(mut, has_one = maker, close = maker)]
+    pub pool: Account<'info, DarkPool>,
+
+    #[account(mut, has_one = maker, has_one = pool, close = maker)]
     pub order: Account<'info, DarkOrder>,
 
-    #[account(mut)]
+    #[account(mut, seeds = [b"order_escrow", order.key().as_ref()], bump)]
     pub escrow_token: Account<'info, TokenAccount>,
 
     #[account(mut)]
@@ -460,7 +483,7 @@ pub struct BuyFromLaunch<'info> {
     #[account(mut)]
     pub buyer_receive_token: Account<'info, TokenAccount>,
 
-    #[account(mut)]
+    #[account(mut, constraint = launch_vault.owner == launch.creator @ DarkFlowError::Unauthorized)]
     pub launch_vault: Account<'info, TokenAccount>,
 
     #[account(mut)]
