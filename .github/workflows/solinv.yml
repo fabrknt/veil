@@ -1,10 +1,15 @@
-# Fails a pull request that removes an account check (has_one, seeds,
-# constraint, signer, ...) from one of the Anchor programs, with an
-# annotation on the line. https://github.com/psyto/solinv
+# Fails a pull request or a push that removes an Anchor account check
+# (has_one, seeds, constraint, signer, ...), with an annotation on the line.
+# https://github.com/psyto/solinv
 name: solinv diff
 
 on:
   pull_request:
+    paths:
+      - apps/*/programs/**
+      - .github/workflows/solinv.yml
+  push:
+    branches: [main]
     paths:
       - apps/*/programs/**
       - .github/workflows/solinv.yml
@@ -16,8 +21,8 @@ jobs:
   account-checks:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: psyto/solinv@4a800dc3fb1cb91cff8254aafb30cef7b71f732c
+      - uses: actions/checkout@v7
+      - uses: psyto/solinv@eb75c260c1ff95ce18196ecde07a46779a142d42
         with:
           program-src: |
             apps/confidential-swap-router/programs/confidential-swap-router/src
