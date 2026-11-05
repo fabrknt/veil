@@ -228,13 +228,15 @@ pub struct InitializePool<'info> {
 
 #[derive(Accounts)]
 pub struct InitializePoolVaults<'info> {
-    #[account(mut)]
+    #[account(mut, has_one = authority)]
     pub pool: Box<Account<'info, DarkPool>>,
 
-    /// CHECK: Token A mint
+    /// CHECK: Token A mint, must be the pool's
+    #[account(address = pool.token_a_mint @ DarkFlowError::InvalidTokenMint)]
     pub token_a_mint: UncheckedAccount<'info>,
 
-    /// CHECK: Token B mint
+    /// CHECK: Token B mint, must be the pool's
+    #[account(address = pool.token_b_mint @ DarkFlowError::InvalidTokenMint)]
     pub token_b_mint: UncheckedAccount<'info>,
 
     #[account(
@@ -413,6 +415,8 @@ pub struct ExecuteDarkOrder<'info> {
     #[account(mut, has_one = pool)]
     pub order: Account<'info, DarkOrder>,
 
+    /// Only the pool authority may execute orders
+    #[account(constraint = solver.key() == pool.authority @ DarkFlowError::Unauthorized)]
     pub solver: Signer<'info>,
 
     #[account(mut, seeds = [b"order_escrow", order.key().as_ref()], bump)]
@@ -466,6 +470,9 @@ pub struct LaunchConfidentialToken<'info> {
     /// CHECK: Token mint for the launch
     pub token_mint: UncheckedAccount<'info>,
 
+    /// Mint buyers pay in
+    pub payment_mint: Account<'info, Mint>,
+
     #[account(mut)]
     pub creator: Signer<'info>,
 
@@ -477,13 +484,20 @@ pub struct BuyFromLaunch<'info> {
     #[account(mut)]
     pub launch: Account<'info, ConfidentialLaunch>,
 
-    #[account(mut)]
+    #[account(
+        mut,
+        constraint = buyer_payment_token.mint == launch.payment_mint @ DarkFlowError::InvalidTokenMint
+    )]
     pub buyer_payment_token: Account<'info, TokenAccount>,
 
     #[account(mut)]
     pub buyer_receive_token: Account<'info, TokenAccount>,
 
-    #[account(mut, constraint = launch_vault.owner == launch.creator @ DarkFlowError::Unauthorized)]
+    #[account(
+        mut,
+        constraint = launch_vault.owner == launch.creator @ DarkFlowError::Unauthorized,
+        constraint = launch_vault.mint == launch.payment_mint @ DarkFlowError::InvalidTokenMint
+    )]
     pub launch_vault: Account<'info, TokenAccount>,
 
     #[account(mut)]

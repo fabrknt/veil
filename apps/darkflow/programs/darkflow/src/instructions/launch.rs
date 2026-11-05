@@ -24,7 +24,7 @@ pub fn launch_confidential_token(
 
     launch.creator = ctx.accounts.creator.key();
     launch.token_mint = token_mint;
-    launch.payment_mint = Pubkey::default(); // Set based on config
+    launch.payment_mint = ctx.accounts.payment_mint.key();
     launch.encrypted_curve_params = encrypted_curve_params;
     launch.initial_price = initial_price;
     launch.max_supply = max_supply;
