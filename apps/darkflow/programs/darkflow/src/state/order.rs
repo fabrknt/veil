@@ -43,6 +43,11 @@ pub struct DarkOrder {
     /// Input amount (public, for escrow)
     pub input_amount: u64,
 
+    /// Minimum output the maker accepts, set by the maker at submit time.
+    /// Public (an on-chain check needs the plain value); the solver cannot
+    /// change it.
+    pub min_output: u64,
+
     /// Order deadline (Unix timestamp)
     pub deadline: i64,
 
@@ -76,6 +81,7 @@ impl DarkOrder {
         encrypted_params: Vec<u8>,
         commitment: [u8; 32],
         input_amount: u64,
+        min_output: u64,
         deadline: i64,
         bump: u8,
     ) -> Result<Self> {
@@ -87,6 +93,7 @@ impl DarkOrder {
             encrypted_params,
             commitment,
             input_amount,
+            min_output,
             deadline,
             status: OrderStatus::Pending,
             executed_by: None,

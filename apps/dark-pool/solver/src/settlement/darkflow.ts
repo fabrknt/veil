@@ -97,6 +97,7 @@ export class DarkflowSettlement implements VenueSettlement {
       //   encryptedParams: encryptedOrder,
       //   commitment: commitmentHash,
       //   inputAmount: match.fillQty,
+      //   minOutput: <maker's minimum output; stored in the order, checked on execute>,
       //   deadline: Math.floor(Date.now() / 1000) + 300,
       // }).accounts({ ... }).instruction();
 

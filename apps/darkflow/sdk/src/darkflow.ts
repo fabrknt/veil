@@ -348,6 +348,9 @@ export class DarkFlowClient {
 
       console.log(`Submitting dark order`);
       console.log(`Input amount: ${params.inputAmount} (public for escrow)`);
+      // min_output is passed in plain form and stored in the order; the
+      // solver's execute_dark_order is checked against it on-chain.
+      console.log(`Min output: ${params.minOutputAmount} (public, stored in the order)`);
       console.log(`Deadline: ${new Date(params.deadline * 1000).toISOString()}`);
 
       // In production, build and send actual transaction

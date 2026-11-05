@@ -153,25 +153,27 @@ pub mod darkflow {
     /// Submit a dark order for later execution by solver
     ///
     /// Order details are encrypted for the solver. Only the solver can
-    /// decrypt and execute the order.
+    /// decrypt and execute the order. `input_amount` and `min_output` are
+    /// stored in plain form: the escrow and the slippage check need them.
     pub fn submit_dark_order(
         ctx: Context<SubmitDarkOrder>,
         encrypted_params: Vec<u8>,
         commitment: [u8; 32],
         input_amount: u64,
+        min_output: u64,
         deadline: i64,
     ) -> Result<()> {
-        instructions::submit_dark_order(ctx, encrypted_params, commitment, input_amount, deadline)
+        instructions::submit_dark_order(ctx, encrypted_params, commitment, input_amount, min_output, deadline)
     }
 
-    /// Execute a dark order (pool's trusted solver only; see zk_verify)
+    /// Execute a dark order (pool's trusted solver only; see zk_verify).
+    /// The output must meet the min_output the maker stored in the order.
     pub fn execute_dark_order(
         ctx: Context<ExecuteDarkOrder>,
-        decrypted_min_output: u64,
         execution_proof: Vec<u8>,
         encrypted_output: Vec<u8>,
     ) -> Result<()> {
-        instructions::execute_dark_order(ctx, decrypted_min_output, execution_proof, encrypted_output)
+        instructions::execute_dark_order(ctx, execution_proof, encrypted_output)
     }
 
     /// Cancel a pending dark order

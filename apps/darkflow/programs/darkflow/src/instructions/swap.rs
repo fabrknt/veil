@@ -54,6 +54,7 @@ pub fn submit_dark_order(
     encrypted_params: Vec<u8>,
     commitment: [u8; 32],
     input_amount: u64,
+    min_output: u64,
     deadline: i64,
 ) -> Result<()> {
     let pool = &mut ctx.accounts.pool;
@@ -65,8 +66,9 @@ pub fn submit_dark_order(
     let now = Clock::get()?.unix_timestamp;
     require!(deadline > now, DarkFlowError::DeadlineExceeded);
 
-    // Validate input amount
+    // Validate input amount and the maker's minimum output
     require!(input_amount > 0, DarkFlowError::InvalidAmount);
+    require!(min_output > 0, DarkFlowError::InvalidAmount);
 
     // Validate encrypted params
     require!(
@@ -86,17 +88,24 @@ pub fn submit_dark_order(
     token::transfer(transfer_ctx, input_amount)?;
 
     // Initialize the order
+    let input_mint = ctx.accounts.maker_input_token.mint;
+    let output_mint = if input_mint == pool.token_a_mint {
+        pool.token_b_mint
+    } else {
+        pool.token_a_mint
+    };
     let order = &mut ctx.accounts.order;
     let bump = ctx.bumps.order;
 
     **order = DarkOrder::new(
         ctx.accounts.maker.key(),
         pool.key(),
-        ctx.accounts.maker_input_token.mint,
-        Pubkey::default(), // Output mint will be determined by pool
+        input_mint,
+        output_mint,
         encrypted_params,
         commitment,
         input_amount,
+        min_output,
         deadline,
         bump,
     )?;
@@ -114,7 +123,6 @@ pub fn submit_dark_order(
 /// Execute a dark order (solver only)
 pub fn execute_dark_order(
     ctx: Context<ExecuteDarkOrder>,
-    decrypted_min_output: u64,
     execution_proof: Vec<u8>,
     encrypted_output: Vec<u8>,
 ) -> Result<()> {
@@ -159,9 +167,9 @@ pub fn execute_dark_order(
         pool.fee_rate_bps,
     )?;
 
-    // Validate slippage
+    // Validate slippage against the maker's stored minimum
     require!(
-        output_amount >= decrypted_min_output,
+        output_amount >= order.min_output,
         DarkFlowError::SlippageExceeded
     );
 
