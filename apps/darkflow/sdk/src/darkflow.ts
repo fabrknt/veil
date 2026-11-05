@@ -77,6 +77,7 @@ export class DarkFlowClient {
       console.log(`Token A: ${config.tokenAMint.toBase58()}`);
       console.log(`Token B: ${config.tokenBMint.toBase58()}`);
       console.log(`Fee rate: ${config.feeRateBps} bps`);
+      console.log(`Solver: ${config.solver.toBase58()}`);
 
       // Placeholder: return mock result
       return {
@@ -256,6 +257,8 @@ export class DarkFlowClient {
    * Execute a dark swap
    *
    * The swap amount is never revealed on-chain. MEV is impossible.
+   * The on-chain dark_swap instruction also requires the pool's trusted
+   * solver (`pool.solver`) to co-sign the transaction.
    */
   async darkSwap(params: DarkSwapParams): Promise<TxResult> {
     try {

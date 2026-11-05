@@ -103,7 +103,9 @@ pub fn remove_liquidity_private(
         DarkFlowError::InvalidCommitment
     );
 
-    // Validate ZK proof (Noir circuit verification)
+    // Validate ZK proof (Noir circuit verification). This is only a hash
+    // check (see zk_verify); the real gate is the owner signature enforced by
+    // `has_one = owner` on the position.
     require!(
         zk_verify::verify_position_proof(&zk_proof, &position_commitment),
         DarkFlowError::InvalidZkProof

@@ -12,6 +12,14 @@
 ///   - `circuits/swap/`      — dark swap validity proof
 ///   - `circuits/execution/` — order execution correctness proof
 ///   - `circuits/position/`  — LP position ownership proof
+///
+/// TRUSTED-SOLVER GATE: none of the checks below verify a zero-knowledge
+/// proof. Each one recomputes a hash of public inputs, which anyone can do.
+/// Until a real verifier is added, the instructions that take these proofs
+/// also require a signature from `DarkPool::solver` (execute_dark_order,
+/// dark_swap) or from the position owner (remove_liquidity_private). The proof
+/// checks are kept as-is so the interface does not change when the real
+/// verifier replaces them.
 
 /// Verify a dark swap ZK proof.
 ///

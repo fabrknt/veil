@@ -43,8 +43,9 @@ pub mod darkflow {
         token_b_mint: Pubkey,
         pool_encryption_pubkey: [u8; 32],
         fee_rate_bps: u16,
+        solver: Pubkey,
     ) -> Result<()> {
-        instructions::initialize_pool(ctx, token_a_mint, token_b_mint, pool_encryption_pubkey, fee_rate_bps)
+        instructions::initialize_pool(ctx, token_a_mint, token_b_mint, pool_encryption_pubkey, fee_rate_bps, solver)
     }
 
     /// Initialize pool vaults (step 2: create token vaults)
@@ -61,8 +62,9 @@ pub mod darkflow {
         ctx: Context<UpdatePoolConfig>,
         new_fee_rate_bps: Option<u16>,
         new_encryption_pubkey: Option<[u8; 32]>,
+        new_solver: Option<Pubkey>,
     ) -> Result<()> {
-        instructions::update_pool_config(ctx, new_fee_rate_bps, new_encryption_pubkey)
+        instructions::update_pool_config(ctx, new_fee_rate_bps, new_encryption_pubkey, new_solver)
     }
 
     // ========================================================================
@@ -145,7 +147,7 @@ pub mod darkflow {
         instructions::submit_dark_order(ctx, encrypted_params, commitment, input_amount, deadline)
     }
 
-    /// Execute a dark order (solver only)
+    /// Execute a dark order (pool's trusted solver only; see zk_verify)
     pub fn execute_dark_order(
         ctx: Context<ExecuteDarkOrder>,
         decrypted_min_output: u64,
@@ -358,6 +360,11 @@ pub struct DarkSwap<'info> {
     )]
     pub nullifier_account: Account<'info, NullifierAccount>,
 
+    /// Trusted solver/attestor must co-sign: the swap proof is only a hash
+    /// check (see zk_verify), so this signature is the real gate.
+    #[account(address = pool.solver @ DarkFlowError::Unauthorized)]
+    pub solver: Signer<'info>,
+
     #[account(mut)]
     pub user: Signer<'info>,
 
@@ -415,8 +422,9 @@ pub struct ExecuteDarkOrder<'info> {
     #[account(mut, has_one = pool)]
     pub order: Account<'info, DarkOrder>,
 
-    /// Only the pool authority may execute orders
-    #[account(constraint = solver.key() == pool.authority @ DarkFlowError::Unauthorized)]
+    /// Only the pool's trusted solver may execute orders. The execution proof
+    /// is only a hash check (see zk_verify), so this signature is the real gate.
+    #[account(address = pool.solver @ DarkFlowError::Unauthorized)]
     pub solver: Signer<'info>,
 
     #[account(mut, seeds = [b"order_escrow", order.key().as_ref()], bump)]

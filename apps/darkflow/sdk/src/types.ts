@@ -12,6 +12,8 @@ export interface DarkPoolConfig {
   feeRateBps: number;
   /** Pool encryption public key */
   encryptionPubkey: Uint8Array;
+  /** Trusted solver/attestor that must sign order execution and dark swaps */
+  solver: PublicKey;
 }
 
 /**
@@ -22,6 +24,8 @@ export interface DarkPoolState {
   address: PublicKey;
   /** Pool authority */
   authority: PublicKey;
+  /** Trusted solver/attestor (signs execute_dark_order and dark_swap) */
+  solver: PublicKey;
   /** Token A mint */
   tokenAMint: PublicKey;
   /** Token B mint */

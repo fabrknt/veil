@@ -46,6 +46,12 @@ pub struct DarkPool {
 
     /// Bump seed for PDA
     pub bump: u8,
+
+    /// Trusted solver/attestor. Order execution and dark swaps must be signed
+    /// by this key (see `zk_verify`: the on-chain proof check is a hash, so
+    /// this signature is the actual gate until a real verifier is added).
+    /// Set at init by the pool authority; changeable via update_pool_config.
+    pub solver: Pubkey,
 }
 
 /// Public pool aggregates (queryable without revealing individual positions)

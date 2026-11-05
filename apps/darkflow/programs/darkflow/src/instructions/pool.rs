@@ -9,7 +9,10 @@ pub fn initialize_pool(
     token_b_mint: Pubkey,
     pool_encryption_pubkey: [u8; 32],
     fee_rate_bps: u16,
+    solver: Pubkey,
 ) -> Result<()> {
+    require!(solver != Pubkey::default(), DarkFlowError::Unauthorized);
+
     // Validate fee rate
     require!(fee_rate_bps <= 10000, DarkFlowError::InvalidAmount);
 
@@ -35,6 +38,7 @@ pub fn initialize_pool(
     pool.last_update = Clock::get()?.unix_timestamp;
     pool.is_active = true;
     pool.bump = bump;
+    pool.solver = solver;
 
     msg!("DarkFlow pool initialized");
     msg!("Token A: {}", token_a_mint);
@@ -59,6 +63,7 @@ pub fn update_pool_config(
     ctx: Context<UpdatePoolConfig>,
     new_fee_rate_bps: Option<u16>,
     new_encryption_pubkey: Option<[u8; 32]>,
+    new_solver: Option<Pubkey>,
 ) -> Result<()> {
     let pool = &mut ctx.accounts.pool;
 
@@ -75,6 +80,12 @@ pub fn update_pool_config(
         );
         pool.encryption_pubkey = encryption_pubkey;
         msg!("Updated encryption public key");
+    }
+
+    if let Some(solver) = new_solver {
+        require!(solver != Pubkey::default(), DarkFlowError::Unauthorized);
+        pool.solver = solver;
+        msg!("Updated solver to {}", solver);
     }
 
     pool.last_update = Clock::get()?.unix_timestamp;
